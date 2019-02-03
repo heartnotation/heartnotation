@@ -1,0 +1,95 @@
+env:
+  global:
+    - REPO="heartnotation"
+    - TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
+
+jobs:
+  include:
+
+    # Testing the API
+    - stage: test
+      name: Backend Tests
+      language: go
+      go:
+        - "1.11.4"
+      before_script:
+        - cd back
+      script:
+        - go test -v -cover ./...
+
+    # Deploying the API
+    - stage: deploy
+      name: Build and deploy the REST API to DockerHub
+      language: go
+      go: "1.11.4"
+      services:
+        - docker
+      before_script:
+        - export APP=$REPO/rest-api
+      script:
+        - docker build -t $APP:$TAG ./back
+      deploy:
+        provider: script
+        script: bash .travis/deploy.sh
+
+    # Testing the web application
+    - stage: test
+      name: Frontend Tests
+      language: node_js
+      node_js:
+        - 11
+      cache:
+        directories:
+          - node_modules
+      before_install:
+        - cd front
+      install:
+        - npm install
+      script:
+        - npm test
+    
+    # Deploying the web application
+    - stage: deploy
+      name: Build and deploy the web application to DockerHub
+      language: node_js
+      node_js:
+        - 11
+      services:
+        - docker
+      before_script:
+        - export APP=$REPO/web-app
+      script:
+        - docker build -t $APP:$TAG ./front
+      deploy:
+        provider: script
+        script: bash .travis/deploy.sh
+      
+    # Deploying the database
+    - stage: deploy
+      name: Deploying database to DockerHub
+      language: go
+      go: "1.11.4"
+      services:
+        - docker
+      before_script:
+        - export APP=$REPO/database
+      script:
+        - docker build -t $APP:$TAG ./db
+      deploy:
+        provider: script
+        script: bash .travis/deploy.sh
+
+    - stage: release
+      name: Release source code to GitHub
+      language: go
+      go: "1.11.4"
+      deploy:
+        provider: releases
+        api_key: 
+          secure: $TOKEN
+        skip_cleanup: true
+        name: "Heartnotation.$(date +'%d.%m.%Y %T')"
+        overwrite: false
+
+notifications:
+  email: false

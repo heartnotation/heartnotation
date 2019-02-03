@@ -7,7 +7,7 @@ services:
   client:
     build: ./front/
     ports:
-      - 3000:80
+      - 80:80
   database:
     build: ./db/
     ports:
