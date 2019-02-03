@@ -1,0 +1,17 @@
+version: '3'
+services:
+  server:
+    build: ./back/
+    ports:
+      - 8080:8080
+  client:
+    build: ./front/
+    ports:
+      - 3000:80
+  database:
+    build: ./db/
+    ports:
+      - 5432:5432
+    volumes:
+      - ./db/datas:/var/lib/postgresql/data
+
