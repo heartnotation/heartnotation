@@ -16,7 +16,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("postgres", "postgres://user:pass@localhost/bookstore")
+	db, err := sql.Open("postgres", "user=tholander password=root dbname=heartnotation sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
