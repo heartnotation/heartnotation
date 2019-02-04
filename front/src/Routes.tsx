@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import AnnotationForm from "./pages/CreateAnnotationForm";
+import CreateAnnotationForm from "./pages/CreateAnnotationForm";
 
 const About = () => <h2>About</h2>;
 const Users = () => <h2>Users</h2>;
@@ -22,7 +22,7 @@ const AppRouter = () => (
         </ul>
       </nav>
 
-      <Route path="/" exact component={AnnotationForm} />
+      <Route path="/" exact component={CreateAnnotationForm} />
       <Route path="/about/" component={About} />
       <Route path="/users/" component={Users} />
     </div>
