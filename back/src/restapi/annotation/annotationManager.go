@@ -1,0 +1,5 @@
+package annotation
+
+func CreateAnnotation() {
+
+}
