@@ -27,4 +27,8 @@
 /back/bin/*
 /back/pkg/*
 
+
+#Visual Studio Code configuration
+.vscode/
+
 # End of https://www.gitignore.io/api/go
