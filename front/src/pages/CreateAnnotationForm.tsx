@@ -4,7 +4,14 @@ import { Form, Icon, Input, Button } from "antd";
 
 class CreateAnnotationForm extends Component {
   public render() {
-    return <Button type="primary">Button</Button>;
+    return (
+      <Form>
+        <Input />
+        <Input />
+        <Input />
+        <Button type="primary">Create</Button>
+      </Form>
+    );
   }
 }
 
