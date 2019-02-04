@@ -1,13 +1,11 @@
 package annotation
 
-import "time"
-
 type Annotation struct {
 	IDAnnotation     int
-	IDSignal         int
+	IDSignal         string
 	Comment          string
-	CreationDate     time.Time
-	EditDate         time.Time
+	CreationDate     string
+	EditDate         string
 	Status           string
 	BasedAnnotation  int
 	OrganizationName string
