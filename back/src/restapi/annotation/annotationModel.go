@@ -4,7 +4,7 @@ import "time"
 
 type Annotation struct {
 	IDAnnotation     int
-	IDSignal         int16
+	IDSignal         int
 	Comment          string
 	CreationDate     time.Time
 	EditDate         time.Time

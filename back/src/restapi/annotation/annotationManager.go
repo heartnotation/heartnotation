@@ -1,5 +1,7 @@
 package annotation
 
-func CreateAnnotation() {
+import "net/http"
+
+func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 }
