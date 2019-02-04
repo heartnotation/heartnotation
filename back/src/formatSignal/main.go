@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 )
@@ -23,30 +23,27 @@ func main() {
 			res2, _ := json.Marshal(res)
 
 			fmt.Println(string(res2))
+			fmt.Println(data)
 		}
 	}
-	test := []string{"test", "test2"}
-	result, err := json.Marshal(test)
-	fmt.Println(string(result))
 }
 
 func formatData(data []byte, leads int) ([][]int16, error) {
 	if len(data)%16 > 0 || len(data)%(16*leads) > 0 {
 		return nil, fmt.Errorf("Given leads does not correspond to datas")
 	}
-	samples := len(data) / 16
+	samples := len(data) / 2
+	fmt.Println(len(data), ":", samples)
 	sizeSample := samples / leads
 
 	formatedDatas := make([][]int16, leads)
-	reader := bytes.NewReader(data)
+	buffer := bytes.NewBuffer(data)
 	for lead := 0; lead < leads; lead++ {
 		formatedDatas[lead] = make([]int16, sizeSample)
 	}
-	fmt.Println(formatedDatas[0])
 	for sample := 0; sample < sizeSample; sample++ {
 		for lead := 0; lead < leads; lead++ {
-			tmp := (sample * leads * 16) + (lead * 16)
-			formatedDatas[lead][sample] = io.ReadFull(reader)
+			binary.Read(buffer, binary.BigEndian, &formatedDatas[lead][sample])
 		}
 	}
 	return formatedDatas, nil
