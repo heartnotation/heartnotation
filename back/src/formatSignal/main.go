@@ -1,15 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 )
 
 func main() {
 	fmt.Println("Starting the app")
-	response, err := http.Get("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin")
+	response, err := http.Get("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin") //A parametrer
 	if err != nil {
 		fmt.Println(" FAIL with %s\n", err)
 	} else {
@@ -17,8 +19,10 @@ func main() {
 		if err != nil {
 			fmt.Println(" FAIL with %s\n", err)
 		} else {
-			formatData(data, 3)
-			//fmt.Println(data)
+			res, _ := formatData(data, 3)
+			res2, _ := json.Marshal(res)
+
+			fmt.Println(string(res2))
 		}
 	}
 	test := []string{"test", "test2"}
@@ -26,31 +30,23 @@ func main() {
 	fmt.Println(string(result))
 }
 
-func formatData(data []byte, leads int) ([][][]byte, error) {
+func formatData(data []byte, leads int) ([][]int16, error) {
 	if len(data)%16 > 0 || len(data)%(16*leads) > 0 {
 		return nil, fmt.Errorf("Given leads does not correspond to datas")
 	}
 	samples := len(data) / 16
 	sizeSample := samples / leads
-	fmt.Println(len(data), samples, sizeSample)
 
-	formatedDatas := make([][][]byte, leads)
-
+	formatedDatas := make([][]int16, leads)
+	reader := bytes.NewReader(data)
 	for lead := 0; lead < leads; lead++ {
-		formatedDatas[lead] = make([][]byte, sizeSample)
-		for sample := 0; sample < 16; sample++ {
-			formatedDatas[lead][sample] = make([]byte, 16)
-		}
+		formatedDatas[lead] = make([]int16, sizeSample)
 	}
 	fmt.Println(formatedDatas[0])
 	for sample := 0; sample < sizeSample; sample++ {
 		for lead := 0; lead < leads; lead++ {
 			tmp := (sample * leads * 16) + (lead * 16)
-			fmt.Println(len(data), samples, sizeSample)
-			fmt.Println("Line ", tmp, ":")
-			fmt.Println(data[tmp : tmp+16])
-			formatedDatas[lead][sample] = data[tmp : tmp+16]
-			fmt.Println(formatedDatas[lead][sample])
+			formatedDatas[lead][sample] = io.ReadFull(reader)
 		}
 	}
 	return formatedDatas, nil
