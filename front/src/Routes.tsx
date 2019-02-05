@@ -10,7 +10,6 @@ const AppRouter = () => (
   <Router>
     <div>
       <Header />
-
       <Route path="/CreateTag/" exact component={AnnotationForm} />
       <Route path="/about/" component={About} />
       <Route path="/users/" component={Users} />
