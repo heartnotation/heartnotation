@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import AnnotationForm from "./pages/CreateAnnotationForm";
 import Header from "./fragments/Header";
+import SignalAnnotation from "./pages/SignalAnnotation";
 
 const About = () => <h2>About</h2>;
 const Users = () => <h2>Users</h2>;
@@ -13,6 +14,7 @@ const AppRouter = () => (
       <Route path="/CreateTag/" exact component={AnnotationForm} />
       <Route path="/about/" component={About} />
       <Route path="/users/" component={Users} />
+      <Route path="/annotations/:id" component={SignalAnnotation}/>
     </div>
   </Router>
 );
