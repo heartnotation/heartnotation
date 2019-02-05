@@ -101,6 +101,18 @@ CREATE TABLE OPERATOR_OF (
 	operation_time date
 );
 
+ALTER TABLE ORGANIZATION OWNER TO heart;
+ALTER TABLE PROCESS OWNER TO heart;
+ALTER TABLE USERROLE OWNER TO heart;
+ALTER TABLE USERPROFILE OWNER TO heart;
+ALTER TABLE ORGANIZATION_USER OWNER TO heart;
+ALTER TABLE ANNOTATION OWNER TO heart;
+ALTER TABLE INTERVAL OWNER TO heart;
+ALTER TABLE ANNOTATION_INTERVAL_USER OWNER TO heart;
+ALTER TABLE TAG OWNER TO heart;
+ALTER TABLE INTERVAL_TAG OWNER TO heart;
+ALTER TABLE OPERATOR_OF OWNER TO heart;
+
 -----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
 
