@@ -95,6 +95,7 @@ func formatToJSONFromAPI(api string) ([]byte, error) {
 	return jsonDatas, nil
 }
 
+//En attente de brancher avec le web (route de recuperation d'une annotation)
 func incompleteTestForSignal() {
 	response, err := formatToJSONFromAPI("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin") //A parametrer
 	if err != nil {
