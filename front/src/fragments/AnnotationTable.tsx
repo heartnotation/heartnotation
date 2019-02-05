@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Table, Input, Button, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { number, string } from 'prop-types';
+import { ColumnProps } from 'antd/lib/table';
 
 interface Annotation {
   signalId: number;
@@ -11,7 +12,7 @@ interface Annotation {
   status: string;
 }
 
-const data = [
+const data: Annotation[] = [
   {
     signalId: 3219876,
     annotation: 'Annotation name',
@@ -40,7 +41,7 @@ const data = [
   }
 ];
 
-const columns = [
+const columns: Array<ColumnProps<Annotation>> = [
   {
     title: 'Signal ID',
     dataIndex: 'signalId',
@@ -86,6 +87,12 @@ const columns = [
   {
     title: 'Status',
     dataIndex: 'status',
+    filters: data
+      .map(a => a.status)
+      .filter((s, i, array) => array.indexOf(s) === i)
+      .map(s => ({ text: s, value: s })),
+    onFilter: (value: string, record: Annotation) =>
+      record.status.indexOf(value) === 0,
     sorter: (a: Annotation, b: Annotation) =>
       a.status.localeCompare(b.status, 'en', {
         sensitivity: 'base',
@@ -93,13 +100,12 @@ const columns = [
       })
   }
 ];
-
 class AnnotationTable extends Component {
   public state = {
     searchText: ''
   };
 
-  public getColumnSearchProps = (dataIndex: number) => ({
+  /* public getColumnSearchProps = (dataIndex: number) => ({
     filterDropdown: ({
       setSelectedKeys,
       selectedKeys,
@@ -152,7 +158,7 @@ class AnnotationTable extends Component {
     },
     render: (text: string) => <mark>this.state.searchText</mark>
   })
-
+*/
   public handleSearch = (selectedKeys: string[], confirm: VoidFunction) => {
     confirm();
     this.setState({ searchText: selectedKeys[0] });
