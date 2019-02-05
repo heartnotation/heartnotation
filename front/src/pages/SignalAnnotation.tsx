@@ -33,20 +33,18 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     for (let i = 0; i < datas.length; i += leadNumber) {
       for (let j = 0; j < leadNumber; j++) {
-        if (datas[i * leadNumber + j]) {
+        if (datas[i * leadNumber + j] !== undefined) {
           leads[j].push(datas[i * leadNumber + j]);
         }
       }
     }
 
-    console.log(leads[2]);
-
     await this.setState({ leads });
 
-    const svgWidth = 600;
+    const svgWidth = .8 * window.innerWidth;
     const svgHeight = 400;
     const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-    const width = svgWidth - margin.left - margin.right;
+
     const height = svgHeight - margin.top - margin.bottom;
 
     const l: number[] = leads[2];
@@ -69,7 +67,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .domain([0, l.length]);
     const y = d3
       .scaleLinear()
-      .rangeRound([height, 0])
+      .range([height - margin.top, margin.bottom])
       .domain([yMin ? yMin : 0, yMax ? yMax : 0]);
 
     const line = d3
