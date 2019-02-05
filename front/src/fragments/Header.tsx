@@ -1,83 +1,78 @@
-import React, { MouseEvent, Component } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Link,
-  LinkProps
-} from "react-router-dom";
-import { Row, Col, Menu, Icon, Alert } from "antd";
-import { ClickParam } from "antd/lib/menu";
+import React, { PureComponent } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, Icon } from 'antd';
+import { ClickParam } from 'antd/lib/menu';
 
-import logo from "../assets/images/logo.png";
-import "../assets/styles/App.css";
+import logo from '../assets/images/logo.png';
+import '../assets/styles/App.css';
+import { AppRoute } from '../Routes';
 
-const SubMenu = Menu.SubMenu;
-const MenuItemGroup = Menu.ItemGroup;
+interface Props {
+  routes: AppRoute[];
+}
+
+interface State {
+  current: number;
+}
 
 // this is a class because it needs state
-class Header extends Component {
-  state = {
-    current: "Home"
-  };
+class Header extends PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      current: 1
+    };
+  }
 
-  handleClick = (e: ClickParam) => {
+  public componentDidUpdate = () => {
+    const { routes } = this.props;
+    const currentRoute = routes.filter(
+      r => r.path === window.location.pathname
+    )[0];
+    this.setState({ current: routes.indexOf(currentRoute) });
+  }
+
+  public handleClick = (e: ClickParam) => {
     this.setState({
-      current: e.key
+      current: Number.parseInt(e.key, 10)
     });
-  };
+  }
 
-  handleClickHome = (e: MouseEvent<HTMLElement>) => {
+  public handleClickHome = () => {
     this.setState({
-      current: "Home"
+      current: -1
     });
-  };
+  }
 
-  render() {
+  public render() {
+    const { routes } = this.props;
+    const { current } = this.state;
+
     return (
-      <div className="navbar-container">
-        <Link to="/" onClick={this.handleClickHome}>
-          <img src={logo} className="logo" alt="logo" />
+      <div className='navbar-container'>
+        <Link to='/' onClick={this.handleClickHome}>
+          <img src={logo} className='logo' alt='logo' />
         </Link>
-        <div className="menu-container">
-          <h1 className="page-title">{this.state.current}</h1>
+        <div className='menu-container'>
+          <h1 className='page-title'>
+            {routes[current] ? routes[current].title : 'Home'}
+          </h1>
           <Menu
             onClick={this.handleClick}
-            selectedKeys={[this.state.current]}
-            mode="horizontal"
-            className="main-menu"
+            selectedKeys={current >= 0 ? [current.toString()] : ['Home']}
+            mode='horizontal'
+            className='main-menu'
           >
-            <Menu.Item key="Create User">
-              <Link to="/CreateUser/">
-                <span className="main-menu-item-text">
-                  <Icon type="user-add" />
-                  Create User
-                </span>
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="Create Tag">
-              <Link to="/CreateTag/">
-                <span className="main-menu-item-text">
-                  <Icon type="tag" />
-                  Create Tag
-                </span>
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="Dashboard">
-              <Link to="/Dashboard/">
-                <span className="main-menu-item-text">
-                  <Icon type="dashboard" />
-                  Dashboard
-                </span>
-              </Link>
-            </Menu.Item>
-            <Menu.Item key="Notifications">
-              <Link to="/Notifications/">
-                <span className="main-menu-item-text">
-                  <Icon type="bell" />
-                  Notifications
-                </span>
-              </Link>
-            </Menu.Item>
+            {routes.map((r, key) => (
+              <Menu.Item key={key}>
+                <Link to={r.path}>
+                  <span className='main-menu-item-text'>
+                    {r.iconName ? <Icon type={r.iconName} /> : ''}
+                    {r.title}
+                  </span>
+                </Link>
+              </Menu.Item>
+            ))}
           </Menu>
         </div>
       </div>
