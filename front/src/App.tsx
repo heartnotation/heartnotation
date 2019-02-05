@@ -14,56 +14,52 @@ interface State {
 class App extends Component<any, State> {
   constructor(props: any) {
     super(props);
+    /**
+     * TODO remplacer pour récupérer les routes en fonctions du rôle de l'utilisateur connecté.
+     */
     this.state = {
-      routes: []
+      routes: [
+        {
+          path: '/annotations/new',
+          exact: true,
+          component: AnnotationForm,
+          title: 'Create annotation',
+          iconName: 'plus'
+        },
+        {
+          path: '/users/new',
+          component: UserCreation,
+          title: 'Create User',
+          iconName: 'user-add'
+        },
+        {
+          path: '/about',
+          component: () => <h2>About</h2>,
+          title: 'About',
+          iconName: 'question'
+        },
+        {
+          path: '/users',
+          component: Users,
+          exact: true,
+          title: 'Users',
+          iconName: 'user'
+        },
+        {
+          path: '/tags/new',
+          component: TagCreation,
+          title: 'Create Tags',
+          iconName: 'tag'
+        },
+        {
+          path: '/tags',
+          exact: true,
+          component: Tags,
+          title: 'Tags',
+          iconName: 'tags'
+        }
+      ]
     };
-  }
-  /**
-   * TODO remplacer pour récupérer les routes en fonctions du rôle de l'utilisateur connecté.
-   */
-  public componentDidMount = () => {
-    const routes: AppRoute[] = [
-      {
-        path: '/annotations/new',
-        exact: true,
-        component: AnnotationForm,
-        title: 'Create annotation',
-        iconName: 'plus'
-      },
-      {
-        path: '/users/new',
-        component: UserCreation,
-        title: 'Create User',
-        iconName: 'user-add'
-      },
-      {
-        path: '/about',
-        component: () => <h2>About</h2>,
-        title: 'About',
-        iconName: 'question'
-      },
-      {
-        path: '/users',
-        component: Users,
-        exact: true,
-        title: 'Users',
-        iconName: 'user'
-      },
-      {
-        path: '/tags/new',
-        component: TagCreation,
-        title: 'Create Tags',
-        iconName: 'tag'
-      },
-      {
-        path: '/tags',
-        exact: true,
-        component: Tags,
-        title: 'Tags',
-        iconName: 'tags'
-      }
-    ];
-    this.setState({ routes });
   }
   public render() {
     const { routes } = this.state;
