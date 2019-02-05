@@ -17,7 +17,7 @@
   font-size: 1.3em !important;
 }
 
-.anticon {
+.anticon-title {
   font-size: 20px !important;
 }
 
@@ -25,4 +25,9 @@
   color: #dddddd !important;
   float: left;
   margin-left: 7%;
+}
+
+.ant-table-pagination.ant-pagination {
+  float: none !important;
+  text-align: center !important;
 }

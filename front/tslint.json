@@ -17,7 +17,8 @@
     "semicolon": [true, "always", "ignore-interfaces"],
     "arrow-return-shorthand": true,
     "class-name": true,
-    "no-console": false
+    "no-console": false,
+    "jsx-no-lambda": false
   },
   "linterOptions": {
     "exclude": ["**/node_modules/**"]
