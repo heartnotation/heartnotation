@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"fmt"
 
 	// import pq driver
 	_ "github.com/lib/pq"
@@ -64,4 +65,38 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, annotation)
+}
+
+// Get annotation by ID using GET Request
+func getAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, http.StatusText(405), 405)
+		return
+	}
+	annID := r.FormValue("id")
+	if annID == "" {
+		http.Error(w, http.StatusText(400), 400)
+		return
+	}
+	db := verifyDBConnection()
+	row := db.QueryRow("SELECT * FROM annotation where annotation_id = $1", annID)
+	annotation := Annotation{}
+	err := row.Scan(&annotation.ID, &annotation.Parent,
+		&annotation.Organization, &annotation.ProcessID, &annotation.SignalID,
+		&annotation.Comment, &annotation.CreatedAt, &annotation.UpdatedAt,
+		&annotation.IsActive)
+	if err == sql.ErrNoRows {
+		http.NotFound(w, r)
+		return
+	} else if err != nil {
+		http.Error(w, http.StatusText(500), 500)
+		return
+	}
+
+	annot, err := json.Marshal(annotation)
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Fprintf(w, "%s\n", string(annot))
 }
