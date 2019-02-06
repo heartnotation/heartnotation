@@ -142,7 +142,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
               />
             </Col>
             <Col span={4} className='text-right'>
-              <Button type='primary' icon='check-circle' size='large' className='btn-space btn-heartnotation-secondary'>
+              <Button
+                type='primary'
+                icon='check-circle'
+                size='large'
+                className='btn-space btn-heartnotation-secondary'
+              >
                 Validate
               </Button>
             </Col>
@@ -151,7 +156,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
         <div className='signal-main-container'>
           <Row>
             <Col span={20}>
-              <svg className='signal' />
+              <div className='signal-graph-container'>
+                <svg className='signal' />
+              </div>
             </Col>
             <Col span={4}>Legend</Col>
           </Row>
