@@ -19,10 +19,8 @@ jobs:
         - cd back/src/restapi
       install:
         - dep ensure -vendor-only
-      before_script:
-        - cd test
       script:
-        - go test -v -cover ./...
+        - find ./ -name '*_test.go' -printf '%h\n' | grep -v "vendor" | sort -u | xargs -n1 -P1 go test -v -cover
 
     # Deploying the API
     - stage: deploy
