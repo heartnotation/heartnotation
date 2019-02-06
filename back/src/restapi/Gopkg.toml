@@ -30,6 +30,10 @@
   version = "1.7.0"
 
 [[constraint]]
+  name = "github.com/jinzhu/gorm"
+  version = "1.9.2"
+
+[[constraint]]
   name = "github.com/lib/pq"
   version = "1.0.0"
 
