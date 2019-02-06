@@ -1,14 +1,22 @@
 package annotation
 
+import (
+	o "restapi/organization"
+	"time"
+
+	"github.com/jinzhu/gorm"
+)
+
 // Annotation structure to represent an annotation
 type Annotation struct {
-	IDAnnotation       int    `json:"idAnnotation"`
-	IDAnnotationParent int    `json:"idAnnotationParent"`
-	OrganizationID     int    `json:"idOrganization"`
-	ProcessID          int    `json:"idProcess"`
-	IDSignal           int    `json:"idSignal"`
-	Comment            string `json:"annotationComment"`
-	CreationDate       string `json:"creationDate"`
-	EditDate           string `json:"editDate"`
-	Status             bool   `json:"status"`
+	gorm.Model
+	ID           uint `gorm:"AUTO_INCREMENT"`
+	Parent       *Annotation
+	Organization o.Organization
+	ProcessID    uint
+	SignalID     uint
+	Comment      string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	IsActive     bool
 }

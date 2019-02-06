@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 
 	// import pq driver
 	_ "github.com/lib/pq"
+
+	u "restapi/utils"
 )
 
 func verifyCode409(w http.ResponseWriter, err error) error {
@@ -37,18 +38,17 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := verifyDBConnection()
+	db := u.GetConnection()
 
 	bodyBytes, _ := ioutil.ReadAll(r.Body)
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	var annotation Annotation
-	creationDate := time.Now()
-	annotation.CreationDate = creationDate.Format("2006-01-02")
-	annotation.EditDate = creationDate.Format("2006-01-02")
+	annotation.CreatedAt = time.Now()
+	annotation.UpdatedAt = time.Now()
 	json.Unmarshal(bodyBytes, &annotation)
 
-	if annotation.OrganizationID != 0 {
+	if annotation.Organization.ID != 0 {
 		annotation.ProcessID = 2
 	} else {
 		annotation.ProcessID = 1
@@ -58,18 +58,10 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(400), 400)
 		return
 	}
-
-	var error409 error
-	if annotation.IDAnnotationParent != 0 {
-		_, err := db.Exec("INSERT INTO ANNOTATION VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)", annotation.IDAnnotation, annotation.IDAnnotationParent, annotation.OrganizationID, annotation.ProcessID, annotation.IDSignal, annotation.Comment, annotation.CreationDate, annotation.EditDate, true)
-		error409 = verifyCode409(w, err)
-	} else {
-		_, err := db.Exec("INSERT INTO ANNOTATION VALUES($1, NULL, $2, $3, $4, $5, $6, $7, $8)", annotation.IDAnnotation, annotation.OrganizationID, annotation.ProcessID, annotation.IDSignal, annotation.Comment, annotation.CreationDate, annotation.EditDate, true)
-		error409 = verifyCode409(w, err)
-	}
-	if error409 != nil {
+	res := db.Create(&annotation)
+	if res.Error != nil {
+		http.Error(w, res.Error.Error(), 402)
 		return
 	}
-
-	fmt.Fprintf(w, "Annotation %d successfully created \n", annotation.IDAnnotation)
+	u.Respond(w, annotation)
 }
