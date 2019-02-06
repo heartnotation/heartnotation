@@ -6,6 +6,7 @@ import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
+import Dashboard from './pages/Dashboard';
 
 interface State {
   routes: AppRoute[];
@@ -25,6 +26,12 @@ class App extends Component<any, State> {
           component: AnnotationForm,
           title: 'Create annotation',
           iconName: 'plus'
+        },
+        {
+          path: '/dashboard',
+          component: Dashboard,
+          title: 'Dashboard',
+          iconName: 'dashboard'
         },
         {
           path: '/users/new',
@@ -61,6 +68,7 @@ class App extends Component<any, State> {
       ]
     };
   }
+
   public render() {
     const { routes } = this.state;
     return (
