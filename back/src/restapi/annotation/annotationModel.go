@@ -20,3 +20,9 @@ type Annotation struct {
 	UpdatedAt    time.Time
 	IsActive     bool
 }
+
+// Gui : En vrai, je pense qu'on devrait fusionner les deux struct du coup, a verifier
+type Gui struct {
+	Annotation Annotation
+	Signal     [][]int16 `json:"signal"`
+}
