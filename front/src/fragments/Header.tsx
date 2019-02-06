@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Icon } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
@@ -16,20 +16,15 @@ interface State {
 }
 
 // this is a class because it needs state
-class Header extends PureComponent<Props, State> {
+class Header extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = {
-      current: 1
-    };
-  }
-
-  public componentDidUpdate = () => {
-    const { routes } = this.props;
-    const currentRoute = routes.filter(
+    const currentRoute = props.routes.filter(
       r => r.path === window.location.pathname
     )[0];
-    this.setState({ current: routes.indexOf(currentRoute) });
+    this.state = {
+      current: currentRoute ? props.routes.indexOf(currentRoute) : -1
+    };
   }
 
   public handleClick = (e: ClickParam) => {
