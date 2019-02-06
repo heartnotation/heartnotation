@@ -20,7 +20,7 @@ jobs:
       install:
         - dep ensure -vendor-only
       script:
-        - find ./ -name '*_test.go' -printf '%h\n' | grep -v "vendor" | sort -u | xargs -n1 -P1 go test -v -cover
+        - go test -v -cover ./...
 
     # Deploying the API
     - stage: deploy
