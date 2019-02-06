@@ -11,31 +11,31 @@ CREATE DATABASE heartnotation OWNER heart;
 
 DROP TABLE IF EXISTS ORGANIZATION CASCADE;
 CREATE TABLE ORGANIZATION (
-	id SERIAL PRIMARY KEY,
-	title varchar(30),
-	isActive boolean
+	id bigint PRIMARY KEY,
+	name varchar(30),
+	is_active boolean
 );
 
-DROP TABLE IF EXISTS _STATUS CASCADE;
-CREATE TABLE _STATUS (
-	id SERIAL PRIMARY KEY,
-	title varchar(30),
-	isActive boolean
+DROP TABLE IF EXISTS PROCESS CASCADE;
+CREATE TABLE PROCESS (
+	id bigint PRIMARY KEY,
+	name varchar(30),
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS USERROLE CASCADE;
 CREATE TABLE USERROLE (
-	id SERIAL PRIMARY KEY,
-	title varchar(30),
-	isActive boolean
+	id bigint PRIMARY KEY,
+	name varchar(30),
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS USERPROFILE CASCADE;
 CREATE TABLE USERPROFILE (
-	id SERIAL PRIMARY KEY,
+	id bigint PRIMARY KEY,
 	role_id bigint REFERENCES USERROLE(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	mail varchar(30),
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS ORGANIZATION_USER CASCADE;
@@ -49,67 +49,65 @@ CREATE TABLE ORGANIZATION_USER (
 
 DROP TABLE IF EXISTS ANNOTATION CASCADE;
 CREATE TABLE ANNOTATION (
-	id SERIAL PRIMARY KEY,
-	title varchar(30),
-	annotation_id_parent bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	id bigint PRIMARY KEY,
+	parent_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	organization_id bigint NOT NULL,
-	status_id bigint REFERENCES _STATUS(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	process_id bigint REFERENCES PROCESS(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	signal_id bigint NOT NULL,
 	annotation_comment varchar(180),
-	creation_date timestamp NOT NULL,
-	edit_date timestamp NOT NULL,
-	isActive boolean,
-	isEditable boolean
+	creation_date date NOT NULL,
+	edit_date date NOT NULL,
+	is_active boolean
 );
 
-DROP TABLE IF EXISTS _INTERVAL CASCADE;
-CREATE TABLE _INTERVAL (
-	id SERIAL PRIMARY KEY,
+DROP TABLE IF EXISTS INTERVAL CASCADE;
+CREATE TABLE INTERVAL (
+	id bigint PRIMARY KEY,
 	timestamp_start int NOT NULL,
-	timestamp_end bigint NOT NULL,
-	isActive boolean
+	timestamp_end int NOT NULL,
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS ANNOTATION_INTERVAL_USER CASCADE;
 CREATE TABLE ANNOTATION_INTERVAL_USER (
-	id SERIAL PRIMARY KEY,
+	id bigint PRIMARY KEY,
 	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	interval_id bigint REFERENCES _INTERVAL(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	interval_id bigint REFERENCES INTERVAL(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	user_id bigint REFERENCES USERPROFILE(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	comment_date timestamp NOT NULL
+	comment_date date NOT NULL
 );
 
 DROP TABLE IF EXISTS TAG CASCADE;
 CREATE TABLE TAG (
-	id SERIAL PRIMARY KEY,
-	tag_id_parent bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	title varchar(30) NOT NULL,
+	id bigint PRIMARY KEY,
+	parent_id bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	label varchar(30) NOT NULL,
 	color varchar(30) NOT NULL,
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS INTERVAL_TAG CASCADE;
 CREATE TABLE INTERVAL_TAG (
-	interval_id bigint,
+	id bigint,
 	tag_id bigint NOT NULL
 );
 
 DROP TABLE IF EXISTS OPERATOR_OF CASCADE;
 CREATE TABLE OPERATOR_OF (
-	id SERIAL PRIMARY KEY,
+	id bigint PRIMARY KEY,
 	user_id bigint REFERENCES USERPROFILE(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	status_id bigint REFERENCES _STATUS(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	process_id bigint REFERENCES PROCESS(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	operation_time date
 );
 
 ALTER TABLE ORGANIZATION OWNER TO heart;
-ALTER TABLE _STATUS OWNER TO heart;
+ALTER TABLE PROCESS OWNER TO heart;
 ALTER TABLE USERROLE OWNER TO heart;
 ALTER TABLE USERPROFILE OWNER TO heart;
 ALTER TABLE ORGANIZATION_USER OWNER TO heart;
 ALTER TABLE ANNOTATION OWNER TO heart;
-ALTER TABLE _INTERVAL OWNER TO heart;
+ALTER TABLE INTERVAL OWNER TO heart;
 ALTER TABLE ANNOTATION_INTERVAL_USER OWNER TO heart;
 ALTER TABLE TAG OWNER TO heart;
 ALTER TABLE INTERVAL_TAG OWNER TO heart;
@@ -122,138 +120,121 @@ ALTER TABLE OPERATOR_OF OWNER TO heart;
 
 -- ORGANIZATION
 
-INSERT INTO ORGANIZATION (title, isActive) 
-	VALUES ('Cardiologs', TRUE);
+INSERT INTO ORGANIZATION (id, name, is_active) 
+	VALUES (1000, 'Cardiologs', TRUE);
 
-INSERT INTO ORGANIZATION (title, isActive) 
-	VALUES ('Podologs', TRUE);
+INSERT INTO ORGANIZATION (id, name, is_active) 
+	VALUES (1001, 'Podologs', TRUE);
 
-INSERT INTO ORGANIZATION (title, isActive) 
-	VALUES ('Heartnotalogs', TRUE);
+-- ROLE
 
-INSERT INTO ORGANIZATION (title, isActive) 
-	VALUES ('', TRUE);
+INSERT INTO USERROLE (id, name, is_active) 
+	VALUES (1, 'Annotateur', TRUE);
 
--- USERROLE
+INSERT INTO USERROLE (id, name, is_active) 
+	VALUES (2, 'Gestionnaire', TRUE);
 
-INSERT INTO USERROLE (title, isActive) 
-	VALUES ('Annotateur', TRUE);
+INSERT INTO USERROLE (id, name, is_active) 
+	VALUES (3, 'Admin', TRUE);
 
-INSERT INTO USERROLE (title, isActive) 
-	VALUES ('Gestionnaire', TRUE);
+--  USER
 
-INSERT INTO USERROLE (title, isActive) 
-	VALUES ('Admin', TRUE);
+INSERT INTO USERPROFILE (id, role_id, mail, is_active) 
+	VALUES (30000, 3, 'rolex@gmail.com', TRUE);
 
---  USERPROFILE
+INSERT INTO USERPROFILE (id, role_id, mail, is_active) 
+	VALUES (10000, 1, 'marvin@gmail.com', TRUE);
 
-INSERT INTO USERPROFILE (role_id, mail, isActive) 
-	VALUES (3, 'rolex@gmail.com', TRUE);
+INSERT INTO USERPROFILE (id, role_id, mail, is_active) 
+	VALUES (20000, 2, 'sophie@gmail.com', TRUE);
 
-INSERT INTO USERPROFILE (role_id, mail, isActive) 
-	VALUES (1, 'marvin@gmail.com', TRUE);
+-- PROCESS
 
-INSERT INTO USERPROFILE (role_id, mail, isActive)  
-	VALUES (2, 'sophie@gmail.com', TRUE);
+INSERT INTO PROCESS (id, name, is_active) 
+	VALUES (1, 'NEW', TRUE);
 
--- _STATUS
+INSERT INTO PROCESS (id, name, is_active) 
+	VALUES (2, 'IN TREATMENT', TRUE);
 
-INSERT INTO _STATUS (title, isActive) 
-	VALUES ('CREATED', TRUE);
+INSERT INTO PROCESS (id, name, is_active) 
+	VALUES (3, 'COMPLETED', TRUE);
 
-INSERT INTO _STATUS (title, isActive)  
-	VALUES ('ASSIGNED', TRUE);
-
-INSERT INTO _STATUS (title, isActive)  
-	VALUES (' INTREATMENT', TRUE);
-
-INSERT INTO _STATUS (title, isActive) 
-	VALUES ('COMPLETED', TRUE);
-
-INSERT INTO _STATUS (title, isActive) 
-	VALUES ('VALIDATED', TRUE);
-
-INSERT INTO _STATUS (title, isActive) 
-	VALUES ('CANCELED', TRUE);
+INSERT INTO PROCESS (id, name, is_active) 
+	VALUES (4, 'VALIDATED', TRUE);
 
 -- ORGANIZATION USER
 
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
-	VALUES (1, 3);
+	VALUES (1000, 30000);
 
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
-	VALUES (2, 1);
+	VALUES (1001, 10000);
 
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
-	VALUES (3, 2);
+	VALUES (1001, 20000);
 
 -- ANNOTATION
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable) 
-	VALUES (NULL, 'Annotation 1', 1, 1, 1, 'Première annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+INSERT INTO ANNOTATION (id, parent_id, organization_id, process_id, signal_id, annotation_comment, creation_date, edit_date, is_active) 
+	VALUES (1, NULL, 1000, 1, 1, 'Première annotation', '2019/01/11', '2019/01/11', TRUE);
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable)  
-	VALUES (NULL, 'Annotation 2', 2, 2, 1, 'Seconde annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+INSERT INTO ANNOTATION (id, parent_id, organization_id, process_id, signal_id, annotation_comment, creation_date, edit_date, is_active) 
+	VALUES (2, NULL, 1000, 1, 1, 'Seconde annotation', '2019/01/13', '2019/01/13', TRUE);
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable) 
-	VALUES (2, 'Annotation 3',  3, 3, 1, 'Troisième annotation qui se base sur la deuxième', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+INSERT INTO ANNOTATION (id, parent_id, organization_id, process_id, signal_id, annotation_comment, creation_date, edit_date, is_active) 
+	VALUES (3, 2, 1000, 1, 1, 'Troisième annotation qui reprend la seconde', '2019/01/18', '2019/01/18', TRUE);
 
--- _INTERVAL
+-- INTERVAL
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive) 
-	VALUES (3, 4, TRUE);
+INSERT INTO INTERVAL (id, timestamp_start, timestamp_end, is_active) 
+	VALUES (1, 3, 4, TRUE);
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive)
-	VALUES (7, 9, TRUE);
+INSERT INTO INTERVAL (id, timestamp_start, timestamp_end, is_active) 
+	VALUES (2, 7, 9, TRUE);
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive) 
-	VALUES (11, 29, TRUE);
+INSERT INTO INTERVAL (id, timestamp_start, timestamp_end, is_active) 
+	VALUES (3, 11, 29, TRUE);
 
 -- ANNOTATION_INTERVAL_USER
 
-INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 1, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (id, annotation_id, interval_id, user_id, comment_date) 
+	VALUES (1000, 1, 1, 10000, '2019/01/18');
 
-INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 2, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (id, annotation_id, interval_id, user_id, comment_date) 
+	VALUES (1001, 1, 2, 10000, '2019/01/18');
 
-INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 3, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (id, annotation_id, interval_id, user_id, comment_date) 
+	VALUES (1002, 1, 3, 10000, '2019/01/18');
 
 -- TAG
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
-	VALUES (NULL, 'Lungs on fire', 'red', TRUE);
+INSERT INTO TAG (id, parent_id, label, color, is_active) 
+	VALUES (1, NULL, 'Lungs on fire', 'red', TRUE);
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
-	VALUES (NULL, 'Lungs on water', 'blue', TRUE);
+INSERT INTO TAG (id, parent_id, label, color, is_active) 
+	VALUES (2, NULL, 'Lungs on water', 'blue', TRUE);
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
-	VALUES (2, 'Weird lungs', 'green', TRUE);
+INSERT INTO TAG (id, parent_id, label, color, is_active) 
+	VALUES (3, NULL, 'Weird lungs', 'green', TRUE);
 
 -- INTERVAL_TAG
 
-INSERT INTO INTERVAL_TAG (interval_id, tag_id) 
+INSERT INTO INTERVAL_TAG (id, tag_id) 
 	VALUES (1, 1);
 
-INSERT INTO INTERVAL_TAG (interval_id, tag_id) 
+INSERT INTO INTERVAL_TAG (id, tag_id) 
 	VALUES (1, 2);
 
-INSERT INTO INTERVAL_TAG (interval_id, tag_id) 
+INSERT INTO INTERVAL_TAG (id, tag_id) 
 	VALUES (1, 3);
 
 -- OPERATOR_OF
 
-INSERT INTO OPERATOR_OF (user_id, status_id, annotation_id, operation_time) 
-	VALUES (1, 2, 1, '2004-10-19 10:23:54');
+INSERT INTO OPERATOR_OF (id, user_id, process_id, annotation_id, operation_time) 
+	VALUES (1, 10000, 2, 1, '2019/01/18');
 
-INSERT INTO OPERATOR_OF (user_id, status_id, annotation_id, operation_time) 
-	VALUES (1, 3, 1, '2004-10-19 10:23:54');
+INSERT INTO OPERATOR_OF (id, user_id, process_id, annotation_id, operation_time) 
+	VALUES (2, 10000, 3, 1, '2019/01/18');
 
-INSERT INTO OPERATOR_OF (user_id, status_id, annotation_id, operation_time) 
-	VALUES (1, 1, 1, '2004-10-19 10:23:54');
-
-
-
-
-
+INSERT INTO OPERATOR_OF (id, user_id, process_id, annotation_id, operation_time) 
+	VALUES (3, 10000, 1, 1, '2019/01/18');
