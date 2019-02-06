@@ -44,3 +44,59 @@
 .ant-menu-sub {
   background: #282828 !important;
 }
+
+.signal-header {
+  background: #dddddd;
+  padding: 30px;
+}
+
+.signal-main-container {
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.btn-space {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.center-vertical-switch {
+  line-height: 40px;
+}
+
+.btn-heartnotation-primary {
+  background: #6669c9 !important;
+  color: #d9d9d9 !important;
+  border-color: #6669c9 !important;
+}
+
+.btn-heartnotation-primary:hover {
+  background: #404040 !important;
+  border-color: #404040 !important;
+}
+
+.btn-heartnotation-secondary {
+  background: #404040 !important;
+  color: #d9d9d9 !important;
+  border-color: #404040 !important;
+}
+
+.btn-heartnotation-secondary:hover {
+  background: #6669c9 !important;
+  border-color: #6669c9 !important;
+}
+
+.ant-switch-checked {
+  background: #404040 !important;
+  color: #d9d9d9 !important;
+}

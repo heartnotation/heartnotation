@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
+import { Row, Col, Icon, Switch, Button } from 'antd';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {}
 
@@ -41,7 +42,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     await this.setState({ leads });
 
-    const svgWidth = .8 * window.innerWidth;
+    const svgWidth = 0.8 * window.innerWidth;
     const svgHeight = 400;
     const margin = { top: 20, right: 20, bottom: 30, left: 50 };
 
@@ -108,8 +109,53 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     return (
       <div>
-        SignalAnnotation
-        <svg className='signal' />
+        <div className='signal-header'>
+          <Row>
+            <Col span={4} className='text-left center-vertical-switch'>
+              <Switch
+                checkedChildren={<Icon type='check' />}
+                unCheckedChildren={<Icon type='close' />}
+                defaultChecked={true}
+              />{' '}
+              Display Leads
+            </Col>
+            <Col span={16} className='text-center'>
+              <Button
+                type='primary'
+                icon='box-plot'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              >
+                Intervals
+              </Button>
+              <Button
+                type='primary'
+                icon='undo'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              />
+              <Button
+                type='primary'
+                icon='redo'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              />
+            </Col>
+            <Col span={4} className='text-right'>
+              <Button type='primary' icon='check-circle' size='large' className='btn-space btn-heartnotation-secondary'>
+                Validate
+              </Button>
+            </Col>
+          </Row>
+        </div>
+        <div className='signal-main-container'>
+          <Row>
+            <Col span={20}>
+              <svg className='signal' />
+            </Col>
+            <Col span={4}>Legend</Col>
+          </Row>
+        </div>
       </div>
     );
   }
