@@ -10,4 +10,4 @@ RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
 
 EXPOSE 8000
 
-CMD ["restapi"]
+CMD ["./restapi"]
