@@ -2,12 +2,17 @@ version: '3'
 services:
   server:
     build: ./back/
+    env_file: ./.env
     ports:
       - 8000:8000
+    depends_on:
+      - client
   client:
     build: ./front/
     ports:
       - 80:80
+    depends_on:
+      - database
   database:
     build: ./db/
     ports:
