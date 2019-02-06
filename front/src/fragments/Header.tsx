@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Icon } from 'antd';
+import { Menu, Icon, Row, Col } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
 import logo from '../assets/images/logo.png';
@@ -49,26 +49,32 @@ class Header extends Component<Props, State> {
           <img src={logo} className='logo' alt='logo' />
         </Link>
         <div className='menu-container'>
-          <h1 className='page-title'>
-            {routes[current] ? routes[current].title : 'Home'}
-          </h1>
-          <Menu
-            onClick={this.handleClick}
-            selectedKeys={current >= 0 ? [current.toString()] : ['Home']}
-            mode='horizontal'
-            className='main-menu'
-          >
-            {routes.map((r, key) => (
-              <Menu.Item key={key}>
-                <Link to={r.path}>
-                  <span className='main-menu-item-text'>
-                    {r.iconName ? <Icon type={r.iconName} /> : ''}
-                    {r.title}
-                  </span>
-                </Link>
-              </Menu.Item>
-            ))}
-          </Menu>
+          <Row>
+            <Col span={8}>
+              <h1 className='page-title'>
+                {routes[current] ? routes[current].title : 'Home'}
+              </h1>
+            </Col>
+            <Col span={16}>
+              <Menu
+                onClick={this.handleClick}
+                selectedKeys={current >= 0 ? [current.toString()] : ['Home']}
+                mode='horizontal'
+                className='main-menu'
+              >
+                {routes.map((r, key) => (
+                  <Menu.Item key={key}>
+                    <Link to={r.path}>
+                      <span className='main-menu-item-text'>
+                        {r.iconName ? <Icon type={r.iconName} /> : ''}
+                        {r.title}
+                      </span>
+                    </Link>
+                  </Menu.Item>
+                ))}
+              </Menu>
+            </Col>
+          </Row>
         </div>
       </div>
     );

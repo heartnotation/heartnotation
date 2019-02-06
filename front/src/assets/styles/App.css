@@ -4,12 +4,17 @@
 }
 
 .logo {
-  margin-left: 5%;
+  margin-left: 30px;
 }
 
 .main-menu {
   background: #282828 !important;
   text-align: right !important;
+  margin-right: 30px !important;
+}
+
+.ant-menu-horizontal {
+  border-bottom: none !important;
 }
 
 .main-menu-item-text {
@@ -24,10 +29,18 @@
 .page-title {
   color: #dddddd !important;
   float: left;
-  margin-left: 7%;
+  margin-left: 30px;
 }
 
 .ant-table-pagination.ant-pagination {
   float: none !important;
   text-align: center !important;
+}
+
+.ant-menu-submenu-title {
+  color: #dddddd !important;
+}
+
+.ant-menu-sub {
+  background: #282828 !important;
 }
