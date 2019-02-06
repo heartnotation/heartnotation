@@ -18,8 +18,8 @@ const formTailLayout = {
 interface States {
   organizations: string[];
   organizationsSearch: string[];
-  tags: string[];
-  tagsSelected: string[];
+  tags: number[];
+  tagsSelected: number[];
   annotations: number[];
   annotationValidateStatus: '' | 'success' | 'error';
 }
@@ -30,7 +30,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     this.state = {
       organizations: ['Abcdef', 'ahdec', 'dceff'],
       organizationsSearch: [],
-      tags: ['t1', 'T2', 'ab', 'abc', 'é', 'e'],
+      tags: [1, 2, 3, 12, 34, 45],
       tagsSelected: [],
       annotations: [1, 12, 333],
       annotationValidateStatus: ''
@@ -66,18 +66,37 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     });
   }
 
+  public validateOrganization = (rule: any, value: any, callback: any) => {
+    const { organizations } = this.state;
+    if (value && !organizations.includes(value)) {
+      callback('This organization doesn\'t exist');
+    }
+    callback();
+  }
+
   public handleChangeAnnotation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { annotations } = this.state;
     if (e.target.value === '') {
       this.setState({ annotationValidateStatus: '' });
     } else if (
       this.isStringNumber(e.target.value) &&
-      annotations.indexOf(parseInt(e.target.value, 10)) !== -1
+      annotations.includes(parseInt(e.target.value, 10))
     ) {
       this.setState({ annotationValidateStatus: 'success' });
     } else {
       this.setState({ annotationValidateStatus: 'error' });
     }
+  }
+
+  public validateAnnotation = (rule: any, value: any, callback: any) => {
+    if (value && !this.isStringNumber(value)) {
+      callback('You should write a number');
+    }
+    const { annotations } = this.state;
+    if (value && !annotations.includes(parseInt(value, 10))) {
+      callback('This annotations doesn\'t exist');
+    }
+    callback();
   }
 
   public filterSearchTag = (
@@ -91,7 +110,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     return false;
   }
 
-  public handleChangeTag = (tag: string[]) => {
+  public handleChangeTag = (tag: number[]) => {
     this.setState({ tagsSelected: tag });
   }
 
@@ -99,6 +118,13 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
+        values.signal_id = parseInt(values.signal_id, 10);
+        values.annotation_parent_id = values.annotation_parent_id
+          ? parseInt(values.annotation_parent_id, 10)
+          : null;
+        values.organization_id = values.organization_id
+          ? values.organization_id
+          : null;
         console.log('Received values of form: ', values); // à envoyer vers la route du back
       }
     });
@@ -153,7 +179,8 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
                   {
                     whitespace: true,
                     message: msgEmpty
-                  }
+                  },
+                  { validator: this.validateOrganization }
                 ]
               })(
                 <AutoComplete
@@ -175,7 +202,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
                     whitespace: true,
                     message: msgEmpty
                   },
-                  { validator: this.validateId }
+                  { validator: this.validateAnnotation }
                 ]
               })(<Input onChange={this.handleChangeAnnotation} />)}
             </Form.Item>
@@ -188,13 +215,13 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
                   }
                 ]
               })(
-                <Select<string[]>
+                <Select<number[]>
                   mode='multiple'
                   onChange={this.handleChangeTag}
                   filterOption={this.filterSearchTag}
                 >
                   {filteredTags.map(tag => (
-                    <Option key={tag} value={tag}>
+                    <Option key='key' value={tag}>
                       {tag}
                     </Option>
                   ))}
