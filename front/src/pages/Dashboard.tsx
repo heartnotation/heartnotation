@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { Table, Input, Button, Icon } from 'antd';
+import { Table, Input } from 'antd';
 import 'antd/dist/antd.css';
-import { number, string } from 'prop-types';
 import { ColumnProps } from 'antd/lib/table';
-import { TapType } from 'tapable';
+
 
 interface Annotation {
   signalId: number;
@@ -42,7 +41,7 @@ const data: Annotation[] = [
   }
 ];
 
-class AnnotationTable extends Component {
+class Dashboard extends Component {
   public state = {
     searches: new Map(),
     currentData: data.slice()
@@ -224,4 +223,4 @@ class AnnotationTable extends Component {
   }
 }
 
-export default AnnotationTable;
+export default Dashboard;

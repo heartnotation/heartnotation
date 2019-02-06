@@ -8,9 +8,6 @@ import HomePage from './pages/Home';
 import { StaticContext } from 'react-router';
 import Header from './fragments/Header';
 
-const About = () => <h2>About</h2>;
-const Users = () => <h2>Users</h2>;
-
 export interface AppRoute {
   path: string;
   component:
