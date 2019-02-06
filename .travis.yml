@@ -19,6 +19,8 @@ jobs:
         - cd back/src/restapi
       install:
         - dep ensure -vendor-only
+      before_script:
+        - cd test
       script:
         - go test -v -cover ./...
 

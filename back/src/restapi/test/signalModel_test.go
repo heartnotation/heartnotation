@@ -1,8 +1,10 @@
-package signal
+package test
 
 import (
 	"encoding/json"
 	"testing"
+
+	s "restapi/signal"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +16,7 @@ func TestFormatData(t *testing.T) {
 		data[i] = i
 	}
 
-	res, err := FormatData(data, 3)
+	res, err := s.FormatData(data, 3)
 	resAsJSON, _ := json.Marshal(res)
 
 	assert.Equal(t, string(resAsJSON), "[[1],[515],[1029]]")
