@@ -1,0 +1,28 @@
+.navbar-container {
+  background-color: #282828;
+  text-align: left !important;
+}
+
+.logo {
+  margin-left: 5%;
+}
+
+.main-menu {
+  background: #282828 !important;
+  text-align: right !important;
+}
+
+.main-menu-item-text {
+  color: #dddddd !important;
+  font-size: 1.3em !important;
+}
+
+.anticon {
+  font-size: 20px !important;
+}
+
+.page-title {
+  color: #dddddd !important;
+  float: left;
+  margin-left: 7%;
+}
