@@ -3,8 +3,10 @@ FROM golang:1.11.4
 WORKDIR /go/src
 COPY ./src/restapi /go/src/restapi
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+WORKDIR /go/src/restapi
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
+    dep ensure -vendor-only \
+    go build
 
 EXPOSE 8000
 
