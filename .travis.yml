@@ -14,6 +14,7 @@ jobs:
       install:
         - export GOPATH="${TRAVIS_BUILD_DIR}/back:$GOPATH"
         - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH"
+        - go get -d -v ./back/...
       before_script:
         - cd back
       script:
