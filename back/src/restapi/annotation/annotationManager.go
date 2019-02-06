@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
 	"fmt"
+
+	s "restapi/signal"
 
 	// import pq driver
 	_ "github.com/lib/pq"
@@ -99,4 +102,40 @@ func getAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "%s\n", string(annot))
+}
+
+func formatToJSONFromAPI(api string) ([]byte, error) {
+	httpResponse, err := http.Get(api) //A parametrer
+	if err != nil {
+		return nil, err
+	}
+
+	dataBrut, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	signalFormated, err := s.FormatData(dataBrut, 3)
+	if err != nil {
+		return nil, err
+	}
+
+	var gui Gui
+	gui.Signal = signalFormated
+
+	jsonDatas, err := json.Marshal(gui)
+	if err != nil {
+		return nil, err
+	}
+	return jsonDatas, nil
+}
+
+//En attente de brancher avec le web (route de recuperation d'une annotation)
+func incompleteTestForSignal() {
+	response, err := formatToJSONFromAPI("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin") //A parametrer
+	if err != nil {
+		fmt.Println(" FAIL with \n", err)
+	}
+
+	fmt.Println(string(response))
 }
