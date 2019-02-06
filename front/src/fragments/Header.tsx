@@ -66,7 +66,7 @@ class Header extends Component<Props, State> {
                   <Menu.Item key={key}>
                     <Link to={r.path}>
                       <span className='main-menu-item-text'>
-                        {r.iconName ? <Icon type={r.iconName} /> : ''}
+                        {r.iconName ? <Icon className='anticon-title' type={r.iconName} /> : ''}
                         {r.title}
                       </span>
                     </Link>
