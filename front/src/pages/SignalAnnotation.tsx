@@ -102,7 +102,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return a.xData - b.xData;
     });
 
-    const line = d3
+    const lineMain1 = d3
       .line<MyData>()
       .x(d => xScale(d.xData))
       .y(d => yScale(d.yData))
@@ -112,9 +112,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .datum<MyData[]>(dataset2)
       .append('path')
       .attr('class', 'line')
-      .attr('d', line);
+      .attr('d', lineMain1);
 
-    const line2 = d3
+    const linePreview1 = d3
       .line<MyData>()
       .x(d => xScale2(d.xData))
       .y(d => yScale2(d.yData))
@@ -124,7 +124,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .datum<MyData[]>(dataset2)
       .append('path')
       .attr('class', 'line')
-      .attr('d', line2);
+      .attr('d', linePreview1);
 
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
@@ -176,7 +176,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       focus
         .datum<MyData[]>(dataset2)
         .select('.line')
-        .attr('d', line);
+        .attr('d', lineMain1);
       xAxisGroup.call(xAxis);
 
       context
@@ -189,15 +189,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     function brushed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
-      xScale.domain([
-        xScale2.invert(d3.event.selection[0]),
-        xScale2.invert(d3.event.selection[1])
-      ]);
+      if(d3.event.selection) {
+        xScale.domain([
+          xScale2.invert(d3.event.selection[0]),
+          xScale2.invert(d3.event.selection[1])
+        ]);
+      }
 
       focus
         .datum<MyData[]>(dataset2)
         .select('.line')
-        .attr('d', line);
+        .attr('d', lineMain1);
       xAxisGroup.call(xAxis);
     }
 

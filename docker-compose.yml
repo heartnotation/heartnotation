@@ -6,13 +6,11 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - client
+      - database
   client:
     build: ./front/
     ports:
       - 80:80
-    depends_on:
-      - database
   database:
     build: ./db/
     ports:
