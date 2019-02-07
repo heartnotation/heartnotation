@@ -15,7 +15,8 @@ type Annotation struct {
 	SignalID          *uint           `json:"signal_id"`
 	CreationDate      time.Time       `json:"creation_date"`
 	EditDate          time.Time       `json:"edit_date"`
-	IsActive          bool            `gorm:"column:is_active" json:"is_active"`
+	IsActive          bool            `json:"is_active"`
+	IsEditable        bool            `json:"is_editable"`
 	Parent            *Annotation     `json:"parent,omitempty"`
 	ParentID          *uint           `gorm:"TYPE:integer REFERENCES annotation" json:"parent_id,integer,omitempty"`
 }
