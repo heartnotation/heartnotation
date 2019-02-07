@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-	"fmt"
 
 	s "restapi/signal"
 
@@ -59,38 +58,18 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-// Get annotation by ID using GET Request
-func getAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
+
+
+// Find annotation by ID using GET Request
+func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
+	annotations := &[]Annotation{}
 	annID := r.FormValue("id")
-	if annID == "" {
-		http.Error(w, http.StatusText(400), 400)
-		return
-	}
-	db := verifyDBConnection()
-	row := db.QueryRow("SELECT * FROM annotation where annotation_id = $1", annID)
-	annotation := Annotation{}
-	err := row.Scan(&annotation.ID, &annotation.Parent,
-		&annotation.Organization, &annotation.ProcessID, &annotation.SignalID,
-		&annotation.Comment, &annotation.CreatedAt, &annotation.UpdatedAt,
-		&annotation.IsActive)
-	if err == sql.ErrNoRows {
-		http.NotFound(w, r)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
-
-	annot, err := json.Marshal(annotation)
+	err := u.GetConnection().Preload("Organization").First(&annotations, annID).Error
 	if err != nil {
-		log.Println(err)
+		http.Error(w, err.Error(), 404)
+		return
 	}
-
-	fmt.Fprintf(w, "%s\n", string(annot))
+	u.Respond(w, annotations)
 }
 
 func formatToJSONFromAPI(api string) ([]byte, error) {
