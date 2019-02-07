@@ -14,6 +14,7 @@ func main() {
 	defer db.Close()
 
 	router := mux.NewRouter()
+	router.HandleFunc("/annotation", a.FindAnnotationByID).Methods("GET")
 	router.HandleFunc("/annotations", a.FindAnnotations).Methods("GET")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")

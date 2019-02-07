@@ -50,7 +50,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Organization").Find(&annotations).Error
+	err := u.GetConnection().Preload("Organization").Where("is_active = ?", true).Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -62,14 +62,14 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 
 // Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
-	annotations := &[]Annotation{}
+	annotation := Annotation{}
 	annID := r.FormValue("id")
-	err := u.GetConnection().Preload("Organization").First(&annotations, annID).Error
+	err := u.GetConnection().Preload("Organization").Where("is_active = ?", true).First(&annotation, annID).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
 	}
-	u.Respond(w, annotations)
+	u.Respond(w, annotation)
 }
 
 func formatToJSONFromAPI(api string) ([]byte, error) {

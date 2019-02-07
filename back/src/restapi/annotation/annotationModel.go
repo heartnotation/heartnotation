@@ -15,7 +15,6 @@ type Annotation struct {
 	SignalID          uint           `json:"signal_id"`
 	CreationDate      time.Time      `json:"creation_date"`
 	EditDate          time.Time      `json:"edit_date"`
-	IsActive          bool           `json:"is_active"`
 	Parent            *Annotation    `gorm:"foreignkey:ParentID;association_foreign:ID" json:"parent"`
 	ParentID          uint           `json:"parent_id"`
 }
