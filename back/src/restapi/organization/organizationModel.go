@@ -10,9 +10,9 @@ import (
 // Organization database representation
 type Organization struct {
 	ID        uint           `gorm:"AUTO_INCREMENT" json:"id"`
-	Title     string         `json:"title"`
-	Employees []user.Profile `gorm:"many2many:organization_user" json:"employees,omitempty"`
-	IsActive  bool           `json:"is_active"`
+	Title     string         `json:"name"`
+	Employees []user.Profile `gorm:"many2many:organization_user" json:"employees"`
+	is_active bool           `json:"is_active"`
 }
 
 // TableName sets table name of the struct
