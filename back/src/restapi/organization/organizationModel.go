@@ -11,7 +11,7 @@ import (
 type Organization struct {
 	ID        uint           `gorm:"AUTO_INCREMENT" json:"id"`
 	Title     string         `json:"title"`
-	Employees []user.Profile `gorm:"many2many:organization_user" json:"employees"`
+	Employees []user.Profile `gorm:"many2many:organization_user" json:"employees,omitempty"`
 	IsActive  bool           `json:"is_active"`
 }
 
