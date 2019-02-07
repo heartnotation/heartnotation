@@ -2,11 +2,16 @@ import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
+import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {}
 
+interface MyData {
+  yData: number;
+  xData: number;
+}
 interface State {
-  leads: number[][];
+  leads: MyData[][];
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
@@ -16,6 +21,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       leads: []
     };
   }
+
   public componentDidMount = async () => {
     const {
       match: {
@@ -34,70 +40,175 @@ class SignalAnnotation extends Component<RouteProps, State> {
     for (let i = 0; i < datas.length; i += leadNumber) {
       for (let j = 0; j < leadNumber; j++) {
         if (datas[i * leadNumber + j] !== undefined) {
-          leads[j].push(datas[i * leadNumber + j]);
+          leads[j].push({
+            xData: i * leadNumber + j,
+            yData: datas[i * leadNumber + j]
+          });
         }
       }
     }
 
     await this.setState({ leads });
 
-    const svgWidth = .8 * window.innerWidth;
-    const svgHeight = 400;
-    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-
+    const svgWidth = window.innerWidth;
+    const svgHeight = 600;
+    const margin = { top: 20, right: 50, bottom: 100, left: 50 };
+    const margin2 = { top: svgHeight - 70, right: 50, bottom: 30, left: 50 };
+    const width = svgWidth - margin.left - margin.right;
     const height = svgHeight - margin.top - margin.bottom;
-
-    const l: number[] = leads[2];
+    const height2 = svgHeight - margin2.top - margin2.bottom;
 
     const svg = d3
-      .select('.signal')
-      .attr('width', svgWidth)
-      .attr('height', svgHeight);
+      .select('#signal')
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom);
 
-    const g = svg
+    const focus = svg
+      .append('g') 
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    const context = svg
       .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+      .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
 
-    const yMin = d3.min(l);
-    const yMax = d3.max(l);
+    const dataset2 = leads[2];
 
-    const x = d3
+    const xMax = d3.max(dataset2, d => d.xData);
+    const yMax = d3.max(dataset2, d => d.yData) + 5000;
+    const xMin = d3.min(dataset2, d => d.xData);
+    const yMin = d3.min(dataset2, d => d.yData) - 5000;
+
+    const xScale = d3
       .scaleLinear()
-      .rangeRound([margin.left, svgWidth - margin.right])
-      .domain([0, l.length]);
-    const y = d3
+      .range([0, width])
+      .domain([0, xMax ? xMax : 0]);
+
+    const yScale = d3
       .scaleLinear()
-      .range([height - margin.top, margin.bottom])
-      .domain([yMin ? yMin : 0, yMax ? yMax : 0]);
+      .range([0, height])
+      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
+
+    const xScale2 = d3
+      .scaleLinear()
+      .range([0, width])
+      .domain([0, xMax ? xMax : 0]);
+
+    const yScale2 = d3
+      .scaleLinear()
+      .range([0, height2])
+      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
+
+    dataset2.sort((a, b) => {
+      return a.xData - b.xData;
+    });
 
     const line = d3
-      .line<number>()
-      .x((_, index) => x(index))
-      .y(d => y(d));
+      .line<MyData>()
+      .x(d => xScale(d.xData))
+      .y(d => yScale(d.yData))
+      .curve(d3.curveBasis);
 
-    g.append('g')
-      .attr('transform', `translate(0, ${height})`)
-      .call(d3.axisBottom(x))
-      .select('.domain')
-      .remove();
-    g.append('g')
-      .call(d3.axisLeft(y))
-      .append('text')
-      .attr('fill', '#000')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', 6)
-      .attr('dy', '0.71em')
-      .attr('text-anchor', 'end')
-      .text('Value');
-
-    g.append('path')
-      .datum<number[]>(l)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-width', 1.5)
+    focus
+      .datum<MyData[]>(dataset2)
+      .append('path')
+      .attr('class', 'line')
       .attr('d', line);
+
+    const line2 = d3
+      .line<MyData>()
+      .x(d => xScale2(d.xData))
+      .y(d => yScale2(d.yData))
+      .curve(d3.curveBasis);
+
+    context
+      .datum<MyData[]>(dataset2)
+      .append('path')
+      .attr('class', 'line')
+      .attr('d', line2);
+
+    const yAxis = d3.axisLeft(yScale).tickSize(-width);
+    const yAxisGroup = focus.append('g').call(yAxis);
+
+    const xAxis = d3
+      .axisBottom(xScale)
+      .tickSize(-height);
+    const xAxisGroup = focus
+      .append('g')
+      .call(xAxis)
+      .attr('transform', 'translate(0,' + height + ')');
+
+    const xAxis2 = d3.axisBottom(xScale2);
+    const xAxisGroup2 = context
+      .append('g')
+      .call(xAxis2)
+      .attr('transform', 'translate(0,' + height2 + ')');
+
+    // add zoom
+    const zoom: any = d3
+      .zoom()
+      .scaleExtent([1, Infinity])
+      .translateExtent([[0, 0], [width, height]])
+      .extent([[0, 0], [width, height]]) 
+      .on('zoom', zoomed);
+
+    svg
+      .append('rect')
+      .attr('class', 'zoom')
+      .attr('width', width)
+      .attr('height', height)
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      .call(zoom);
+
+    const brush: any = d3
+      .brushX()
+      .extent([[0, 0], [width, height2]])
+      .on('brush end', brushed);
+
+    context
+      .append('g')
+      .attr('class', 'brush')
+      .call(brush)
+      .call(brush.move, xScale2.range());
+
+    function zoomed() {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; 
+      xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
+      focus
+        .datum<MyData[]>(dataset2)
+        .select('.line')
+        .attr('d', line);
+      xAxisGroup.call(xAxis);
+
+      context
+        .select('.brush')
+        .call(brush.move, [
+          xScale2(d3.event.transform.rescaleX(xScale2).domain()[0]),
+          xScale2(d3.event.transform.rescaleX(xScale2).domain()[1])
+        ]);
+    }
+
+    function brushed() {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+      xScale.domain([
+        xScale2.invert(d3.event.selection[0]),
+        xScale2.invert(d3.event.selection[1])
+      ]);
+
+      focus
+        .datum<MyData[]>(dataset2)
+        .select('.line')
+        .attr('d', line);
+      xAxisGroup.call(xAxis);
+    }
+
+    svg
+      .append('defs')
+      .append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height);
+    focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
   public render = () => {
@@ -108,8 +219,66 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     return (
       <div>
-        SignalAnnotation
-        <svg className='signal' />
+        <div className='signal-header'>
+          <Row>
+            <Col span={4} className='text-left center-vertical-switch'>
+              <Switch
+                checkedChildren={<Icon type='check' />}
+                unCheckedChildren={<Icon type='close' />}
+                defaultChecked={true}
+              />{' '}
+              Display Leads
+            </Col>
+            <Col span={16} className='text-center'>
+              <Button
+                type='primary'
+                icon='box-plot'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              >
+                Intervals
+              </Button>
+              <Button
+                type='primary'
+                icon='undo'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              />
+              <Button
+                type='primary'
+                icon='redo'
+                size='large'
+                className='btn-space btn-heartnotation-primary'
+              />
+            </Col>
+            <Col span={4} className='text-right'>
+              <Button
+                type='primary'
+                icon='check-circle'
+                size='large'
+                className='btn-space btn-heartnotation-secondary'
+              >
+                Validate
+              </Button>
+            </Col>
+          </Row>
+        </div>
+        <div className='signal-main-container'>
+          <div className='signal-legend-container'>
+            <Tag color='magenta'>magenta</Tag>
+            <Tag color='red'>red</Tag>
+            <Tag color='volcano'>volcano</Tag>
+            <Tag color='orange'>orange</Tag>
+            <Tag color='gold'>gold</Tag>
+            <Tag color='lime'>lime</Tag>
+            <Tag color='green'>green</Tag>
+            <Tag color='cyan'>cyan</Tag>
+            <Tag color='blue'>blue</Tag>
+            <Tag color='geekblue'>geekblue</Tag>
+            <Tag color='purple'>purple</Tag>
+          </div>
+          <div className='signal-graph-container' id='signal' />
+        </div>
       </div>
     );
   }
