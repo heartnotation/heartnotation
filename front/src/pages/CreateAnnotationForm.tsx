@@ -16,19 +16,30 @@ const formTailLayout = {
   wrapperCol: { span: 14, offset: 10 }
 };
 
+interface Organization {
+  id: number;
+  label: string;
+  active: boolean;
+}
+
 interface Tag {
   id: number;
   label: string;
 }
 
-const t: Tag = { id: 3, label: 'ok' };
+interface Annotation {
+  id: number;
+}
 
 interface States {
   organizations: string[];
+  organizationsAjax: Organization[];
   organizationsSearch: string[];
   tags: number[];
+  tagsAjax: Tag[];
   tagsSelected: number[];
   annotations: number[];
+  annotationsAjax: Annotation[];
   annotationValidateStatus: '' | 'success' | 'error';
 }
 
@@ -37,22 +48,46 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     super(props);
     this.state = {
       organizations: ['Abcdef', 'ahdec', 'dceff'],
+      organizationsAjax: [],
       organizationsSearch: [],
       tags: [1, 2, 3, 12, 34, 45],
+      tagsAjax: [],
       tagsSelected: [],
       annotations: [1, 12, 333],
+      annotationsAjax: [],
       annotationValidateStatus: ''
     };
   }
 
   public componentDidMount = () => {
-    axios
-      .get('localhost:8000/organizations', {
-        headers: { 'Access-Control-Allow-Origin': '*' }
-      })
-      .then((res: AxiosResponse) => {
-        console.log(res.data);
+    const organizationsAjax: Promise<Organization[]> = axios
+      .get<Organization[]>('/organizations')
+      .then((res: AxiosResponse<Organization[]>) => {
+        return res.data;
       });
+
+    const tagsAjax: Promise<Tag[]> = axios
+      .get<Tag[]>('/tags')
+      .then((res: AxiosResponse<Tag[]>) => {
+        return res.data;
+      });
+
+    const annotationsAjax: Promise<Annotation[]> = axios
+      .get<Annotation[]>('/annotations')
+      .then((res: AxiosResponse<Annotation[]>) => {
+        return res.data;
+      });
+
+    Promise.all([organizationsAjax, tagsAjax, annotationsAjax]).then(
+      (allResponse: [Organization[], Tag[], Annotation[]]) => {
+        console.log(allResponse);
+        this.setState({
+          organizationsAjax: allResponse[0],
+          tagsAjax: allResponse[1],
+          annotationsAjax: allResponse[2]
+        });
+      }
+    );
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -63,7 +98,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     return !isNaN(Number(s));
   }
 
-  public validateId = (rule: any, value: any, callback: any) => {
+  public validateId = (value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
       callback('You should write a number');
     }
