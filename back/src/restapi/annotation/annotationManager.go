@@ -15,6 +15,10 @@ import (
 	u "restapi/utils"
 )
 
+func RemoveAnnotation(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
