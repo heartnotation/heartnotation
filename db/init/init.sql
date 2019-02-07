@@ -51,7 +51,7 @@ DROP TABLE IF EXISTS ANNOTATION CASCADE;
 CREATE TABLE ANNOTATION (
 	id SERIAL PRIMARY KEY,
 	name varchar(30),
-	id_parent bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	parent_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	organization_id bigint REFERENCES ORGANIZATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	status_id bigint REFERENCES STATUS(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	signal_id bigint NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE ANNOTATIONINTERVAL_USER (
 DROP TABLE IF EXISTS TAG CASCADE;
 CREATE TABLE TAG (
 	id SERIAL PRIMARY KEY,
-	id_parent bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	parent_id bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	name varchar(30) NOT NULL,
 	color varchar(30) NOT NULL,
 	is_active boolean NOT NULL
@@ -186,13 +186,13 @@ INSERT INTO ORGANIZATION_USER (organization_id, user_id)
 
 -- ANNOTATION
 
-INSERT INTO ANNOTATION (id_parent, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
+INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
 	VALUES (NULL, 'Annotation 1', 1, 1, 1, 'Première annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO ANNOTATION (id_parent, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable)  
+INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable)  
 	VALUES (NULL, 'Annotation 2', 2, 2, 1, 'Seconde annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO ANNOTATION (id_parent, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
+INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
 	VALUES (2, 'Annotation 3',  3, 3, 1, 'Troisième annotation qui se base sur la deuxième', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 -- INTERVAL
@@ -219,13 +219,13 @@ INSERT INTO ANNOTATIONINTERVAL_USER (annotation_id, interval_id, user_id, commen
 
 -- TAG
 
-INSERT INTO TAG (id_parent, name, color, is_active) 
+INSERT INTO TAG (parent_id, name, color, is_active) 
 	VALUES (NULL, 'Lungs on fire', 'red', TRUE);
 
-INSERT INTO TAG (id_parent, name, color, is_active) 
+INSERT INTO TAG (parent_id, name, color, is_active) 
 	VALUES (NULL, 'Lungs on water', 'blue', TRUE);
 
-INSERT INTO TAG (id_parent, name, color, is_active) 
+INSERT INTO TAG (parent_id, name, color, is_active) 
 	VALUES (2, 'Weird lungs', 'green', TRUE);
 
 -- INTERVAL_TAG
