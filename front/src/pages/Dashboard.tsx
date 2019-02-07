@@ -10,12 +10,17 @@ interface Organization {
   is_active: boolean;
 }
 
+interface Status {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
 interface Annotation {
   id: number;
   name: string;
   organization:Organization;
-  organization_id: number;
-  status_id: number;
+  status: Status;
   signal_id: number;
   creation_date: Date;
   edit_date?: Date;
@@ -133,15 +138,15 @@ class Dashboard extends Component {
     },
     {
       title: 'Status',
-      dataIndex: 'status_id',
+      dataIndex: 'status.name',
       filters: this.state.initialAnnotations
-        .map((a:Annotation) => a.status_id.toString())
+        .map((a:Annotation) => a.status.name)
         .filter((s, i, array) => array.indexOf(s) === i)
         .map(s => ({ text: s, value: s })),
       onFilter: (value: string, record: Annotation) =>
-        record.status_id.toString().indexOf(value) === 0,
+        record.status.name.indexOf(value) === 0,
       sorter: (a: Annotation, b: Annotation) =>
-        a.status_id.toString().localeCompare(b.status_id.toString(), 'en', {
+        a.status.name.localeCompare(b.status.name, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
         })
@@ -222,11 +227,11 @@ class Dashboard extends Component {
           return false;
         }
       }
-      if (this.state.searches.get('status_id')) {
+      if (this.state.searches.get('status.name')) {
         if (
-          !record.status_id
+          !record.status.name
             .toString()
-            .startsWith(this.state.searches.get('status_id'))
+            .startsWith(this.state.searches.get('status.name'))
         ) {
           return false;
         }
