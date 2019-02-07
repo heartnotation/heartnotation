@@ -7,17 +7,17 @@ import (
 
 // Annotation structure to represent an annotation
 type Annotation struct {
-	ID                uint           `json:"id"`
-	AnnotationComment string         `json:"name"`
-	Organization      o.Organization `gorm:"foreignkey:OrganizationID;association_foreign:ID" json:"organization"`
-	OrganizationID    uint           `json:"organization_id"`
-	ProcessID         uint           `json:"process_id"`
-	SignalID          uint           `json:"signal_id"`
-	CreationDate      time.Time      `json:"creation_date"`
-	EditDate          time.Time      `json:"edit_date"`
-	IsActive          bool           `json:"is_active"`
-	Parent            *Annotation    `gorm:"foreignkey:ParentID;association_foreign:ID" json:"parent"`
-	ParentID          uint           `json:"parent_id"`
+	ID                uint            `json:"id"`
+	AnnotationComment string          `json:"name"`
+	Organization      *o.Organization `gorm:"foreignkey:OrganizationID" json:"organization,omitempty"`
+	OrganizationID    *uint           `json:"organization_id,omitempty"`
+	StatusID          uint            `json:"status_id"`
+	SignalID          *uint           `json:"signal_id"`
+	CreationDate      time.Time       `json:"creation_date"`
+	EditDate          time.Time       `json:"edit_date"`
+	IsActive          bool            `gorm:"column:is_active" json:"is_active"`
+	Parent            *Annotation     `json:"parent,omitempty"`
+	ParentID          *uint           `gorm:"TYPE:integer REFERENCES annotation" json:"parent_id,integer,omitempty"`
 }
 
 // TableName sets table name of the struct

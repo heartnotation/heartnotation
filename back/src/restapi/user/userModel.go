@@ -4,7 +4,7 @@ package user
 type Profile struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
 	Mail     string `gorm:"type:varchar(100);unique_index" json:"mail"`
-	Role     Role   `gorm:"foreignkey:RoleID;association_foreign:ID" json:"role"`
+	Role     Role   `gorm:"foreignkey:RoleID" json:"role"`
 	RoleID   uint
 	IsActive bool `json:"is_active"`
 }
@@ -17,7 +17,7 @@ func (Profile) TableName() string {
 // Role represent a role in database
 type Role struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
-	Name     string `json:"name"`
+	Title    string `json:"name"`
 	IsActive bool   `json:"is_active"`
 }
 
