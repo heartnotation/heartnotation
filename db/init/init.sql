@@ -13,21 +13,21 @@ DROP TABLE IF EXISTS ORGANIZATION CASCADE;
 CREATE TABLE ORGANIZATION (
 	id SERIAL PRIMARY KEY,
 	title varchar(30),
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS _STATUS CASCADE;
 CREATE TABLE _STATUS (
 	id SERIAL PRIMARY KEY,
 	title varchar(30),
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS USERROLE CASCADE;
 CREATE TABLE USERROLE (
 	id SERIAL PRIMARY KEY,
 	title varchar(30),
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS USERPROFILE CASCADE;
@@ -35,7 +35,7 @@ CREATE TABLE USERPROFILE (
 	id SERIAL PRIMARY KEY,
 	role_id bigint REFERENCES USERROLE(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	mail varchar(30),
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS ORGANIZATION_USER CASCADE;
@@ -58,8 +58,8 @@ CREATE TABLE ANNOTATION (
 	annotation_comment varchar(180),
 	creation_date timestamp NOT NULL,
 	edit_date timestamp NOT NULL,
-	isActive boolean,
-	isEditable boolean
+	is_active boolean,
+	is_editable boolean
 );
 
 DROP TABLE IF EXISTS _INTERVAL CASCADE;
@@ -67,7 +67,7 @@ CREATE TABLE _INTERVAL (
 	id SERIAL PRIMARY KEY,
 	timestamp_start int NOT NULL,
 	timestamp_end bigint NOT NULL,
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS ANNOTATION_INTERVAL_USER CASCADE;
@@ -85,7 +85,7 @@ CREATE TABLE TAG (
 	tag_id_parent bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	title varchar(30) NOT NULL,
 	color varchar(30) NOT NULL,
-	isActive boolean
+	is_active boolean
 );
 
 DROP TABLE IF EXISTS INTERVAL_TAG CASCADE;
@@ -122,58 +122,58 @@ ALTER TABLE OPERATOR_OF OWNER TO heart;
 
 -- ORGANIZATION
 
-INSERT INTO ORGANIZATION (title, isActive) 
+INSERT INTO ORGANIZATION (title, is_active) 
 	VALUES ('Cardiologs', TRUE);
 
-INSERT INTO ORGANIZATION (title, isActive) 
+INSERT INTO ORGANIZATION (title, is_active) 
 	VALUES ('Podologs', TRUE);
 
-INSERT INTO ORGANIZATION (title, isActive) 
+INSERT INTO ORGANIZATION (title, is_active) 
 	VALUES ('Heartnotalogs', TRUE);
 
-INSERT INTO ORGANIZATION (title, isActive) 
+INSERT INTO ORGANIZATION (title, is_active) 
 	VALUES ('', TRUE);
 
 -- USERROLE
 
-INSERT INTO USERROLE (title, isActive) 
+INSERT INTO USERROLE (title, is_active) 
 	VALUES ('Annotateur', TRUE);
 
-INSERT INTO USERROLE (title, isActive) 
+INSERT INTO USERROLE (title, is_active) 
 	VALUES ('Gestionnaire', TRUE);
 
-INSERT INTO USERROLE (title, isActive) 
+INSERT INTO USERROLE (title, is_active) 
 	VALUES ('Admin', TRUE);
 
 --  USERPROFILE
 
-INSERT INTO USERPROFILE (role_id, mail, isActive) 
+INSERT INTO USERPROFILE (role_id, mail, is_active) 
 	VALUES (3, 'rolex@gmail.com', TRUE);
 
-INSERT INTO USERPROFILE (role_id, mail, isActive) 
+INSERT INTO USERPROFILE (role_id, mail, is_active) 
 	VALUES (1, 'marvin@gmail.com', TRUE);
 
-INSERT INTO USERPROFILE (role_id, mail, isActive)  
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
 	VALUES (2, 'sophie@gmail.com', TRUE);
 
 -- _STATUS
 
-INSERT INTO _STATUS (title, isActive) 
+INSERT INTO _STATUS (title, is_active) 
 	VALUES ('CREATED', TRUE);
 
-INSERT INTO _STATUS (title, isActive)  
+INSERT INTO _STATUS (title, is_active)  
 	VALUES ('ASSIGNED', TRUE);
 
-INSERT INTO _STATUS (title, isActive)  
-	VALUES (' INTREATMENT', TRUE);
+INSERT INTO _STATUS (title, is_active)  
+	VALUES ('IN_PROCESS', TRUE);
 
-INSERT INTO _STATUS (title, isActive) 
+INSERT INTO _STATUS (title, is_active) 
 	VALUES ('COMPLETED', TRUE);
 
-INSERT INTO _STATUS (title, isActive) 
+INSERT INTO _STATUS (title, is_active) 
 	VALUES ('VALIDATED', TRUE);
 
-INSERT INTO _STATUS (title, isActive) 
+INSERT INTO _STATUS (title, is_active) 
 	VALUES ('CANCELED', TRUE);
 
 -- ORGANIZATION USER
@@ -189,24 +189,24 @@ INSERT INTO ORGANIZATION_USER (organization_id, user_id)
 
 -- ANNOTATION
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable) 
+INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
 	VALUES (NULL, 'Annotation 1', 1, 1, 1, 'Première annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable)  
+INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable)  
 	VALUES (NULL, 'Annotation 2', 2, 2, 1, 'Seconde annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, isActive, isEditable) 
+INSERT INTO ANNOTATION (annotation_id_parent, title, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
 	VALUES (2, 'Annotation 3',  3, 3, 1, 'Troisième annotation qui se base sur la deuxième', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 -- _INTERVAL
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive) 
+INSERT INTO _INTERVAL (timestamp_start, timestamp_end, is_active) 
 	VALUES (3, 4, TRUE);
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive)
+INSERT INTO _INTERVAL (timestamp_start, timestamp_end, is_active)
 	VALUES (7, 9, TRUE);
 
-INSERT INTO _INTERVAL (timestamp_start, timestamp_end, isActive) 
+INSERT INTO _INTERVAL (timestamp_start, timestamp_end, is_active) 
 	VALUES (11, 29, TRUE);
 
 -- ANNOTATION_INTERVAL_USER
@@ -222,13 +222,13 @@ INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comme
 
 -- TAG
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
+INSERT INTO TAG (tag_id_parent, title, color, is_active) 
 	VALUES (NULL, 'Lungs on fire', 'red', TRUE);
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
+INSERT INTO TAG (tag_id_parent, title, color, is_active) 
 	VALUES (NULL, 'Lungs on water', 'blue', TRUE);
 
-INSERT INTO TAG (tag_id_parent, title, color, isActive) 
+INSERT INTO TAG (tag_id_parent, title, color, is_active) 
 	VALUES (2, 'Weird lungs', 'green', TRUE);
 
 -- INTERVAL_TAG
