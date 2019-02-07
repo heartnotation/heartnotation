@@ -1,71 +1,92 @@
 import React, { Component } from 'react';
-import { Table, Input } from 'antd';
+import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
+import axios, { AxiosResponse } from 'axios';
 
-
-interface Annotation {
-  signalId: number;
-  annotation: string;
-  creationDate: Date;
-  lastEdit?: Date;
-  status: string;
+interface Organization {
+  id: number;
+  name: string;
+  is_active: boolean;
 }
 
-const data: Annotation[] = [
-  {
-    signalId: 3219876,
-    annotation: 'Annotation name',
-    creationDate: new Date('2019-01-22'),
-    lastEdit: new Date(2019, 1, 25),
-    status: 'IN TREATMENT'
-  },
-  {
-    signalId: 2393282,
-    annotation: 'Annotation name',
-    creationDate: new Date(2019, 2, 5),
-    status: 'NEW'
-  },
-  {
-    signalId: 9837262,
-    annotation: 'Annotation name',
-    creationDate: new Date(2019, 2, 5),
-    status: 'NEW'
-  },
-  {
-    signalId: 2874023,
-    annotation: 'Annotation name',
-    creationDate: new Date(2019, 1, 2),
-    lastEdit: new Date(2019, 1, 10),
-    status: 'COMPLETED'
-  }
-];
+interface Annotation {
+  id: number;
+  name: string;
+  organization:Organization;
+  organization_id: number;
+  status_id: number;
+  signal_id: number;
+  creation_date: Date;
+  edit_date?: Date;
+  is_active: boolean;
+}
+
+interface State {
+  searches: Map<string, string>;
+  initialData: Annotation[];
+  currentData: Annotation[];
+}
 
 class Dashboard extends Component {
   public state = {
     searches: new Map(),
-    currentData: data.slice()
+    initialAnnotations: [],
+    currentAnnotations: []
   };
+
+  public componentDidMount = () => {
+    const annotationsAjax: Promise<Annotation[]> = axios
+      .get<Annotation[]>('/annotations')
+      .then((res: AxiosResponse<Annotation[]>) => {
+        const data = res.data;
+        /* Convert timestamp string to date objects */
+        data.forEach((a:Annotation) => {
+          a.creation_date = new Date(a.creation_date);
+          if(a.edit_date) {
+            a.edit_date = new Date(a.edit_date);
+          }
+        })
+        return data;
+      });
+
+    Promise.all([annotationsAjax]).then((allResponse: Annotation[][]) => {
+      this.setState({
+        initialAnnotations: allResponse[0],
+        currentAnnotations: allResponse[0].slice()
+      });   
+    });
+  }
 
   public columns: Array<ColumnProps<Annotation>> = [
     {
-      title: () => this.getColumnSearchBox('signalId', 'signal ID'),
+      title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
         {
-          title: 'Signal ID',
-          dataIndex: 'signalId',
-          sorter: (a: Annotation, b: Annotation) => a.signalId - b.signalId
+          title: 'ID',
+          dataIndex: 'id',
+          sorter: (a: Annotation, b: Annotation) => a.id - b.id
         }
       ]
     },
     {
-      title: () => this.getColumnSearchBox('annotation', 'annotation'),
+      title: () => this.getColumnSearchBox('signal_id', 'signal ID'),
+      children: [
+        {
+          title: 'Signal ID',
+          dataIndex: 'signal_id',
+          sorter: (a: Annotation, b: Annotation) => a.signal_id - b.signal_id
+        }
+      ]
+    },
+    {
+      title: () => this.getColumnSearchBox('name', 'annotation'),
       children: [
         {
           title: 'Annotation',
-          dataIndex: 'annotation',
+          dataIndex: 'name',
           sorter: (a: Annotation, b: Annotation) =>
-            a.annotation.localeCompare(b.annotation, 'en', {
+            a.name.localeCompare(b.name, 'en', {
               sensitivity: 'base',
               ignorePunctuation: true
             })
@@ -73,23 +94,23 @@ class Dashboard extends Component {
       ]
     },
     {
-      title: () => this.getColumnSearchBox('creationDate', 'creation date'),
+      title: () => this.getColumnSearchBox('creation_date', 'creation date'),
       children: [
         {
           title: 'Creation date',
-          dataIndex: 'creationDate',
+          dataIndex: 'creation_date',
           render: (date: Date) => date.toLocaleDateString('fr-FR'),
           sorter: (a: Annotation, b: Annotation) =>
-            a.creationDate.getTime() - b.creationDate.getTime()
+            a.creation_date.getTime() - b.creation_date.getTime()
         }
       ]
     },
     {
-      title: () => this.getColumnSearchBox('lastEdit', 'last edit date'),
+      title: () => this.getColumnSearchBox('edit_date', 'last edit date'),
       children: [
         {
           title: 'Last edit',
-          dataIndex: 'lastEdit',
+          dataIndex: 'edit_date',
           render: (date: Date | undefined) => {
             if (date === undefined) {
               return '-';
@@ -99,11 +120,11 @@ class Dashboard extends Component {
           sorter: (a: Annotation, b: Annotation) => {
             let timeA = 0;
             let timeB = 0;
-            if (a.lastEdit !== undefined) {
-              timeA = a.lastEdit.getTime();
+            if (a.edit_date !== undefined) {
+              timeA = a.edit_date.getTime();
             }
-            if (b.lastEdit !== undefined) {
-              timeB = b.lastEdit.getTime();
+            if (b.edit_date !== undefined) {
+              timeB = b.edit_date.getTime();
             }
             return timeA - timeB;
           }
@@ -112,18 +133,23 @@ class Dashboard extends Component {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
-      filters: data
-        .map(a => a.status)
+      dataIndex: 'status_id',
+      filters: this.state.initialAnnotations
+        .map((a:Annotation) => a.status_id.toString())
         .filter((s, i, array) => array.indexOf(s) === i)
         .map(s => ({ text: s, value: s })),
       onFilter: (value: string, record: Annotation) =>
-        record.status.indexOf(value) === 0,
+        record.status_id.toString().indexOf(value) === 0,
       sorter: (a: Annotation, b: Annotation) =>
-        a.status.localeCompare(b.status, 'en', {
+        a.status_id.toString().localeCompare(b.status_id.toString(), 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
         })
+    },
+    {
+      title: 'Edit',
+      dataIndex: 'edit',
+      render: edits => <Icon type='edit' theme='twoTone' />
     }
   ];
 
@@ -145,53 +171,62 @@ class Dashboard extends Component {
   }
 
   public handleSearch = () => {
-    this.state.currentData = data.slice();
-    const filteredData = this.state.currentData.filter(record => {
-      if (this.state.searches.get('signalId')) {
+    this.state.currentAnnotations = this.state.initialAnnotations.slice();
+    const filteredData = this.state.currentAnnotations.filter((record:Annotation) => {
+      if (this.state.searches.get('id')) {
         if (
-          !record.signalId
+          !record.id
             .toString()
-            .startsWith(this.state.searches.get('signalId'))
+            .startsWith(this.state.searches.get('id'))
         ) {
           return false;
         }
       }
-      if (this.state.searches.get('annotation')) {
+      if (this.state.searches.get('signal_id')) {
         if (
-          !record.annotation
+          !record.signal_id
             .toString()
-            .includes(this.state.searches.get('annotation'))
+            .startsWith(this.state.searches.get('signal_id'))
         ) {
           return false;
         }
       }
-      if (record.creationDate && this.state.searches.get('creationDate')) {
+      if (this.state.searches.get('name')) {
         if (
-          !record.creationDate
+          !record.name
+            .toString()
+            .includes(this.state.searches.get('name'))
+        ) {
+          return false;
+        }
+      }
+      if (record.creation_date && this.state.searches.get('creation_date')) {
+        if (
+          !record.creation_date
             .toLocaleDateString('fr-FR')
-            .includes(this.state.searches.get('creationDate'))
+            .includes(this.state.searches.get('creation_date'))
         ) {
           return false;
         }
       }
-      if (this.state.searches.get('lastEdit')) {
-        if (!record.lastEdit && this.state.searches.get('lastEdit') !== '-') {
+      if (this.state.searches.get('edit_date')) {
+        if (!record.edit_date && this.state.searches.get('edit_date') !== '-') {
           return false;
         }
         if (
-          record.lastEdit &&
-          !record.lastEdit
+          record.edit_date &&
+          !record.edit_date
             .toLocaleDateString('fr-FR')
-            .includes(this.state.searches.get('lastEdit'))
+            .includes(this.state.searches.get('edit_date'))
         ) {
           return false;
         }
       }
-      if (this.state.searches.get('status')) {
+      if (this.state.searches.get('status_id')) {
         if (
-          !record.status
+          !record.status_id
             .toString()
-            .startsWith(this.state.searches.get('status'))
+            .startsWith(this.state.searches.get('status_id'))
         ) {
           return false;
         }
@@ -200,7 +235,7 @@ class Dashboard extends Component {
     });
 
     this.setState({
-      currentData: filteredData
+      currentAnnotations: filteredData
     });
   }
 
@@ -208,14 +243,15 @@ class Dashboard extends Component {
     return (
       <div>
         <Table
-          rowKey='signalId'
+          rowKey='id'
           columns={this.columns}
-          dataSource={this.state.currentData}
+          dataSource={this.state.currentAnnotations}
           pagination={{
             position: 'bottom',
             pageSizeOptions: ['10', '20', '30', '40'],
             showSizeChanger: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
           }}
         />
       </div>
