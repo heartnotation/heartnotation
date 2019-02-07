@@ -57,7 +57,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     };
   }
 
-  public componentDidMount = async () => {
+  public componentDidMount = () => {
     const organizationsAjax: Promise<Organization[]> = axios
       .get<Organization[]>('/organizations')
       .then((res: AxiosResponse<Organization[]>) => {
