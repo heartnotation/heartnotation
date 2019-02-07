@@ -3,8 +3,8 @@ package tag
 // Tag database representation
 type Tag struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
-	ParentID uint   `json:"tag_id_parent,omitempty"`
-	Title    string `json:"title"`
+	ParentID uint   `json:"parent_id,omitempty"`
+	Name     string `json:"name"`
 	Color    string `json:"color"`
 	IsActive bool   `json:"is_active"`
 }
