@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as d3 from 'd3';
-import * as d3Zoom from 'd3-zoom';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
@@ -51,223 +50,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     await this.setState({ leads });
 
-    // const leadData: number[] = leads[2];
-
-    // const svgWidth = 4000; // 0.8 * window.innerWidth;
-    // const svgHeight = 400;
-
-    // const svg = d3
-    //   .select('#signal')
-    //   .attr('width', svgWidth)
-    //   .attr('height', svgHeight);
-
-    // const marginMainGraph = { top: 20, right: 20, bottom: 110, left: 40 };
-    // const marginPreviewGraph = { top: 430, right: 20, bottom: 30, left: 40 };
-    // const width = svgWidth - marginMainGraph.left - marginMainGraph.right;
-    // const heightMainGraph =
-    //   svgHeight - marginMainGraph.top - marginMainGraph.bottom;
-    // const heightPreviewGraph =
-    //   svgHeight - marginPreviewGraph.top - marginPreviewGraph.bottom;
-
-    // const xMainGraph = d3.scaleLinear().range([0, leadData.length]);
-    // const xPreviewGraph = d3.scaleLinear().range([0, leadData.length]);
-    // const yMainGraph = d3.scaleLinear().range([heightMainGraph, 0]);
-    // const yPreviewGraph = d3.scaleLinear().range([heightPreviewGraph, 0]);
-
-    // const xAxisMainGraph = d3.axisBottom(xMainGraph);
-    // const xAxisPreviewGraph = d3.axisBottom(xPreviewGraph);
-    // const yAxisMainGraph = d3.axisLeft(yMainGraph);
-
-    // const chart = svg
-    //   .append('g')
-    //   .attr('class', 'focus')
-    //   .attr(
-    //     'transform',
-    //     'translate(' + marginMainGraph.left + ',' + marginMainGraph.top + ')'
-    //   )
-    //   .attr('clip-path', 'url(#clip)');
-
-    // const focus = svg
-    //   .append('g')
-    //   .attr('class', 'focus')
-    //   .attr(
-    //     'transform',
-    //     'translate(' + marginMainGraph.left + ',' + marginMainGraph.top + ')'
-    //   );
-
-    // const context = svg
-    //   .append('g')
-    //   .attr('class', 'context')
-    //   .attr(
-    //     'transform',
-    //     'translate(' +
-    //       marginPreviewGraph.left +
-    //       ',' +
-    //       marginPreviewGraph.top +
-    //       ')'
-    //   );
-
-    // const lineMainGraph = d3
-    //   .line<number>()
-    //   .x((_, index) => xMainGraph(index))
-    //   .y(d => yMainGraph(d));
-
-    // const linePreviewGraph = d3
-    //   .line<number>()
-    //   .x((_, index) => xMainGraph(index))
-    //   .y(d => yMainGraph(d));
-
-    // const clip = svg
-    //   .append('defs')
-    //   .append('svg:clipPath')
-    //   .attr('id', 'clip')
-    //   .append('svg:rect')
-    //   .attr('width', width)
-    //   .attr('height', heightMainGraph)
-    //   .attr('x', 0)
-    //   .attr('y', 0);
-
-    // const yMin = d3.min(leadData);
-    // const yMax = d3.max(leadData);
-
-    // xMainGraph.domain([0, leadData.length]);
-    // yMainGraph.domain([yMin ? yMin : 0, yMax ? yMax : 0]);
-    // xPreviewGraph.domain(xMainGraph.domain());
-    // yPreviewGraph.domain(yMainGraph.domain());
-
-    // focus
-    //   .append('g')
-    //   .attr('class', 'axis axis--x')
-    //   .attr('transform', 'translate(0,' + heightMainGraph + ')')
-    //   .call(xAxisMainGraph);
-
-    // focus
-    //   .append('g')
-    //   .attr('class', 'axis axis--y')
-    //   .call(yAxisMainGraph);
-
-    // chart
-    //   .append('path')
-    //   .datum(leadData)
-    //   .attr('class', 'line')
-    //   .attr('d', lineMainGraph);
-
-    // context
-    //   .append('path')
-    //   .datum(leadData)
-    //   .attr('class', 'line')
-    //   .attr('d', linePreviewGraph);
-
-    // context
-    //   .append('g')
-    //   .attr('class', 'axis axis--x')
-    //   .attr('transform', 'translate(0,' + heightPreviewGraph + ')')
-    //   .call(xAxisPreviewGraph);
-
-    // const brush = d3.brushX().extent([[0, 0], [width, heightPreviewGraph]]);
-    // const zoom = d3
-    //   .zoom()
-    //   .scaleExtent([1, Infinity])
-    //   .translateExtent([[0, 0], [width, heightMainGraph]])
-    //   .extent([[0, 0], [width, heightMainGraph]]);
-
-    // const zoomed = () => {
-    //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
-    //     return;
-    //   } // ignore zoom-by-brush
-    //   const t = d3.event.transform;
-    //   xMainGraph.domain(t.rescaleX(xPreviewGraph).domain());
-    //   /*chart.select('.line').attr('d', lineMainGraph);
-    //   focus.select('.axis--x').call(xAxisMainGraph);
-    //   context
-    //     .select('.brush')
-    //     .call(brush.move, xMainGraph.range().map(t.invertX, t));*/
-    // };
-
-    // const brushed = () => {
-    //   if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
-    //     return;
-    //   } // ignore brush-by-zoom
-    //   const s = d3.event.selection || xPreviewGraph.range();
-    //   xMainGraph.domain(s.map(xPreviewGraph.invert, xPreviewGraph));
-    //  /* chart.select('.line').attr('d', lineMainGraph);
-    //   focus.select('.axis--x').call(xAxisMainGraph);
-    //   svg
-    //     .select('.zoom')
-    //     .call(
-    //       zoom.transform,
-    //       d3.zoomIdentity.scale(width / (s[1] - s[0])).translate(-s[0], 0)
-    //     );*/
-    // };
-
-    // brush.on('brush end', brushed);
-    // zoom.on('zoom', zoomed);
-
-    // context
-    //   .append('g')
-    //   .attr('class', 'brush')
-    //   .call(brush)
-    //   .call(brush.move, xMainGraph.range());
-
-    /*
-    const svgWidth = 3000;
-    const svgHeight = 400;
-    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
-
-    const height = svgHeight - margin.top - margin.bottom;
-
-    const l: number[] = leads[2];
-
-    const svg = d3
-      .select('#signal')
-      .attr('width', svgWidth)
-      .attr('height', svgHeight);
-
-    const g = svg
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    const yMin = d3.min(l);
-    const yMax = d3.max(l);
-
-    const x = d3
-      .scaleLinear()
-      .rangeRound([margin.left, svgWidth - margin.right])
-      .domain([0, l.length]);
-    const y = d3
-      .scaleLinear()
-      .range([height - margin.top, margin.bottom])
-      .domain([yMin ? yMin : 0, yMax ? yMax : 0]);
-
-    const line = d3
-      .line<number>()
-      .x((_, index) => x(index))
-      .y(d => y(d));
-
-    g.append('g')
-      .attr('transform', `translate(0, ${height})`)
-      .call(d3.axisBottom(x))
-      .select('.domain')
-      .remove();
-    g.append('g')
-      .call(d3.axisLeft(y))
-      .append('text')
-      .attr('fill', '#000')
-      .attr('transform', 'rotate(-90)')
-      .attr('y', 6)
-      .attr('dy', '0.71em')
-      .attr('text-anchor', 'end')
-      .text('Value');
-
-    g.append('path')
-      .datum<number[]>(l)
-      .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-linecap', 'round')
-      .attr('stroke-width', 1.5)
-      .attr('d', line);*/
-
     const svgWidth = window.innerWidth;
     const svgHeight = 600;
     const margin = { top: 20, right: 50, bottom: 100, left: 50 };
@@ -276,8 +58,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const height = svgHeight - margin.top - margin.bottom;
     const height2 = svgHeight - margin2.top - margin2.bottom;
 
-    // add svg with margin !important
-    // this is svg is actually group
     const svg = d3
       .select('#signal')
       .append('svg')
@@ -285,55 +65,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('height', height + margin.top + margin.bottom);
 
     const focus = svg
-      .append('g') // add group to leave margin for axis
+      .append('g') 
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     const context = svg
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
-
-    /*
-    const dataset2: MyData[] = [
-      {
-        xData: 5,
-        yData: 20
-      },
-      {
-        xData: 480,
-        yData: 90
-      },
-      {
-        xData: 250,
-        yData: 50
-      },
-      {
-        xData: 100,
-        yData: 33
-      },
-      {
-        xData: 330,
-        yData: 95
-      },
-      {
-        xData: 410,
-        yData: 12
-      },
-      {
-        xData: 475,
-        yData: 44
-      },
-      {
-        xData: 25,
-        yData: 67
-      },
-      {
-        xData: 85,
-        yData: 21
-      },
-      {
-        xData: 220,
-        yData: 88
-      }
-    ];*/
 
     const dataset2 = leads[2];
 
@@ -350,7 +86,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const yScale = d3
       .scaleLinear()
       .range([0, height])
-      .domain([yMax ? yMax : 0, 0]);
+      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
 
     const xScale2 = d3
       .scaleLinear()
@@ -360,9 +96,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const yScale2 = d3
       .scaleLinear()
       .range([0, height2])
-      .domain([yMax ? yMax : 0, 0]);
+      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
 
-    // sort x
     dataset2.sort((a, b) => {
       return a.xData - b.xData;
     });
@@ -383,7 +118,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .line<MyData>()
       .x(d => xScale2(d.xData))
       .y(d => yScale2(d.yData))
-      .curve(d3.curveBasis); // default is d3.curveLinear
+      .curve(d3.curveBasis);
 
     context
       .datum<MyData[]>(dataset2)
@@ -391,30 +126,29 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('class', 'line')
       .attr('d', line2);
 
-    // add x and y axis
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
 
     const xAxis = d3
       .axisBottom(xScale)
-      .tickSize(-height); /*.tickFormat("");remove tick label*/
+      .tickSize(-height);
     const xAxisGroup = focus
       .append('g')
       .call(xAxis)
       .attr('transform', 'translate(0,' + height + ')');
 
-    const xAxis2 = d3.axisBottom(xScale2); // no need to create grid
+    const xAxis2 = d3.axisBottom(xScale2);
     const xAxisGroup2 = context
       .append('g')
       .call(xAxis2)
       .attr('transform', 'translate(0,' + height2 + ')');
 
     // add zoom
-    const zoom = d3
+    const zoom: any = d3
       .zoom()
-      .scaleExtent([1, Infinity]) // <1 means can resize smaller than  original size
+      .scaleExtent([1, Infinity])
       .translateExtent([[0, 0], [width, height]])
-      .extent([[0, 0], [width, height]]) // view point size
+      .extent([[0, 0], [width, height]]) 
       .on('zoom', zoomed);
 
     svg
@@ -423,12 +157,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('width', width)
       .attr('height', height)
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      .call(() => zoom);
+      .call(zoom);
 
-    const brush = d3
+    const brush: any = d3
       .brushX()
-      .extent([[0, 0], [width, height2]]) // (x0,y0)  (x1,y1)
-      .on('brush end', brushed); // when mouse up, move the selection to the exact tick //start(mouse down), brush(mouse move), end(mouse up)
+      .extent([[0, 0], [width, height2]])
+      .on('brush end', brushed);
 
     context
       .append('g')
@@ -437,37 +171,36 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .call(brush.move, xScale2.range());
 
     function zoomed() {
-      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; // ignore zoom-by-brush
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; 
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
       focus
         .datum<MyData[]>(dataset2)
         .select('.line')
         .attr('d', line);
-      xAxisGroup.call(xAxis); // rescale x
+      xAxisGroup.call(xAxis);
 
-      // brush area
       context
         .select('.brush')
-        .call(() => brush.move, [
+        .call(brush.move, [
           xScale2(d3.event.transform.rescaleX(xScale2).domain()[0]),
           xScale2(d3.event.transform.rescaleX(xScale2).domain()[1])
         ]);
     }
 
     function brushed() {
-      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return; // ignore brush-by-zoom
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
       xScale.domain([
         xScale2.invert(d3.event.selection[0]),
         xScale2.invert(d3.event.selection[1])
       ]);
+
       focus
         .datum<MyData[]>(dataset2)
         .select('.line')
         .attr('d', line);
-      xAxisGroup.call(xAxis); // rescale x
+      xAxisGroup.call(xAxis);
     }
 
-    // add clip path to the svg
     svg
       .append('defs')
       .append('clipPath')
