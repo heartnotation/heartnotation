@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Form, Input, Button, Select, AutoComplete, Row, Col } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
+import axios, { AxiosResponse } from 'axios';
 import 'antd/dist/antd.css';
 
 const { Option } = Select;
@@ -14,6 +15,13 @@ const formItemLayout = {
 const formTailLayout = {
   wrapperCol: { span: 14, offset: 10 }
 };
+
+interface Tag {
+  id: number;
+  label: string;
+}
+
+const t: Tag = { id: 3, label: 'ok' };
 
 interface States {
   organizations: string[];
@@ -35,6 +43,16 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       annotations: [1, 12, 333],
       annotationValidateStatus: ''
     };
+  }
+
+  public componentDidMount = () => {
+    axios
+      .get('localhost:8000/organizations', {
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      })
+      .then((res: AxiosResponse) => {
+        console.log(res.data);
+      });
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
