@@ -18,8 +18,8 @@ const formTailLayout = {
 
 interface Organization {
   id: number;
-  label: string;
-  active: boolean;
+  name: string;
+  is_active: boolean;
 }
 
 interface Tag {
@@ -32,8 +32,7 @@ interface Annotation {
 }
 
 interface States {
-  organizations: string[];
-  organizationsAjax: Organization[];
+  organizations: Organization[];
   organizationsSearch: string[];
   tags: number[];
   tagsAjax: Tag[];
@@ -47,8 +46,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
   constructor(props: FormComponentProps) {
     super(props);
     this.state = {
-      organizations: ['Abcdef', 'ahdec', 'dceff'],
-      organizationsAjax: [],
+      organizations: [],
       organizationsSearch: [],
       tags: [1, 2, 3, 12, 34, 45],
       tagsAjax: [],
@@ -66,6 +64,13 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         return res.data;
       });
 
+    Promise.all([organizationsAjax]).then((allResponse: Organization[][]) => {
+      console.log(allResponse);
+      this.setState({
+        organizations: allResponse[0]
+      });
+    });
+    /*
     const tagsAjax: Promise<Tag[]> = axios
       .get<Tag[]>('/tags')
       .then((res: AxiosResponse<Tag[]>) => {
@@ -76,7 +81,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       .get<Annotation[]>('/annotations')
       .then((res: AxiosResponse<Annotation[]>) => {
         return res.data;
-      });
+      }); 
 
     Promise.all([organizationsAjax, tagsAjax, annotationsAjax]).then(
       (allResponse: [Organization[], Tag[], Annotation[]]) => {
@@ -87,7 +92,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
           annotationsAjax: allResponse[2]
         });
       }
-    );
+    );*/
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -98,7 +103,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     return !isNaN(Number(s));
   }
 
-  public validateId = (value: any, callback: any) => {
+  public validateId = (_: any, value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
       callback('You should write a number');
     }
@@ -109,7 +114,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     const { organizations } = this.state;
     const organizationsSearch = this.filterNoCaseSensitive(
       value,
-      organizations
+      organizations.map((o: Organization) => o.name)
     );
     this.setState({
       organizationsSearch:
@@ -119,9 +124,12 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     });
   }
 
-  public validateOrganization = (rule: any, value: any, callback: any) => {
+  public validateOrganization = (_: any, value: any, callback: any) => {
     const { organizations } = this.state;
-    if (value && !organizations.includes(value)) {
+    if (
+      value &&
+      !organizations.map((o: Organization) => o.name).includes(value)
+    ) {
       callback('This organization doesn\'t exist');
     }
     callback();
@@ -141,7 +149,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     }
   }
 
-  public validateAnnotation = (rule: any, value: any, callback: any) => {
+  public validateAnnotation = (_: any, value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
       callback('You should write a number');
     }
@@ -170,14 +178,21 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
   public handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
+      const { organizations } = this.state;
       if (!err) {
         values.signal_id = parseInt(values.signal_id, 10);
         values.annotation_parent_id = values.annotation_parent_id
           ? parseInt(values.annotation_parent_id, 10)
           : null;
-        values.organization_id = values.organization_id
-          ? values.organization_id
-          : null;
+        if (values.organization_id) {
+          const findOrgaId = organizations.find(
+            (o: Organization) => o.name === values.organization_id
+          );
+          values.organization_id =
+            findOrgaId === undefined ? null : findOrgaId.id;
+        } else {
+          values.organization_id = null;
+        }
         console.log('Received values of form: ', values); // à envoyer vers la route du back
       }
     });
