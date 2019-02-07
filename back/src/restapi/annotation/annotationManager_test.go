@@ -1,12 +1,7 @@
 package annotation
 
 import (
-	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func Sum(x int, y int) int {
@@ -17,7 +12,6 @@ func Sum(x int, y int) int {
 // 	http.HandleFunc("/annotation", getAnnotation)
 // 	http.ListenAndServe(":3000", nil)
 // }
-
 
 type API struct {
 	Client  *http.Client
@@ -34,7 +28,6 @@ type API struct {
 // 	// handling error and doing stuff with body that needs to be unit tested
 // 	return body, err
 // }
-
 
 // func TestDoStuffWithTestServer(t *testing.T) {
 // 	// Start a local HTTP server
@@ -55,24 +48,24 @@ type API struct {
 // 	// equals(t, []byte("OK"), body)
 // }
 
-func TestGetAnnotation(t *testing.T) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		// here we write our expected response, in this case, we return a
-		// JSON string which is typical when dealing with REST APIs
-		io.WriteString(w, "{ \"status\": \"expected service response\"}")
-	}
-	//fmt.Print("here")
-	req := httptest.NewRequest("GET", "localhost:3000/annotation?id=5", nil)
-	w := httptest.NewRecorder()
-	handler(w, req)
+// func TestGetAnnotation(t *testing.T) {
+// 	handler := func(w http.ResponseWriter, r *http.Request) {
+// 		// here we write our expected response, in this case, we return a
+// 		// JSON string which is typical when dealing with REST APIs
+// 		io.WriteString(w, "{ \"status\": \"expected service response\"}")
+// 	}
+// 	//fmt.Print("here")
+// 	req := httptest.NewRequest("GET", "localhost:3000/annotation?id=5", nil)
+// 	w := httptest.NewRecorder()
+// 	handler(w, req)
 
-	resp := w.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(resp.StatusCode)
-	fmt.Println(resp.Header.Get("Content-Type"))
-	fmt.Println(string(body))
-	// total := Sum(5, 5)
-	// if total != 10 {
-	// 	t.Errorf("Sum was incorrect, got: %d, want: %d.", total, 10)
-	// }
-}
+// 	resp := w.Result()
+// 	body, _ := ioutil.ReadAll(resp.Body)
+// 	fmt.Println(resp.StatusCode)
+// 	fmt.Println(resp.Header.Get("Content-Type"))
+// 	fmt.Println(string(body))
+// 	// total := Sum(5, 5)
+// 	// if total != 10 {
+// 	// 	t.Errorf("Sum was incorrect, got: %d, want: %d.", total, 10)
+// 	// }
+// }
