@@ -4,16 +4,53 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	s "restapi/signal"
+	u "restapi/utils"
 	"time"
 
-	s "restapi/signal"
-
-	// import pq driver
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-
-	u "restapi/utils"
 )
+
+func checkErrorCode(err error, w http.ResponseWriter) {
+	switch err {
+	case gorm.ErrRecordNotFound:
+		http.Error(w, err.Error(), 204)
+	case gorm.ErrInvalidSQL:
+		http.Error(w, err.Error(), 400)
+	case gorm.ErrInvalidTransaction:
+	case gorm.ErrCantStartTransaction:
+	case gorm.ErrUnaddressable:
+		http.Error(w, err.Error(), 500)
+	default:
+		return
+	}
+}
+
+func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, http.StatusText(405), 405)
+		return
+	}
+	db := u.GetConnection()
+	var annotation Annotation
+	q := r.URL.Query()
+	fmt.Println(q)
+	fmt.Println(len(q))
+	json.NewDecoder(r.Body).Decode(&annotation)
+	if len(q) != 1 {
+		log.Print("request with too much arguments")
+		return
+	}
+	if len(q["id"]) != 1 {
+		log.Print("malformated id")
+		return
+	}
+	checkErrorCode(db.First(&annotation, q["id"][0]).Error, w)
+	checkErrorCode(db.Delete(&annotation).Error, w)
+}
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {

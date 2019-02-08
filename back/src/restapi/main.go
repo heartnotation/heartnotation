@@ -20,8 +20,7 @@ func main() {
 	// Annotations
 	router.HandleFunc("/annotations", a.FindAnnotations).Methods("GET")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
-
-	// Users
+	router.HandleFunc("/annotations", a.DeleteAnnotation).Methods("DELETE")
 	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
 
 	// Organizations
