@@ -114,6 +114,30 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 
+// ModifyAnnotation modifies an annotation
+func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
+		http.Error(w, http.StatusText(405), 405)
+		return
+	}
+
+	db := u.GetConnection()
+
+	var annotation Annotation
+
+	json.NewDecoder(r.Body).Decode(&annotation)
+	date := time.Now()
+	annotation.EditDate = date
+	annotation.IsActive = true
+
+	err := db.Save(&annotation).Error
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	u.Respond(w, annotation)
+}
+
 func formatToJSONFromAPI(api string) ([]byte, error) {
 	httpResponse, err := http.Get(api) //A parametrer
 	if err != nil {
