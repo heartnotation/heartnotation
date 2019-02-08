@@ -4,9 +4,9 @@ WORKDIR /go/src
 COPY ./src/restapi /go/src/restapi
 
 WORKDIR /go/src/restapi
-RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
-    dep ensure -vendor-only \
-    go build
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+RUN dep ensure -vendor-only
+RUN go build
 
 EXPOSE 8000
 
