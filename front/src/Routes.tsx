@@ -7,7 +7,6 @@ import {
 import HomePage from './pages/Home';
 import { StaticContext } from 'react-router';
 import Header from './fragments/Header';
-import SignalAnnotation from './pages/SignalAnnotation';
 
 export interface AppRoute {
   path: string;
@@ -23,15 +22,14 @@ export interface AppRoute {
 
 interface Props {
   routes: AppRoute[];
+  hiddenRoutes: AppRoute[];
 }
 
 const AppRouter = (props: Props) => (
   <Router>
     <div>
       <Header routes={props.routes} />
-      <Route path='/' exact={true} component={HomePage} />
-      <Route path='/annotations/:id' component={SignalAnnotation} />
-      {props.routes.map((r, index) => (
+      {[...props.hiddenRoutes, ...props.routes].map((r, index) => (
         <Route
           key={index}
           path={r.path}
