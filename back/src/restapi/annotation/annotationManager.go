@@ -34,9 +34,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	annotation.IsActive = true
 
 	if *(annotation.OrganizationID) != 0 {
-		annotation.StatusID = 2
+		*annotation.StatusID = 2
 	} else {
-		annotation.StatusID = 1
+		*annotation.StatusID = 1
 	}
 	err := db.Preload("Organization").Create(&annotation).Error
 	if err != nil {
@@ -62,7 +62,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Organization").Find(&annotations).Error
+	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -74,6 +74,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	for i := range *annotations {
 		arr := *annotations
 		arr[i].OrganizationID = nil
+		arr[i].StatusID = nil
 	}
 
 	u.Respond(w, annotations)
