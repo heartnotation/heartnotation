@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-
+	"github.com/gorilla/mux"
 	s "restapi/signal"
 
 	// import pq driver
@@ -31,17 +31,11 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	date := time.Now()
 	annotation.CreationDate = date
 	annotation.EditDate = date
-	annotation.IsActive = true
 
 	if *(annotation.OrganizationID) != 0 {
 		*annotation.StatusID = 2
 	} else {
 		*annotation.StatusID = 1
-	}
-	err := db.Preload("Organization").Create(&annotation).Error
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
 	}
 
 	err := db.Preload("Organization").Create(&annotation).Error
@@ -76,13 +70,13 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 // Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
-	annID := r.FormValue("id")
-	err := u.GetConnection().Preload("Organization").Where("is_active = ?", true).First(&annotation, annID).Error
+	vars := mux.Vars(r)
+	err := u.GetConnection().Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
 	}
-	u.Respond(w, annotations)
+	u.Respond(w, annotation)
 }
 
 func formatToJSONFromAPI(api string) ([]byte, error) {
