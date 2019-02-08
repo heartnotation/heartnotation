@@ -1,7 +1,9 @@
 import React from 'react';
 import Enzyme, { mount, ReactWrapper } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
-import Dashboard, { Annotation } from '../pages/Dashboard';
+import Dashboard from '../pages/Dashboard';
+import Router from '../Routes';
+import { Annotation } from '../utils';
 import { Table, Input } from 'antd';
 import mock from './mocks/annotations.json';
 
@@ -15,7 +17,16 @@ describe('Dashboard page', () => {
   let mountedPage: ReactWrapper;
 
   beforeEach(() => {
-    mountedPage = mount(<Dashboard getAnnotations={mockPromise} />);
+    mountedPage = mount(
+      <Router
+        defaultRoute={{
+          path: '/',
+          component: () => <Dashboard getAnnotations={mockPromise} />,
+          title: 'Dashboard'
+        }}
+        routes={[]}
+      />
+    ).find(Dashboard);
   });
 
   it('renders', () => {

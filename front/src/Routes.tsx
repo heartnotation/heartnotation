@@ -20,18 +20,23 @@ export interface AppRoute {
 }
 
 interface Props {
+  defaultRoute: AppRoute;
   routes: AppRoute[];
   hiddenRoutes?: AppRoute[];
 }
 
 export default (props: Props) => {
-  const { routes, hiddenRoutes } = props;
+  const { routes, hiddenRoutes, defaultRoute } = props;
   const hiddens = hiddenRoutes ? hiddenRoutes : [];
   return (
     <Router>
       <div>
-        <Header routes={routes} />
-        {[...hiddens, ...routes].map((r, index) => (
+        <Header
+          defaultRoute={defaultRoute}
+          routes={routes}
+          hiddenRoutes={hiddens}
+        />
+        {[defaultRoute, ...hiddens, ...routes].map((r, index) => (
           <Route
             key={index}
             path={r.path}

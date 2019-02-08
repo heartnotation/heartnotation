@@ -11,9 +11,8 @@ import {
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
-import axios, { AxiosResponse } from 'axios';
-import { API_URL } from '../utils';
-import { RouteComponentProps } from 'react-router';
+import { RouteComponentProps, withRouter } from 'react-router';
+import { Organization, Tag, Annotation } from '../utils';
 
 const { Option } = Select;
 
@@ -25,22 +24,6 @@ const formItemLayout = {
 const formTailLayout = {
   wrapperCol: { span: 14, offset: 10 }
 };
-
-interface Organization {
-  id: number;
-  name: string;
-  is_active: boolean;
-}
-
-interface Tag {
-  id: number;
-  name: string;
-  is_active: boolean;
-}
-
-interface Annotation {
-  id: number;
-}
 
 interface States {
   organizations: Organization[];
@@ -54,7 +37,13 @@ interface States {
   error: string;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {}
+interface Props extends FormComponentProps, RouteComponentProps {
+  getTags: () => Promise<Tag[]>;
+  getOrganizations: () => Promise<Organization[]>;
+  getAnnotations: () => Promise<Annotation[]>;
+  checkSignal: (id: number) => Promise<any>;
+  sendAnnotation: (datas: Annotation) => Promise<Annotation>;
+}
 
 class CreateAnnotationForm extends Component<Props, States> {
   constructor(props: Props) {
@@ -73,25 +62,8 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public componentDidMount = () => {
-    const organizationsAjax: Promise<Organization[]> = axios
-      .get<Organization[]>(`${API_URL}/organizations`)
-      .then((res: AxiosResponse<Organization[]>) => {
-        return res.data;
-      });
-
-    const tagsAjax: Promise<Tag[]> = axios
-      .get<Tag[]>(`${API_URL}/tags`)
-      .then((res: AxiosResponse<Tag[]>) => {
-        return res.data;
-      });
-
-    const annotationsAjax: Promise<Annotation[]> = axios
-      .get<Annotation[]>('/annotations')
-      .then((res: AxiosResponse<Annotation[]>) => {
-        return res.data;
-      });
-
-    Promise.all([tagsAjax, organizationsAjax, annotationsAjax]).then(
+    const { getTags, getOrganizations, getAnnotations } = this.props;
+    Promise.all([getTags(), getOrganizations(), getAnnotations()]).then(
       responses => {
         this.setState({
           tags: responses[0],
@@ -112,17 +84,17 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateId = (_: any, value: any, callback: any) => {
-    if (value && !this.isStringNumber(value)) {
-      callback('You should write a number');
-    } else {
-      axios
-        .get(`${API_URL}/signal/${value}`)
+    if (!isNaN(parseInt(value, 10))) {
+      this.props
+        .checkSignal(value)
         .then(() => {
           callback();
         })
         .catch(() => {
           callback(`Signal n°${value} not found`);
         });
+    } else {
+      callback('You should write numbers');
     }
   }
 
@@ -234,8 +206,8 @@ class CreateAnnotationForm extends Component<Props, States> {
           values.organization_id = null;
         }
         this.setState({ loading: true, error: '' });
-        axios
-          .post(`${API_URL}/annotations`, values)
+        this.props
+          .sendAnnotation(values)
           .then(() => {
             this.props.history.push('/');
           })
@@ -369,4 +341,4 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 }
 
-export default Form.create()(CreateAnnotationForm);
+export default Form.create()(withRouter(CreateAnnotationForm));
