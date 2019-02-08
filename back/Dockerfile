@@ -1,11 +1,13 @@
 FROM golang:1.11.4
 
-WORKDIR /go/src/app
-COPY ./src/hello /go/src/app
+WORKDIR /go/src
+COPY ./src/restapi /go/src/restapi
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+WORKDIR /go/src/restapi
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+RUN dep ensure -vendor-only
+RUN go build
 
-EXPOSE 8080
+EXPOSE 8000
 
-CMD ["app"]
+CMD ["./restapi"]

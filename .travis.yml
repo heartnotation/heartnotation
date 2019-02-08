@@ -5,23 +5,28 @@ env:
 
 jobs:
   include:
-
     # Testing the API
     - stage: test
       name: Backend Tests
       language: go
       go:
         - "1.11.4"
-      before_script:
-        - cd back
+      before_install:
+        - export GOPATH="${TRAVIS_BUILD_DIR}/back"
+        - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin
+        - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH"
+        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        - cd back/src/restapi
+      install:
+        - dep ensure -vendor-only
       script:
         - go test -v -cover ./...
 
     # Deploying the API
     - stage: deploy
       name: Build and deploy the REST API to DockerHub
-      language: go
-      go: "1.11.4"
+      if: branch = master AND tag IS blank
+      language: generic
       services:
         - docker
       before_script:
@@ -47,13 +52,12 @@ jobs:
         - npm install
       script:
         - npm test
-    
+
     # Deploying the web application
     - stage: deploy
       name: Build and deploy the web application to DockerHub
-      language: node_js
-      node_js:
-        - 11
+      if: branch = master AND tag IS blank
+      language: generic
       services:
         - docker
       before_script:
@@ -63,12 +67,12 @@ jobs:
       deploy:
         provider: script
         script: bash .travis/deploy.sh
-      
+
     # Deploying the database
     - stage: deploy
       name: Deploying database to DockerHub
-      language: go
-      go: "1.11.4"
+      if: branch = master AND tag IS blank
+      language: generic
       services:
         - docker
       before_script:
@@ -81,11 +85,11 @@ jobs:
 
     - stage: release
       name: Release source code to GitHub
-      language: go
-      go: "1.11.4"
+      if: branch = master AND tag IS blank
+      language: generic
       deploy:
         provider: releases
-        api_key: 
+        api_key:
           secure: $TOKEN
         skip_cleanup: true
         name: "Heartnotation.$(date +'%d.%m.%Y %T')"
