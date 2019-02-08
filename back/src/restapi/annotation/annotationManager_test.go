@@ -4,10 +4,48 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"restapi/utils"
 	"strings"
 	"testing"
 )
 
+func TestDeleteAnnotationMethod(t *testing.T) {
+	utils.CheckMethod("DELETE", "/annotations/", DeleteAnnotation, t)
+}
+
+func TestDeleteAnnotationPath(t *testing.T) {
+	utils.CheckPath("DELETE", "/annotations/", DeleteAnnotation, t)
+}
+
+func TestDeleteAnnotationPayload(t *testing.T) {
+	utils.CheckPayload("DELETE", "/annotations/", DeleteAnnotation, "id", utils.CheckPayloadInt, t)
+}
+
+func TestGetAnnotationByIdMethod(t *testing.T) {
+	utils.CheckMethod("GET", "/annotations/", FindAnnotationByID, t)
+}
+
+func TestGetAnnotationByIdPath(t *testing.T) {
+	utils.CheckPath("GET", "/annotations/", FindAnnotationByID, t)
+}
+
+func TestGetAnnotationByIdPayload(t *testing.T) {
+	utils.CheckPayload("GET", "/annotations/", FindAnnotationByID, "id", utils.CheckPayloadInt, t)
+}
+
+func TestFindAnnotationsContentIDNotExists(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/annotations/1", nil)
+	resp, _ := http.Get("http://localhost:8000/annotations/1")
+	res := httptest.NewRecorder()
+	ioutil.ReadAll(resp.Body)
+	FindAnnotationByID(res, req)
+	t.Log(res.Body.String())
+	if strings.TrimSpace(res.Body.String()) != ` ` {
+		t.Error("Expected content", ` `, "but received", res.Body.String())
+	}
+}
+
+/*
 func TestFindAnnotationsCode200(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/annotations", nil)
 	res := httptest.NewRecorder()
@@ -43,22 +81,31 @@ func TestFindAnnotationsContentIDExists(t *testing.T) {
 	res.Body.Reset()
 }*/
 
+/*
+func TestFindAnnotationByIdUrl(t *testing.T) {
+	resp := utils.BodyHTTPRequestURL(FindAnnotationByID, "GET", "/annotations/", map[string]string{"id": "2"})
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(resp.StatusCode)
+	fmt.Println(resp.Header.Get("Content-Type"))
+	fmt.Println(string(body))
+}
+
 func TestFindAnnotationsContentIDExists2(t *testing.T) {
-
-	req, _ := http.NewRequest("GET", "/annotations/2", nil)
+	req, _ := http.NewRequest("GET", "/annotations/", nil)
+	req = mux.SetURLVars(req, map[string]string{"id": "2"})
 	res := httptest.NewRecorder()
-
 	FindAnnotationByID(res, req)
-
-	t.Log(res.Body.String())
+	resp := res.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(resp.StatusCode)
+	fmt.Println(resp.Header.Get("Content-Type"))
+	fmt.Println(string(body))
 }
 
 func TestFindAnnotationsContentIDNotExists(t *testing.T) {
-	//req, _ := http.NewRequest("GET", "/annotations/0", nil)
-	resp, _ := http.Get("http://localhost:8000/annotations/0")
+	//req, _ := http.NewRequest("GET", "/annotations/1", nil)
+	resp, _ := http.Get("http://localhost:8000/annotations/1")
 	//res := httptest.NewRecorder()
-
-	defer resp.Body.Close()
 	contents, err := ioutil.ReadAll(resp.Body)
 	if err == nil {
 		t.Log(string(contents))
@@ -69,5 +116,6 @@ func TestFindAnnotationsContentIDNotExists(t *testing.T) {
 	/*
 		if strings.TrimSpace(res.Body.String()) != ` ` {
 			t.Error("Expected content", ` `, "but received", res.Body.String())
-		}*/
+		}
 }
+*/
