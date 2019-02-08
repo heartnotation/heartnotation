@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"time"
-	"github.com/gorilla/mux"
 	s "restapi/signal"
+	"time"
+
+	"github.com/gorilla/mux"
 
 	// import pq driver
 	_ "github.com/lib/pq"
@@ -65,17 +66,19 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-
-
 // Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
 	}
+
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
+
 	u.Respond(w, annotation)
 }
 
