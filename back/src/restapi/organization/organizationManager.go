@@ -9,7 +9,7 @@ import (
 	u "restapi/utils"
 )
 
-// GetOrganizations receive request to get all annotations in database
+// GetOrganizations receive request to get all organizations in database
 func GetOrganizations(w http.ResponseWriter, r *http.Request) {
 	organization := &[]Organization{}
 	err := u.GetConnection().Find(&organization).Error
