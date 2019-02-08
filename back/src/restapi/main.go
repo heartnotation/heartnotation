@@ -18,6 +18,7 @@ func main() {
 	router := mux.NewRouter()
 
 	// Annotations
+	router.HandleFunc("/annotations/{id}", a.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}
 	router.HandleFunc("/annotations", a.FindAnnotations).Methods("GET")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/annotations", a.DeleteAnnotation).Methods("DELETE")
@@ -29,5 +30,5 @@ func main() {
 	// Tags
 	router.HandleFunc("/tags", t.GetTags).Methods("GET")
 
-	http.ListenAndServe(":8000", router)
+	http.ListenAndServe("0.0.0.0:8000", router)
 }
