@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -67,13 +68,15 @@ func CheckPayload(m string, r string, fp func(http.ResponseWriter, *http.Request
 }
 
 // CreateTest test the creation
-func CreateTest() {
-
+func CreateTest(r string) {
+	//http.PostForm(r, url.Values{"mail": "rom@gmail.com", "role_id": 2, "organizations": []int{1, 2}, "is_active": true})
 }
 
 // ReadTest test the selection
-func ReadTest() {
-
+func ReadTest(r string) string {
+	resp, _ := http.Get(r)
+	contents, _ := ioutil.ReadAll(resp.Body)
+	return string(contents)
 }
 
 // UpdateTest test the update
