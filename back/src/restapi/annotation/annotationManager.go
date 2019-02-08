@@ -31,11 +31,17 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	date := time.Now()
 	annotation.CreationDate = date
 	annotation.EditDate = date
+	annotation.IsActive = true
 
-	if annotation.Organization.ID != 0 {
-		annotation.ProcessID = 2
+	if *(annotation.OrganizationID) != 0 {
+		annotation.StatusID = 2
 	} else {
-		annotation.ProcessID = 1
+		annotation.StatusID = 1
+	}
+	err := db.Preload("Organization").Create(&annotation).Error
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
 	}
 
 	err := db.Preload("Organization").Create(&annotation).Error
@@ -69,7 +75,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 404)
 		return
 	}
-	u.Respond(w, annotation)
+	u.Respond(w, annotations)
 }
 
 func formatToJSONFromAPI(api string) ([]byte, error) {

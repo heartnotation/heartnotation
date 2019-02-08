@@ -3,6 +3,12 @@ env:
     - REPO="heartnotation"
     - TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
 
+branches:
+  only:
+    - master
+    - develop
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 jobs:
   include:
     # Testing the API
@@ -26,8 +32,7 @@ jobs:
     - stage: deploy
       name: Build and deploy the REST API to DockerHub
       if: branch = master AND tag IS blank
-      language: go
-      go: "1.11.4"
+      language: generic
       services:
         - docker
       before_script:
@@ -58,9 +63,7 @@ jobs:
     - stage: deploy
       name: Build and deploy the web application to DockerHub
       if: branch = master AND tag IS blank
-      language: node_js
-      node_js:
-        - 11
+      language: generic
       services:
         - docker
       before_script:
@@ -75,8 +78,7 @@ jobs:
     - stage: deploy
       name: Deploying database to DockerHub
       if: branch = master AND tag IS blank
-      language: go
-      go: "1.11.4"
+      language: generic
       services:
         - docker
       before_script:
@@ -90,8 +92,7 @@ jobs:
     - stage: release
       name: Release source code to GitHub
       if: branch = master AND tag IS blank
-      language: go
-      go: "1.11.4"
+      language: generic
       deploy:
         provider: releases
         api_key:
