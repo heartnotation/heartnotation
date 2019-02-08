@@ -36,4 +36,7 @@
 #Dependencies vendor ignore
 /back/src/restapi/vendor/
 
+# Ignore executable files
+/back/src/restapi/restapi
+
 # End of https://www.gitignore.io/api/go
