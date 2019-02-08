@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	s "restapi/signal"
 	"time"
 
-	s "restapi/signal"
+	"github.com/gorilla/mux"
 
 	// import pq driver
 	_ "github.com/lib/pq"
@@ -31,31 +32,19 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	date := time.Now()
 	annotation.CreationDate = date
 	annotation.EditDate = date
-	annotation.IsActive = true
 
 	if *(annotation.OrganizationID) != 0 {
 		*annotation.StatusID = 2
 	} else {
 		*annotation.StatusID = 1
 	}
+
 	err := db.Preload("Organization").Create(&annotation).Error
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), 403)
 		return
 	}
-
-	a := &Annotation{}
-	e := db.Preload("Organization").Preload("Parent").Find(&a).Error
-	if e != nil {
-		http.Error(w, e.Error(), 503)
-		return
-	}
-	a.OrganizationID = nil
-	if a.Parent != nil {
-		a.Parent.OrganizationID = nil
-		a.ParentID = nil
-	}
-	u.Respond(w, a)
+	u.Respond(w, annotation)
 
 }
 
@@ -65,9 +54,6 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
@@ -80,41 +66,22 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-/*
-// Get annotation by ID using GET Request
-func getAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
-	annID := r.FormValue("id")
-	if annID == "" {
-		http.Error(w, http.StatusText(400), 400)
-		return
-	}
-	db := verifyDBConnection()
-	row := db.QueryRow("SELECT * FROM annotation where annotation_id = $1", annID)
+// Find annotation by ID using GET Request
+func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
-	err := row.Scan(&annotation.ID, &annotation.Parent,
-		&annotation.Organization, &annotation.ProcessID, &annotation.SignalID,
-		&annotation.Comment, &annotation.CreatedAt, &annotation.UpdatedAt,
-		&annotation.is_active)
-	if err == sql.ErrNoRows {
-		http.NotFound(w, r)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
+	vars := mux.Vars(r)
+	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
 		return
 	}
 
-	// annot, err := json.Marshal(annotation)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
 
-	// fmt.Fprintf(w, "%s\n", string(annot))
+	u.Respond(w, annotation)
 }
-*/
+
 func formatToJSONFromAPI(api string) ([]byte, error) {
 	httpResponse, err := http.Get(api) //A parametrer
 	if err != nil {

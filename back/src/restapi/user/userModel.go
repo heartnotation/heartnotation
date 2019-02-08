@@ -17,7 +17,7 @@ func (Profile) TableName() string {
 // Role represent a role in database
 type Role struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
-	Title    string `json:"name"`
+	Name     string `json:"name"`
 	IsActive bool   `json:"is_active"`
 }
 
