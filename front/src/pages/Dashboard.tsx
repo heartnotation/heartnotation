@@ -3,7 +3,7 @@ import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import axios, { AxiosResponse } from 'axios';
-
+import { API_URL } from '../utils';
 interface Organization {
   id: number;
   name: string;
@@ -19,7 +19,7 @@ interface Status {
 interface Annotation {
   id: number;
   name: string;
-  organization:Organization;
+  organization: Organization;
   status: Status;
   signal_id: number;
   creation_date: Date;
@@ -42,13 +42,13 @@ class Dashboard extends Component {
 
   public componentDidMount = () => {
     const annotationsAjax: Promise<Annotation[]> = axios
-      .get<Annotation[]>('/annotations')
+      .get<Annotation[]>(`${API_URL}/annotations`)
       .then((res: AxiosResponse<Annotation[]>) => {
         const data = res.data;
         /* Convert timestamp string to date objects */
-        data.forEach((a:Annotation) => {
+        data.forEach((a: Annotation) => {
           a.creation_date = new Date(a.creation_date);
-          if(a.edit_date) {
+          if (a.edit_date) {
             a.edit_date = new Date(a.edit_date);
           }
         });
@@ -59,7 +59,7 @@ class Dashboard extends Component {
       this.setState({
         initialAnnotations: allResponse[0],
         currentAnnotations: allResponse[0].slice()
-      });   
+      });
     });
   }
 
@@ -140,7 +140,7 @@ class Dashboard extends Component {
       title: 'Status',
       dataIndex: 'status.name',
       filters: this.state.initialAnnotations
-        .map((a:Annotation) => a.status.name)
+        .map((a: Annotation) => a.status.name)
         .filter((s, i, array) => array.indexOf(s) === i)
         .map(s => ({ text: s, value: s })),
       onFilter: (value: string, record: Annotation) =>
@@ -177,67 +177,66 @@ class Dashboard extends Component {
 
   public handleSearch = () => {
     this.state.currentAnnotations = this.state.initialAnnotations.slice();
-    const filteredData = this.state.currentAnnotations.filter((record:Annotation) => {
-      if (this.state.searches.get('id')) {
-        if (
-          !record.id
-            .toString()
-            .startsWith(this.state.searches.get('id'))
-        ) {
-          return false;
+    const filteredData = this.state.currentAnnotations.filter(
+      (record: Annotation) => {
+        if (this.state.searches.get('id')) {
+          if (!record.id.toString().startsWith(this.state.searches.get('id'))) {
+            return false;
+          }
         }
+        if (this.state.searches.get('signal_id')) {
+          if (
+            !record.signal_id
+              .toString()
+              .startsWith(this.state.searches.get('signal_id'))
+          ) {
+            return false;
+          }
+        }
+        if (this.state.searches.get('name')) {
+          if (
+            !record.name.toString().includes(this.state.searches.get('name'))
+          ) {
+            return false;
+          }
+        }
+        if (record.creation_date && this.state.searches.get('creation_date')) {
+          if (
+            !record.creation_date
+              .toLocaleDateString('fr-FR')
+              .includes(this.state.searches.get('creation_date'))
+          ) {
+            return false;
+          }
+        }
+        if (this.state.searches.get('edit_date')) {
+          if (
+            !record.edit_date &&
+            this.state.searches.get('edit_date') !== '-'
+          ) {
+            return false;
+          }
+          if (
+            record.edit_date &&
+            !record.edit_date
+              .toLocaleDateString('fr-FR')
+              .includes(this.state.searches.get('edit_date'))
+          ) {
+            return false;
+          }
+        }
+        if (this.state.searches.get('status.name')) {
+          if (
+            !record.status.name
+              .toString()
+              .startsWith(this.state.searches.get('status.name'))
+          ) {
+            return false;
+          }
+        }
+        return true;
       }
-      if (this.state.searches.get('signal_id')) {
-        if (
-          !record.signal_id
-            .toString()
-            .startsWith(this.state.searches.get('signal_id'))
-        ) {
-          return false;
-        }
-      }
-      if (this.state.searches.get('name')) {
-        if (
-          !record.name
-            .toString()
-            .includes(this.state.searches.get('name'))
-        ) {
-          return false;
-        }
-      }
-      if (record.creation_date && this.state.searches.get('creation_date')) {
-        if (
-          !record.creation_date
-            .toLocaleDateString('fr-FR')
-            .includes(this.state.searches.get('creation_date'))
-        ) {
-          return false;
-        }
-      }
-      if (this.state.searches.get('edit_date')) {
-        if (!record.edit_date && this.state.searches.get('edit_date') !== '-') {
-          return false;
-        }
-        if (
-          record.edit_date &&
-          !record.edit_date
-            .toLocaleDateString('fr-FR')
-            .includes(this.state.searches.get('edit_date'))
-        ) {
-          return false;
-        }
-      }
-      if (this.state.searches.get('status.name')) {
-        if (
-          !record.status.name
-            .toString()
-            .startsWith(this.state.searches.get('status.name'))
-        ) {
-          return false;
-        }
-      }
-      return true;
-    });
+    );
 
     this.setState({
       currentAnnotations: filteredData
