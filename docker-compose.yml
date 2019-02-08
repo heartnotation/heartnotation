@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   server:
     build: ./back/
@@ -18,5 +18,6 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./db/datas:/var/lib/postgresql/data
-
+      - db-datas:/var/lib/postgresql/data
+volumes:
+  db-datas:
