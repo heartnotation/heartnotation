@@ -4,17 +4,49 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	s "restapi/signal"
+	u "restapi/utils"
 	"time"
 
 	"github.com/gorilla/mux"
-
-	// import pq driver
+	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-
-	u "restapi/utils"
 )
+
+func checkErrorCode(err error, w http.ResponseWriter) {
+	switch err {
+	case gorm.ErrRecordNotFound:
+		http.Error(w, err.Error(), 204)
+	case gorm.ErrInvalidSQL:
+		http.Error(w, err.Error(), 400)
+	case gorm.ErrInvalidTransaction:
+	case gorm.ErrCantStartTransaction:
+	case gorm.ErrUnaddressable:
+		http.Error(w, err.Error(), 500)
+	default:
+		return
+	}
+}
+
+// DeleteAnnotation remove an annotation
+func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, http.StatusText(405), 405)
+		return
+	}
+	db := u.GetConnection()
+	var annotation Annotation
+	v := mux.Vars(r)
+	if len(v) != 1 {
+		log.Print("unvalidate arguments")
+		return
+	}
+	checkErrorCode(db.First(&annotation, v["id"]).Error, w)
+	annotation.IsActive = false
+	checkErrorCode(db.Save(&annotation).Error, w)
+}
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
