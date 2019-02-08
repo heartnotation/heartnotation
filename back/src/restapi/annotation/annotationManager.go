@@ -10,6 +10,7 @@ import (
 	u "restapi/utils"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
@@ -29,6 +30,7 @@ func checkErrorCode(err error, w http.ResponseWriter) {
 	}
 }
 
+// DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, http.StatusText(405), 405)
@@ -36,20 +38,14 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	db := u.GetConnection()
 	var annotation Annotation
-	q := r.URL.Query()
-	fmt.Println(q)
-	fmt.Println(len(q))
-	json.NewDecoder(r.Body).Decode(&annotation)
-	if len(q) != 1 {
-		log.Print("request with too much arguments")
+	v := mux.Vars(r)
+	if len(v) != 1 {
+		log.Print("unvalidate arguments")
 		return
 	}
-	if len(q["id"]) != 1 {
-		log.Print("malformated id")
-		return
-	}
-	checkErrorCode(db.First(&annotation, q["id"][0]).Error, w)
-	checkErrorCode(db.Delete(&annotation).Error, w)
+	checkErrorCode(db.First(&annotation, v["id"]).Error, w)
+	annotation.IsActive = false
+	checkErrorCode(db.Save(&annotation).Error, w)
 }
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation

@@ -21,7 +21,7 @@ func main() {
 	router.HandleFunc("/annotations/{id}", a.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}
 	router.HandleFunc("/annotations", a.FindAnnotations).Methods("GET")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
-	router.HandleFunc("/annotations", a.DeleteAnnotation).Methods("DELETE")
+	router.HandleFunc("/annotations/{id}", a.DeleteAnnotation).Methods("DELETE")
 	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
 
 	// Organizations
