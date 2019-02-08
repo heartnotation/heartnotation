@@ -70,6 +70,12 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(500), 500)
 		return
 	}
+
+	for i := range *annotations {
+		arr := *annotations
+		arr[i].OrganizationID = nil
+	}
+
 	u.Respond(w, annotations)
 }
 
