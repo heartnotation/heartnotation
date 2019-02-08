@@ -3,6 +3,7 @@ import { Form, Input, Button, Select, AutoComplete, Row, Col } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import axios, { AxiosResponse } from 'axios';
+import { API_URL } from '../utils';
 import 'antd/dist/antd.css';
 
 const { Option } = Select;
@@ -59,7 +60,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
 
   public componentDidMount = () => {
     const organizationsAjax: Promise<Organization[]> = axios
-      .get<Organization[]>('/organizations')
+      .get<Organization[]>(`${API_URL}/organizations`)
       .then((res: AxiosResponse<Organization[]>) => {
         return res.data;
       });
