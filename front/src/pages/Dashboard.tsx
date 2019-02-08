@@ -51,7 +51,7 @@ class Dashboard extends Component {
           if(a.edit_date) {
             a.edit_date = new Date(a.edit_date);
           }
-        })
+        });
         return data;
       });
 
