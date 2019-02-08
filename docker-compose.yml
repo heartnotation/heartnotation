@@ -8,7 +8,11 @@ services:
     depends_on:
       - database
   client:
-    build: ./front/
+    build:
+      context: ./front/
+      args:
+        api: "${URL}"
+    env_file: ./.env
     ports:
       - 80:80
   database:

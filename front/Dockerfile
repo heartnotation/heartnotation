@@ -8,6 +8,9 @@ COPY package*.json /app/
 RUN npm install
 COPY ./ /app/
 
+ARG api=""
+ENV REACT_APP_API=${api}
+
 RUN npm run build
 
 # Stage 1 : "deploy"

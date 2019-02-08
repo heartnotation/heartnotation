@@ -30,5 +30,5 @@ func main() {
 	// Tags
 	router.HandleFunc("/tags", t.GetTags).Methods("GET")
 
-	http.ListenAndServe(":8000", router)
+	http.ListenAndServe("0.0.0.0:8000", router)
 }
