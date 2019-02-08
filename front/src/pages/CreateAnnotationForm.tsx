@@ -96,7 +96,8 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
-    return items.filter(i => i.toLowerCase().startsWith(value));
+    const v = value.toLowerCase();
+    return items.filter(i => i.toLowerCase().startsWith(v));
   }
 
   private isStringNumber = (s: string) => {
