@@ -23,13 +23,16 @@ func main() {
 	router.HandleFunc("/annotations", a.ModifyAnnotation).Methods("PUT")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/annotations/{id}", a.DeleteAnnotation).Methods("DELETE")
-	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
 
 	// Organizations
 	router.HandleFunc("/organizations", o.GetOrganizations).Methods("GET")
 
 	// Tags
 	router.HandleFunc("/tags", t.GetTags).Methods("GET")
+
+	// Users
+	router.HandleFunc("/users", u.CreateUser).Methods("POST")
+	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
 
 	http.ListenAndServe("0.0.0.0:8000", router)
 }
