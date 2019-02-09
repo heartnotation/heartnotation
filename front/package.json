@@ -1,7 +1,28 @@
 {
   "name": "front",
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!<rootDir>/node_modules/",
+      "!<rootDir>/src/index.tsx",
+      "!<rootDir>/src/serviceWorker.ts",
+      "!<rootDir>/src/pages/SignalAnnotation.tsx"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    },
+    "coverageReporters": [
+      "text"
+    ]
+  },
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8000",
   "dependencies": {
     "@types/d3": "^5.7.0",
     "@types/enzyme": "^3.1.16",
@@ -13,6 +34,7 @@
     "@types/react-router-dom": "^4.3.1",
     "antd": "^3.13.1",
     "axios": "^0.18.0",
+    "axios-mock-adapter": "^1.16.0",
     "babel-plugin-import": "^1.11.0",
     "customize-cra": "^0.2.11",
     "d3": "^5.8.0",

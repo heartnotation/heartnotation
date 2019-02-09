@@ -66,7 +66,6 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       });
 
     Promise.all([organizationsAjax]).then((allResponse: Organization[][]) => {
-      console.log(allResponse);
       this.setState({
         organizations: allResponse[0]
       });
