@@ -5,7 +5,7 @@ type Profile struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
 	Mail     string `gorm:"type:varchar(100);unique_index" json:"mail"`
 	Role     Role   `gorm:"foreignkey:RoleID" json:"role"`
-	RoleID   uint   `json:"role_id"`
+	RoleID   *uint  `json:"role_id,omitempty"`
 	IsActive bool   `json:"is_active"`
 }
 

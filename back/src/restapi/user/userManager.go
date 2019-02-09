@@ -26,6 +26,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.RoleID = nil
+
 	u.Respond(w, user)
 }
 
