@@ -34,6 +34,7 @@ func main() {
 	router.HandleFunc("/users", u.CreateUser).Methods("POST")
 	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", u.FindUserByID).Methods("GET")
+	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
 
 	http.ListenAndServe("0.0.0.0:8000", router)
 }
