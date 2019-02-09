@@ -58,3 +58,20 @@ func FindUserByID(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, user)
 }
+
+// ModifyUser modifies an annotation
+func ModifyUser(w http.ResponseWriter, r *http.Request) {
+	db := u.GetConnection()
+	user := Profile{}
+	json.NewDecoder(r.Body).Decode(&user)
+
+	err := db.Save(&user).Error
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	user.RoleID = nil
+
+	u.Respond(w, user)
+}
