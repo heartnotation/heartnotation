@@ -7,9 +7,11 @@ import TagCreation from './pages/TagCreation';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
+import SignalAnnotation from './pages/SignalAnnotation';
 
 interface State {
   routes: AppRoute[];
+  hiddenRoutes: AppRoute[];
 }
 
 class App extends Component<any, State> {
@@ -19,22 +21,28 @@ class App extends Component<any, State> {
      * TODO remplacer pour récupérer les routes en fonctions du rôle de l'utilisateur connecté.
      */
     this.state = {
+      hiddenRoutes: [
+        {
+          path: '/annotations/:id',
+          component: SignalAnnotation,
+          title: 'Signal annotation'
+        },
+        {
+          path: '/',
+          exact: true,
+          component: Dashboard,
+          title: 'Dashboard'
+        }
+      ],
       routes: [
         {
-          path: '/annotations/new',
-          exact: true,
+          path: '/new/annotations',
           component: AnnotationForm,
           title: 'Create annotation',
           iconName: 'plus'
         },
         {
-          path: '/dashboard',
-          component: Dashboard,
-          title: 'Dashboard',
-          iconName: 'dashboard'
-        },
-        {
-          path: '/users/new',
+          path: '/new/users',
           component: UserCreation,
           title: 'Create User',
           iconName: 'user-add'
@@ -53,7 +61,7 @@ class App extends Component<any, State> {
           iconName: 'user'
         },
         {
-          path: '/tags/new',
+          path: '/new/tags',
           component: TagCreation,
           title: 'Create Tags',
           iconName: 'tag'
@@ -70,10 +78,10 @@ class App extends Component<any, State> {
   }
 
   public render() {
-    const { routes } = this.state;
+    const { routes, hiddenRoutes } = this.state;
     return (
       <div>
-        <AppRouter routes={routes} />
+        <AppRouter routes={routes} hiddenRoutes={hiddenRoutes} />
       </div>
     );
   }

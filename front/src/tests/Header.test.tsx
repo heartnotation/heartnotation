@@ -1,7 +1,7 @@
 import React from 'react';
-import Header from './Header';
+import Header from '../fragments/Header';
 import Router, { AppRoute } from '../Routes';
-import Enzyme, { mount, shallow } from 'enzyme';
+import Enzyme, { mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { Menu } from 'antd';
 
