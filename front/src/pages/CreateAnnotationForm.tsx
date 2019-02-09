@@ -25,7 +25,8 @@ interface Organization {
 
 interface Tag {
   id: number;
-  label: string;
+  name: string;
+  is_active: boolean;
 }
 
 interface Annotation {
@@ -35,8 +36,8 @@ interface Annotation {
 interface States {
   organizations: Organization[];
   organizationsSearch: string[];
-  tags: number[];
-  tagsAjax: Tag[];
+  tags: Tag[];
+  tagsSearch: string[];
   tagsSelected: number[];
   annotations: number[];
   annotationsAjax: Annotation[];
@@ -49,8 +50,8 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     this.state = {
       organizations: [],
       organizationsSearch: [],
-      tags: [1, 2, 3, 12, 34, 45],
-      tagsAjax: [],
+      tags: [],
+      tagsSearch: [],
       tagsSelected: [],
       annotations: [1, 12, 333],
       annotationsAjax: [],
@@ -71,13 +72,20 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         organizations: allResponse[0]
       });
     });
-    /*
+
     const tagsAjax: Promise<Tag[]> = axios
-      .get<Tag[]>('/tags')
+      .get<Tag[]>(`${API_URL}/tags`)
       .then((res: AxiosResponse<Tag[]>) => {
         return res.data;
       });
 
+    Promise.all([tagsAjax]).then((allResponse: Tag[][]) => {
+      console.log(allResponse);
+      this.setState({
+        tags: allResponse[0]
+      });
+    });
+    /*
     const annotationsAjax: Promise<Annotation[]> = axios
       .get<Annotation[]>('/annotations')
       .then((res: AxiosResponse<Annotation[]>) => {
@@ -126,11 +134,36 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     });
   }
 
+  public handleSearchTag = (value: string) => {
+    const { tags } = this.state;
+    const tagsSearch = this.filterNoCaseSensitive(
+      value,
+      tags.map((t: Tag) => t.name)
+    );
+    this.setState({
+      tagsSearch:
+        tagsSearch.length !== tags.length
+          ? tagsSearch
+          : []
+    });
+  }
+
   public validateOrganization = (_: any, value: any, callback: any) => {
     const { organizations } = this.state;
     if (
       value &&
       !organizations.map((o: Organization) => o.name).includes(value)
+    ) {
+      callback('This organization doesn\'t exist');
+    }
+    callback();
+  }
+
+  public validateTag = (_: any, value: any, callback: any) => {
+    const { tags } = this.state;
+    if (
+      value &&
+      !tags.map((t: Tag) => t.name).includes(value)
     ) {
       callback('This organization doesn\'t exist');
     }
@@ -203,10 +236,9 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
   public render() {
     const { getFieldDecorator } = this.props.form;
     const { organizationsSearch } = this.state;
-    const { tags } = this.state;
-    const { tagsSelected } = this.state;
+    const { tagsSearch } = this.state;
     const { annotationValidateStatus } = this.state;
-    const filteredTags = tags.filter(t => !tagsSelected.includes(t));
+    // const filteredTags = tags.filter(t => !tagsSelected.includes(t));
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
@@ -282,20 +314,25 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
                   {
                     required: true,
                     message: msgRequired
-                  }
+                  },
+                  { validator: this.validateTag }
                 ]
               })(
-                <Select<number[]>
-                  mode='multiple'
-                  onChange={this.handleChangeTag}
-                  filterOption={this.filterSearchTag}
-                >
-                  {filteredTags.map(tag => (
-                    <Option key='key' value={tag}>
-                      {tag}
-                    </Option>
-                  ))}
-                </Select>
+                <AutoComplete
+                  dataSource={tagsSearch}
+                  onSearch={this.handleSearchTag}
+                />
+                // <Select<number[]>
+                //   mode='multiple'
+                //   onChange={this.handleChangeTag}
+                //   filterOption={this.filterSearchTag}
+                // >
+                //   {/* {filteredTags.map(tag => (
+                //     <Option key='key' value={tag}>
+                //       {tag}
+                //     </Option>
+                //   ))} */}
+                // </Select>
               )}
             </Form.Item>
             <Form.Item {...formTailLayout}>
