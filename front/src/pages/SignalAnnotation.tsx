@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
+import loadingGif from '../assets/images/loading.gif';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {}
 
@@ -12,13 +13,15 @@ interface MyData {
 }
 interface State {
   leads: MyData[][];
+  loading: boolean;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
     this.state = {
-      leads: []
+      leads: [],
+      loading: true
     };
   }
 
@@ -48,7 +51,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
     }
 
-    await this.setState({ leads });
+    await this.setState({ leads, loading: false });
 
     const svgWidth = window.innerWidth;
     const svgHeight = 600;
@@ -65,7 +68,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('height', height + margin.top + margin.bottom);
 
     const focus = svg
-      .append('g') 
+      .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
     const context = svg
       .append('g')
@@ -129,9 +132,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
 
-    const xAxis = d3
-      .axisBottom(xScale)
-      .tickSize(-height);
+    const xAxis = d3.axisBottom(xScale).tickSize(-height);
     const xAxisGroup = focus
       .append('g')
       .call(xAxis)
@@ -148,7 +149,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .zoom()
       .scaleExtent([1, Infinity])
       .translateExtent([[0, 0], [width, height]])
-      .extent([[0, 0], [width, height]]) 
+      .extent([[0, 0], [width, height]])
       .on('zoom', zoomed);
 
     svg
@@ -171,7 +172,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .call(brush.move, xScale2.range());
 
     function zoomed() {
-      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return; 
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
       focus
         .datum<MyData[]>(dataset2)
@@ -189,7 +190,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     function brushed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
-      if(d3.event.selection) {
+      if (d3.event.selection) {
         xScale.domain([
           xScale2.invert(d3.event.selection[0]),
           xScale2.invert(d3.event.selection[1])
@@ -214,9 +215,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public render = () => {
-    const { leads } = this.state;
-    if (!leads.length) {
-      return 'Nothing to show';
+    const { loading } = this.state;
+    if (loading) {
+      return (
+        <img
+          style={{ width: '50%', display: 'block', margin: 'auto' }}
+          src={loadingGif}
+          alt='Loading'
+        />
+      );
     }
 
     return (
