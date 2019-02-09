@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	u "restapi/utils"
+
+	"github.com/gorilla/mux"
 )
 
 // CreateUser function which receive a POST request and return a fresh-new user
@@ -40,4 +42,19 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, users)
+}
+
+// Find user by ID using GET Request
+func FindUserByID(w http.ResponseWriter, r *http.Request) {
+	user := Profile{}
+	vars := mux.Vars(r)
+	err := u.GetConnection().Preload("Role").Where("is_active = ?", true).First(&user, vars["id"]).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	user.RoleID = nil
+
+	u.Respond(w, user)
 }
