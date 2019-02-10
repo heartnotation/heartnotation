@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	s "restapi/signal"
@@ -22,7 +23,7 @@ var templateURLAPI string
 func init() {
 	url := os.Getenv("API_URL")
 	if url == "" {
-		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%d\" where \\%d will be an integer")
+		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
 	}
 	templateURLAPI = url
 }
@@ -62,13 +63,26 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 
+	if annotation.SignalID == 0 || annotation.Name == "" {
+		http.Error(w, "Missing fields", 422)
+		return
+	}
+
+	id := strconv.Itoa(int(annotation.SignalID))
+	signalError := s.SendCheckSignal(id)
+	if signalError != nil {
+		http.Error(w, signalError.Error(), 404)
+		return
+	}
+
 	date := time.Now()
 	annotation.CreationDate = date
 	annotation.EditDate = date
 	annotation.IsActive = true
 	annotation.IsEditable = true
 
-	if *(annotation.OrganizationID) != 0 {
+	annotation.StatusID = new(uint)
+	if annotation.OrganizationID != nil {
 		*annotation.StatusID = 2
 	} else {
 		*annotation.StatusID = 1
@@ -79,7 +93,16 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 403)
 		return
 	}
-	u.Respond(w, annotation)
+	a := &Annotation{}
+	e := db.Preload("Status").Preload("Organization").First(&a, annotation.ID).Error
+	if e != nil {
+		http.Error(w, e.Error(), 400)
+		return
+	}
+	a.OrganizationID = nil
+	a.ParentID = nil
+	a.StatusID = nil
+	u.Respond(w, a)
 
 }
 
