@@ -4,13 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
 
 	s "restapi/signal"
-
 	u "restapi/utils"
+
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	_ "github.com/lib/pq"
 )
 
 var templateURLAPI string
@@ -21,6 +25,39 @@ func init() {
 		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%d\" where \\%d will be an integer")
 	}
 	templateURLAPI = url
+}
+
+func checkErrorCode(err error, w http.ResponseWriter) {
+	switch err {
+	case gorm.ErrRecordNotFound:
+		http.Error(w, err.Error(), 204)
+	case gorm.ErrInvalidSQL:
+		http.Error(w, err.Error(), 400)
+	case gorm.ErrInvalidTransaction:
+	case gorm.ErrCantStartTransaction:
+	case gorm.ErrUnaddressable:
+		http.Error(w, err.Error(), 500)
+	default:
+		return
+	}
+}
+
+// DeleteAnnotation remove an annotation
+func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, http.StatusText(405), 405)
+		return
+	}
+	db := u.GetConnection()
+	var annotation Annotation
+	v := mux.Vars(r)
+	if len(v) != 1 {
+		log.Print("unvalidate arguments")
+		return
+	}
+	checkErrorCode(db.First(&annotation, v["id"]).Error, w)
+	annotation.IsActive = false
+	checkErrorCode(db.Save(&annotation).Error, w)
 }
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
@@ -43,80 +80,78 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	annotation.IsEditable = true
 
 	if *(annotation.OrganizationID) != 0 {
-		annotation.StatusID = 2
+		*annotation.StatusID = 2
 	} else {
-		annotation.StatusID = 1
+		*annotation.StatusID = 1
 	}
+
 	err := db.Preload("Organization").Create(&annotation).Error
 	if err != nil {
 		http.Error(w, err.Error(), 403)
 		return
 	}
-
-	a := &Annotation{}
-	e := db.Preload("Organization").Preload("Parent").Find(&a).Error
-	if e != nil {
-		http.Error(w, e.Error(), 503)
-		return
-	}
-	a.OrganizationID = nil
-	if a.Parent != nil {
-		a.Parent.OrganizationID = nil
-		a.ParentID = nil
-	}
-	u.Respond(w, a)
+	u.Respond(w, annotation)
 
 }
 
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Organization").Find(&annotations).Error
+	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
 	}
+
+	for i := range *annotations {
+		arr := *annotations
+		arr[i].OrganizationID = nil
+		arr[i].StatusID = nil
+	}
+
 	u.Respond(w, annotations)
 }
 
-/*
-// Get annotation by ID using GET Request
-func getAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
+// FindAnnotationByID Find annotation by ID using GET Request
+func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
+	annotation := Annotation{}
+	vars := mux.Vars(r)
+	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
+
+	u.Respond(w, annotation)
+}
+
+// ModifyAnnotation modifies an annotation
+func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "PUT" {
 		http.Error(w, http.StatusText(405), 405)
 		return
 	}
-	annID := r.FormValue("id")
-	if annID == "" {
-		http.Error(w, http.StatusText(400), 400)
+
+	db := u.GetConnection()
+
+	var annotation Annotation
+
+	json.NewDecoder(r.Body).Decode(&annotation)
+	date := time.Now()
+	annotation.EditDate = date
+	annotation.IsActive = true
+
+	err := db.Save(&annotation).Error
+	if err != nil {
+		http.Error(w, err.Error(), 400)
 		return
 	}
-	db := verifyDBConnection()
-	row := db.QueryRow("SELECT * FROM annotation where annotation_id = $1", annID)
-	annotation := Annotation{}
-	err := row.Scan(&annotation.ID, &annotation.Parent,
-		&annotation.Organization, &annotation.ProcessID, &annotation.SignalID,
-		&annotation.Comment, &annotation.CreatedAt, &annotation.UpdatedAt,
-		&annotation.is_active)
-	if err == sql.ErrNoRows {
-		http.NotFound(w, r)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
-		return
-	}
-
-	// annot, err := json.Marshal(annotation)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// fmt.Fprintf(w, "%s\n", string(annot))
+	u.Respond(w, annotation)
 }
-*/
+
 func formatToJSONFromAPI(api string) ([]byte, error) {
 	httpResponse, err := http.Get(api) //A parametrer
 	if err != nil {

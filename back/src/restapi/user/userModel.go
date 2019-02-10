@@ -5,8 +5,8 @@ type Profile struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
 	Mail     string `gorm:"type:varchar(100);unique_index" json:"mail"`
 	Role     Role   `gorm:"foreignkey:RoleID" json:"role"`
-	RoleID   uint
-	IsActive bool `json:"is_active"`
+	RoleID   *uint  `json:"role_id,omitempty"`
+	IsActive bool   `json:"is_active"`
 }
 
 // TableName sets table name of the struct
@@ -17,7 +17,7 @@ func (Profile) TableName() string {
 // Role represent a role in database
 type Role struct {
 	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
-	Title    string `json:"name"`
+	Name     string `json:"name"`
 	IsActive bool   `json:"is_active"`
 }
 

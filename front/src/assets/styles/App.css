@@ -4,12 +4,17 @@
 }
 
 .logo {
-  margin-left: 5%;
+  margin-left: 30px;
 }
 
 .main-menu {
   background: #282828 !important;
   text-align: right !important;
+  margin-right: 30px !important;
+}
+
+.ant-menu-horizontal {
+  border-bottom: none !important;
 }
 
 .main-menu-item-text {
@@ -24,10 +29,111 @@
 .page-title {
   color: #dddddd !important;
   float: left;
-  margin-left: 7%;
+  margin-left: 30px;
 }
 
 .ant-table-pagination.ant-pagination {
   float: none !important;
   text-align: center !important;
+}
+
+.ant-menu-submenu-title {
+  color: #dddddd !important;
+}
+
+.ant-menu-sub {
+  background: #282828 !important;
+}
+
+.signal-header {
+  background: #dddddd;
+  padding: 30px;
+}
+
+.signal-main-container {
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.btn-space {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.center-vertical-switch {
+  line-height: 40px;
+}
+
+.btn-heartnotation-primary {
+  background: #6669c9 !important;
+  color: #d9d9d9 !important;
+  border-color: #6669c9 !important;
+}
+
+.btn-heartnotation-primary:hover {
+  background: #404040 !important;
+  border-color: #404040 !important;
+}
+
+.btn-heartnotation-secondary {
+  background: #404040 !important;
+  color: #d9d9d9 !important;
+  border-color: #404040 !important;
+}
+
+.btn-heartnotation-secondary:hover {
+  background: #6669c9 !important;
+  border-color: #6669c9 !important;
+}
+
+.ant-switch-checked {
+  background: #404040 !important;
+  color: #d9d9d9 !important;
+}
+
+.signal-legend-container {
+  padding-top: 20px;
+  text-align: center;
+}
+
+.signal-graph-container {
+  overflow-x: scroll;
+}
+
+.signal-graph-container::-webkit-scrollbar-track {
+  background-color: #d9d9d9;
+}
+
+.signal-graph-container::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background: #d9d9d9;
+}
+
+.signal-graph-container::-webkit-scrollbar-thumb {
+  background-color: #0ae;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+.tick line {
+  opacity: 0.2;
+}
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
 }

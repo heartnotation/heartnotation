@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   server:
     build: ./back/
@@ -6,17 +6,20 @@ services:
     ports:
       - 8000:8000
     depends_on:
-      - client
+      - database
   client:
-    build: ./front/
+    build:
+      context: ./front/
+      args:
+        api: "${URL}"
+    env_file: ./.env
     ports:
       - 80:80
-    depends_on:
-      - database
   database:
     build: ./db/
     ports:
       - 5432:5432
     volumes:
-      - ./db/datas:/var/lib/postgresql/data
-
+      - db-datas:/var/lib/postgresql/data
+volumes:
+  db-datas:

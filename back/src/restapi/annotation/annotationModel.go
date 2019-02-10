@@ -2,6 +2,7 @@ package annotation
 
 import (
 	o "restapi/organization"
+	s "restapi/status"
 	"time"
 )
 
@@ -11,8 +12,9 @@ type Annotation struct {
 	AnnotationComment string          `json:"name"`
 	Organization      *o.Organization `gorm:"foreignkey:OrganizationID" json:"organization,omitempty"`
 	OrganizationID    *uint           `json:"organization_id,omitempty"`
-	StatusID          uint            `json:"status_id"`
-	SignalID          *uint           `json:"signal_id"`
+	Status            *s.Status       `json:"status"`
+	StatusID          *uint           `gorm:"TYPE:integer REFERENCES status" json:"status_id,integer,omitempty"`
+	SignalID          uint            `json:"signal_id"`
 	CreationDate      time.Time       `json:"creation_date"`
 	EditDate          time.Time       `json:"edit_date"`
 	IsActive          bool            `json:"is_active"`
@@ -26,7 +28,7 @@ func (Annotation) TableName() string {
 	return "annotation"
 }
 
-// Gui : En vrai, je pense qu'on devrait fusionner les deux struct du coup, a verifier
+// Gui : Gui aspects of annotation
 type Gui struct {
 	Annotation Annotation
 	Signal     [][]int16 `json:"signal"`
