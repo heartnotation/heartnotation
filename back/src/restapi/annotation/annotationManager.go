@@ -32,10 +32,6 @@ func checkErrorCode(err error, w http.ResponseWriter) {
 
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
 	db := u.GetConnection()
 	var annotation Annotation
 	v := mux.Vars(r)
@@ -50,15 +46,8 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
-
 	db := u.GetConnection()
-
 	var annotation Annotation
-
 	json.NewDecoder(r.Body).Decode(&annotation)
 
 	date := time.Now()
@@ -77,7 +66,6 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, annotation)
-
 }
 
 // FindAnnotations receive request to get all annotations in database
@@ -98,7 +86,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-// Find annotation by ID using GET Request
+// FindAnnotationByID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
 	vars := mux.Vars(r)
@@ -116,15 +104,8 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "PUT" {
-		http.Error(w, http.StatusText(405), 405)
-		return
-	}
-
 	db := u.GetConnection()
-
 	var annotation Annotation
-
 	json.NewDecoder(r.Body).Decode(&annotation)
 	date := time.Now()
 	annotation.EditDate = date
