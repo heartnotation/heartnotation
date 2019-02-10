@@ -64,15 +64,13 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&a)
 
 	tags := []t.Tag{}
-	for _, id := range a.TagsID {
-		tags = append(tags, t.Tag{ID: uint(id)})
-	}
 
-	err := db.Find(&tags).Error
+	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
 		http.Error(w, err.Error()+" toto", 400)
 		return
 	}
+
 	if len(tags) != len(a.TagsID) {
 		http.Error(w, "Tag not found", 404)
 		return
@@ -96,7 +94,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		status = 1
 	}
 	date := time.Now()
-	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date}
+	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
 	err = db.Create(&annotation).Error
 	if err != nil {
 		http.Error(w, err.Error()+" titi", 400)
@@ -111,7 +109,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	annotation.OrganizationID = nil
 	annotation.StatusID = nil
 
-	u.Respond(w, annotation)
+	u.RespondCreate(w, annotation)
 }
 
 // FindAnnotations receive request to get all annotations in database

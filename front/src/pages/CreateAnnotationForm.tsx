@@ -38,9 +38,8 @@ interface States {
   organizationsSearch: string[];
   tags: Tag[];
   tagsSearch: string[];
-  tagsSelected: number[];
-  annotations: number[];
-  annotationsAjax: Annotation[];
+  tagsSelected: Tag[];
+  annotations: Annotation[];
   annotationValidateStatus: '' | 'success' | 'error';
 }
 
@@ -53,8 +52,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       tags: [],
       tagsSearch: [],
       tagsSelected: [],
-      annotations: [1, 12, 333],
-      annotationsAjax: [],
+      annotations: [],
       annotationValidateStatus: ''
     };
   }
@@ -66,47 +64,33 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         return res.data;
       });
 
-    Promise.all([organizationsAjax]).then((allResponse: Organization[][]) => {
-      console.log(allResponse);
-      this.setState({
-        organizations: allResponse[0]
-      });
-    });
-
     const tagsAjax: Promise<Tag[]> = axios
       .get<Tag[]>(`${API_URL}/tags`)
       .then((res: AxiosResponse<Tag[]>) => {
         return res.data;
       });
 
-    Promise.all([tagsAjax]).then((allResponse: Tag[][]) => {
-      console.log(allResponse);
-      this.setState({
-        tags: allResponse[0]
-      });
-    });
-    /*
     const annotationsAjax: Promise<Annotation[]> = axios
       .get<Annotation[]>('/annotations')
       .then((res: AxiosResponse<Annotation[]>) => {
         return res.data;
-      }); 
+      });
 
-    Promise.all([organizationsAjax, tagsAjax, annotationsAjax]).then(
-      (allResponse: [Organization[], Tag[], Annotation[]]) => {
-        console.log(allResponse);
+    Promise.all([tagsAjax, organizationsAjax, annotationsAjax]).then(
+      responses => {
+        console.log(responses);
         this.setState({
-          organizationsAjax: allResponse[0],
-          tagsAjax: allResponse[1],
-          annotationsAjax: allResponse[2]
+          tags: responses[0],
+          organizations: responses[1],
+          annotations: responses[2]
         });
       }
-    );*/
+    );
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
     const v = value.toLowerCase();
-    return items.filter(i => i.toLowerCase().startsWith(v));
+    return items.filter(i => i.toLowerCase().startsWith(v.toLowerCase()));
   }
 
   private isStringNumber = (s: string) => {
@@ -141,10 +125,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       tags.map((t: Tag) => t.name)
     );
     this.setState({
-      tagsSearch:
-        tagsSearch.length !== tags.length
-          ? tagsSearch
-          : []
+      tagsSearch: tagsSearch.length !== tags.length ? tagsSearch : []
     });
   }
 
@@ -159,13 +140,12 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     callback();
   }
 
-  public validateTag = (_: any, value: any, callback: any) => {
+  public validateTag = (_: any, values: number[], callback: any) => {
     const { tags } = this.state;
-    if (
-      value &&
-      !tags.map((t: Tag) => t.name).includes(value)
-    ) {
-      callback('This organization doesn\'t exist');
+    const ids = tags.map(t => t.id);
+
+    if (values && values.filter(v => ids.includes(v)).length === 0) {
+      callback('This tag doesn\'t exist');
     }
     callback();
   }
@@ -176,7 +156,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       this.setState({ annotationValidateStatus: '' });
     } else if (
       this.isStringNumber(e.target.value) &&
-      annotations.includes(parseInt(e.target.value, 10))
+      annotations.map(a => a.id).includes(parseInt(e.target.value, 10))
     ) {
       this.setState({ annotationValidateStatus: 'success' });
     } else {
@@ -189,7 +169,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       callback('You should write a number');
     }
     const { annotations } = this.state;
-    if (value && !annotations.includes(parseInt(value, 10))) {
+    if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
       callback('This annotations doesn\'t exist');
     }
     callback();
@@ -206,7 +186,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     return false;
   }
 
-  public handleChangeTag = (tag: number[]) => {
+  public handleChangeTag = (tag: Tag[]) => {
     this.setState({ tagsSelected: tag });
   }
 
@@ -216,8 +196,8 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       const { organizations } = this.state;
       if (!err) {
         values.signal_id = parseInt(values.signal_id, 10);
-        values.annotation_parent_id = values.annotation_parent_id
-          ? parseInt(values.annotation_parent_id, 10)
+        values.parent_id = values.parent_id
+          ? parseInt(values.parent_id, 10)
           : null;
         if (values.organization_id) {
           const findOrgaId = organizations.find(
@@ -228,17 +208,26 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         } else {
           values.organization_id = null;
         }
-        console.log('Received values of form: ', values); // à envoyer vers la route du back
+        axios
+          .post(`${API_URL}/annotations`, values)
+          .then(console.log)
+          .catch(error => console.log(error.message));
       }
     });
   }
 
   public render() {
     const { getFieldDecorator } = this.props.form;
-    const { organizationsSearch } = this.state;
-    const { tagsSearch } = this.state;
-    const { annotationValidateStatus } = this.state;
-    // const filteredTags = tags.filter(t => !tagsSelected.includes(t));
+    const {
+      tags,
+      organizationsSearch,
+      annotationValidateStatus,
+      tagsSelected
+    } = this.state;
+
+    const filteredTags = tags.filter(
+      t => !tagsSelected.map(tag => tag.id).includes(t.id)
+    );
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
@@ -246,7 +235,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         <Col span={8}>
           <Form layout='horizontal' onSubmit={this.handleSubmit}>
             <Form.Item {...formItemLayout} label='Annotation title'>
-              {getFieldDecorator('title', {
+              {getFieldDecorator('name', {
                 rules: [
                   {
                     whitespace: true,
@@ -297,7 +286,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
               hasFeedback={true}
               validateStatus={annotationValidateStatus}
             >
-              {getFieldDecorator('annotation_parent_id', {
+              {getFieldDecorator('parent_id', {
                 initialValue: null,
                 rules: [
                   {
@@ -309,7 +298,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
               })(<Input onChange={this.handleChangeAnnotation} />)}
             </Form.Item>
             <Form.Item {...formItemLayout} label='Tags autorisés'>
-              {getFieldDecorator('authorized_tags', {
+              {getFieldDecorator('tags', {
                 rules: [
                   {
                     required: true,
@@ -318,21 +307,17 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
                   { validator: this.validateTag }
                 ]
               })(
-                <AutoComplete
-                  dataSource={tagsSearch}
-                  onSearch={this.handleSearchTag}
-                />
-                // <Select<number[]>
-                //   mode='multiple'
-                //   onChange={this.handleChangeTag}
-                //   filterOption={this.filterSearchTag}
-                // >
-                //   {/* {filteredTags.map(tag => (
-                //     <Option key='key' value={tag}>
-                //       {tag}
-                //     </Option>
-                //   ))} */}
-                // </Select>
+                <Select<Tag[]>
+                  mode='multiple'
+                  onChange={this.handleChangeTag}
+                  filterOption={this.filterSearchTag}
+                >
+                  {filteredTags.map((tag: Tag) => (
+                    <Option key='key' value={tag.id}>
+                      {tag.name}
+                    </Option>
+                  ))}
+                </Select>
               )}
             </Form.Item>
             <Form.Item {...formTailLayout}>

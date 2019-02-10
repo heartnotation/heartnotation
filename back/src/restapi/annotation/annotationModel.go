@@ -22,7 +22,7 @@ type Annotation struct {
 	IsEditable     bool            `json:"is_editable"`
 	Parent         *Annotation     `json:"parent,omitempty"`
 	ParentID       *int            `gorm:"TYPE:integer REFERENCES annotation" json:"parent_id,integer,omitempty"`
-	Tags           []t.Tag         `gorm:"many2many:annotation_tag"`
+	Tags           []t.Tag         `gorm:"many2many:annotation_tag" json:"tags,omitempty"`
 }
 
 // JSON is a struct to handle request and response as JSON
