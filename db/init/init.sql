@@ -88,8 +88,16 @@ CREATE TABLE TAG (
 	is_active boolean NOT NULL
 );
 
+DROP TABLE IF EXISTS ANNOTATION_TAG CASCADE;
+CREATE TABLE ANNOTATION_TAG (
+	id SERIAL PRIMARY KEY,
+	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	tag_id bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 DROP TABLE IF EXISTS INTERVAL_TAG CASCADE;
 CREATE TABLE INTERVAL_TAG (
+	id SERIAL PRIMARY KEY,
 	interval_id bigint,
 	tag_id bigint NOT NULL
 );
@@ -114,6 +122,7 @@ ALTER TABLE ANNOTATIONINTERVAL_USER OWNER TO heart;
 ALTER TABLE TAG OWNER TO heart;
 ALTER TABLE INTERVAL_TAG OWNER TO heart;
 ALTER TABLE OPERATOR_OF OWNER TO heart;
+ALTER TABLE ANNOTATION_TAG OWNER TO heart;
 
 -----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
@@ -227,6 +236,20 @@ INSERT INTO TAG (parent_id, name, color, is_active)
 
 INSERT INTO TAG (parent_id, name, color, is_active) 
 	VALUES (2, 'Weird lungs', 'green', TRUE);
+
+-- ANNOTATION_TAG
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (1, 1);
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (1, 2);
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (1, 3);
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (2, 1);
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (2, 2);
+INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
+	VALUES (3, 1);
 
 -- INTERVAL_TAG
 

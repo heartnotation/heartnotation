@@ -10,6 +10,7 @@ import (
 	"time"
 
 	s "restapi/signal"
+	t "restapi/tag"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
@@ -59,28 +60,58 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
-	var annotation Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
+	var a JSON
+	json.NewDecoder(r.Body).Decode(&a)
 
-	date := time.Now()
-	annotation.CreationDate = date
-	annotation.EditDate = date
-	annotation.IsActive = true
-	annotation.IsEditable = true
-
-	if *(annotation.OrganizationID) != 0 {
-		*annotation.StatusID = 2
-	} else {
-		*annotation.StatusID = 1
+	tags := []t.Tag{}
+	for _, id := range a.TagsID {
+		tags = append(tags, t.Tag{ID: uint(id)})
 	}
 
-	err := db.Preload("Organization").Create(&annotation).Error
+	err := db.Find(&tags).Error
 	if err != nil {
-		http.Error(w, err.Error(), 403)
+		http.Error(w, err.Error()+" toto", 400)
 		return
 	}
-	u.Respond(w, annotation)
+	if len(tags) != len(a.TagsID) {
+		http.Error(w, "Tag not found", 404)
+		return
+	}
+	if a.SignalID == 0 || a.Name == "" {
+		http.Error(w, "Missing field", 424)
+		return
+	}
+	if a.ParentID != 0 {
+		parent := &Annotation{ID: uint(a.ParentID)}
+		err = db.Find(&parent).Error
+		if err != nil {
+			http.Error(w, err.Error()+" tutu", 400)
+			return
+		}
+	}
+	var status int
+	if a.OrganizationID != 0 {
+		status = 2
+	} else {
+		status = 1
+	}
+	date := time.Now()
+	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date}
+	err = db.Create(&annotation).Error
+	if err != nil {
+		http.Error(w, err.Error()+" titi", 400)
+		return
+	}
+	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
+	if err != nil {
+		http.Error(w, err.Error()+" tata", 400)
+		return
+	}
+	annotation.ParentID = nil
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
 
+	u.Respond(w, annotation)
 }
 
 // FindAnnotations receive request to get all annotations in database
