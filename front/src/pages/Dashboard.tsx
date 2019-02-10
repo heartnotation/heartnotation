@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import axios from 'axios';
-import { API_URL } from '../utils';
+
 interface Organization {
   id: number;
   name: string;
@@ -33,7 +32,11 @@ export interface State {
   currentAnnotations: Annotation[];
 }
 
-class Dashboard extends Component {
+interface Props {
+  getAnnotations: () => Promise<Annotation[]>;
+}
+
+class Dashboard extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
     initialAnnotations: [],
@@ -49,14 +52,14 @@ class Dashboard extends Component {
   }
 
   public async getDatas(): Promise<Annotation[]> {
-    const { data } = await axios.get<Annotation[]>(`${API_URL}/annotations`);
-    data.forEach((a: Annotation) => {
+    const annotations = await this.props.getAnnotations();
+    annotations.forEach((a: Annotation) => {
       a.creation_date = new Date(a.creation_date);
       if (a.edit_date) {
         a.edit_date = new Date(a.edit_date);
       }
     });
-    return data;
+    return annotations;
   }
 
   public columns: Array<ColumnProps<Annotation>> = [
@@ -160,6 +163,7 @@ class Dashboard extends Component {
   ) => (
     <div style={{ paddingTop: 8, textAlign: 'center' }}>
       <Input
+        className={`search_${dataIndex}`}
         placeholder={`Search by ${displayText}`}
         onChange={e => this.handleChange(dataIndex, e.target.value)}
       />
@@ -172,58 +176,63 @@ class Dashboard extends Component {
   }
 
   public handleSearch = () => {
-    const { initialAnnotations, searches, currentAnnotations } = this.state;
-    this.setState({ currentAnnotations: initialAnnotations.slice() });
+    const { initialAnnotations, searches } = this.state;
 
-    const filteredData = currentAnnotations.filter((record: Annotation) => {
-      const id = searches.get('id');
-      if (id) {
-        if (!record.id.toString().startsWith(id)) {
-          return false;
+    const filteredData = initialAnnotations
+      .slice()
+      .filter((record: Annotation) => {
+        const id = searches.get('id');
+        if (id) {
+          if (!record.id.toString().startsWith(id)) {
+            return false;
+          }
         }
-      }
-      const signalId = searches.get('signal_id');
-      if (signalId) {
-        if (!record.signal_id.toString().startsWith(signalId)) {
-          return false;
+        const signalId = searches.get('signal_id');
+        if (signalId) {
+          if (!record.signal_id.toString().startsWith(signalId)) {
+            return false;
+          }
         }
-      }
-      const name = searches.get('name');
-      if (name) {
-        if (!record.name.toString().includes(name)) {
-          return false;
+        const name = searches.get('name');
+        if (name) {
+          if (!record.name.toLowerCase().includes(name.toLowerCase())) {
+            return false;
+          }
         }
-      }
-      const creationDate = searches.get('creation_date');
-      if (record.creation_date && creationDate) {
-        if (
-          !record.creation_date
-            .toLocaleDateString('fr-FR')
-            .includes(creationDate)
-        ) {
-          return false;
+        const creationDate = searches.get('creation_date');
+        if (record.creation_date && creationDate) {
+          if (
+            !record.creation_date
+              .toLocaleDateString('fr-FR')
+              .includes(creationDate)
+          ) {
+            return false;
+          }
         }
-      }
-      const editDate = searches.get('edit_date');
-      if (editDate) {
-        if (!record.edit_date && editDate !== '-') {
-          return false;
+        const editDate = searches.get('edit_date');
+        if (editDate) {
+          if (!record.edit_date && editDate !== '-') {
+            return false;
+          }
+          if (
+            record.edit_date &&
+            !record.edit_date.toLocaleDateString('fr-FR').includes(editDate)
+          ) {
+            return false;
+          }
         }
-        if (
-          record.edit_date &&
-          !record.edit_date.toLocaleDateString('fr-FR').includes(editDate)
-        ) {
-          return false;
+        const statusName = searches.get('status.name');
+        if (statusName) {
+          if (
+            !record.status.name
+              .toLowerCase()
+              .startsWith(statusName.toLowerCase())
+          ) {
+            return false;
+          }
         }
-      }
-      const statusName = searches.get('status.name');
-      if (statusName) {
-        if (!record.status.name.toString().startsWith(statusName)) {
-          return false;
-        }
-      }
-      return true;
-    });
+        return true;
+      });
 
     this.setState({
       currentAnnotations: filteredData
