@@ -66,12 +66,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		checkErrorCode(err, w)
 		return
 	}
 
 	if len(tags) != len(a.TagsID) {
-		http.Error(w, "Tag not found", 404)
+		http.Error(w, "Tag not found", 204)
 		return
 	}
 	if a.SignalID == 0 || a.Name == "" {
@@ -82,7 +82,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		parent := &Annotation{ID: uint(a.ParentID)}
 		err = db.Find(&parent).Error
 		if err != nil {
-			http.Error(w, err.Error(), 400)
+			checkErrorCode(err, w)
 			return
 		}
 	}
@@ -102,12 +102,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Create(&annotation).Error
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		checkErrorCode(err, w)
 		return
 	}
 	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		checkErrorCode(err, w)
 		return
 	}
 	annotation.ParentID = nil
