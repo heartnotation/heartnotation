@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_URL, Annotation, Organization, Tag } from '.';
+import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
 
 export const get = <T>(url: string): Promise<T> => {
   return axios.get<T>(`${API_URL}/${url}`).then(res => res.data);
@@ -19,6 +19,10 @@ export const getAnnotationById = (id: number): Promise<Annotation> => {
 
 export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
   return post<Annotation>(`${urls.annotations}`, datas);
+};
+
+export const sendUser = (datas: User): Promise<User> => {
+  return post<User>(`${urls.users}`, datas);
 };
 
 export const getOrganizations = (): Promise<Organization[]> => {
@@ -41,9 +45,15 @@ export const checkSignal = (id: number): Promise<any> => {
   return get(`${urls.signal}/${id}`);
 };
 
+export const getRoles = (): Promise<Role[]> => {
+  return get<Role[]>(urls.roles);
+};
+
 const urls = {
   annotations: 'annotations',
   organizations: 'organizations',
   tags: 'tags',
-  signal: 'signal'
+  signal: 'signal',
+  roles: 'roles',
+  users: 'users'
 };
