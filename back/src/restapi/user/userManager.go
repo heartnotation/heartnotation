@@ -52,6 +52,22 @@ func FindUserByID(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, user)
 }
 
+
+// DeleteUser disable user give in URL information (IsActive -> false)
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	db := u.GetConnection()
+	user := Profile{}
+	vars := mux.Vars(r)
+
+	err := db.First(&user, vars["id"]).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+	user.IsActive = false
+	db.Save(&user)
+}
+ 
 // ModifyUser modifies an annotation
 func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
