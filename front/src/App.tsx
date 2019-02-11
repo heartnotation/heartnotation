@@ -8,6 +8,7 @@ import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
+import { api } from './utils';
 
 interface State {
   routes: AppRoute[];
@@ -30,7 +31,7 @@ class App extends Component<any, State> {
         {
           path: '/',
           exact: true,
-          component: Dashboard,
+          component: () => <Dashboard getAnnotations={api.getAnnotations} />,
           title: 'Dashboard'
         }
       ],
