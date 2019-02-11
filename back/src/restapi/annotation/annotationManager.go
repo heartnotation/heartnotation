@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	s "restapi/signal"
@@ -86,7 +87,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a.ParentID != 0 {
-		parent := &Annotation{ID: uint(a.ParentID)}
+		parent := &Annotation{ID: a.ParentID}
 		err = db.Find(&parent).Error
 		if err != nil {
 			checkErrorCode(err, w)
@@ -152,6 +153,11 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))
+	if e != nil {
+		http.Error(w, e.Error(), 500)
+	}
+	annotation.Signal = signal
 	annotation.OrganizationID = nil
 	annotation.StatusID = nil
 
@@ -170,7 +176,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 
-func formatToJSONFromAPI(api string) ([]byte, error) {
+func formatToJSONFromAPI(api string) ([][]int16, error) {
 	httpResponse, err := http.Get(api) //A parametrer
 	if err != nil {
 		return nil, err
@@ -186,22 +192,5 @@ func formatToJSONFromAPI(api string) ([]byte, error) {
 		return nil, err
 	}
 
-	var gui Gui
-	gui.Signal = signalFormated
-
-	jsonDatas, err := json.Marshal(gui)
-	if err != nil {
-		return nil, err
-	}
-	return jsonDatas, nil
-}
-
-//En attente de brancher avec le web (route de recuperation d'une annotation)
-func incompleteTestForSignal() {
-	response, err := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, 1))
-	if err != nil {
-		fmt.Println(" FAIL with \n", err)
-	}
-
-	fmt.Println(string(response))
+	return signalFormated, nil
 }
