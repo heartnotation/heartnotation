@@ -3,20 +3,14 @@ import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation } from '../utils';
-
-interface Organization {
-  id: number;
-  name: string;
-  is_active: boolean;
-}
-
+import { withRouter, RouteComponentProps } from 'react-router';
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
   currentAnnotations: Annotation[];
 }
 
-interface Props {
+interface Props extends RouteComponentProps {
   getAnnotations: () => Promise<Annotation[]>;
 }
 
@@ -226,7 +220,7 @@ class Dashboard extends Component<Props, State> {
   public render() {
     const { currentAnnotations } = this.state;
     return (
-      <Table
+      <Table<Annotation>
         rowKey='id'
         columns={this.columns}
         dataSource={currentAnnotations}
@@ -237,9 +231,12 @@ class Dashboard extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
+        onRow={a => ({
+          onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        })}
       />
     );
   }
 }
 
-export default Dashboard;
+export default withRouter(Dashboard);

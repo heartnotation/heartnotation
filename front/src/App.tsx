@@ -26,7 +26,10 @@ class App extends Component<any, State> {
         {
           path: '/annotations/:id',
           component: () => (
-            <SignalAnnotation getAnnotation={api.getAnnotationById} />
+            <SignalAnnotation
+              getAnnotation={api.getAnnotationById}
+              changeAnnotation={api.changeAnnotation}
+            />
           ),
           title: 'Signal annotation'
         },

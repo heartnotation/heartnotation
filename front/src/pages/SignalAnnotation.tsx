@@ -1,13 +1,13 @@
-import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
+import { Row, Col, Icon, Switch, Button, Tag, Alert } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
+  changeAnnotation: (datas: Annotation) => Promise<Annotation>;
 }
 
 interface MyData {
@@ -15,18 +15,16 @@ interface MyData {
   xData: number;
 }
 interface State {
-  leads: Point[][];
+  annotation?: Annotation;
   loading: boolean;
-  error: string;
+  error?: string;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
     this.state = {
-      leads: [],
-      loading: true,
-      error: ''
+      loading: true
     };
   }
 
@@ -46,7 +44,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     } else {
       leads = l;
-      this.setState({ leads, loading: false });
+      this.setState({ loading: false, annotation });
     }
 
     const svgWidth = window.innerWidth;
@@ -213,8 +211,26 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
+  public handleClickValidate = async (
+    e: React.FormEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    const { annotation } = this.state;
+    if (annotation) {
+      try {
+        await this.props.changeAnnotation({
+          ...annotation,
+          status: { ...annotation.status, id: 4 }
+        });
+        this.props.history.push('/');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
   public render = () => {
-    const { loading } = this.state;
+    const { loading, error } = this.state;
     if (loading) {
       return (
         <img
@@ -260,11 +276,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
               />
             </Col>
             <Col span={4} className='text-right'>
+              {error && (
+                <Alert message='Error while sending datas' type='error' />
+              )}
               <Button
                 type='primary'
                 icon='check-circle'
                 size='large'
                 className='btn-space btn-heartnotation-secondary'
+                onClick={this.handleClickValidate}
               >
                 Validate
               </Button>

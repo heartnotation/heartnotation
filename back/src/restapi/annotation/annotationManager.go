@@ -170,7 +170,12 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
+	fmt.Println(annotation)
 	if checkErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
+	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
+		checkErrorCode(err, w)
 		return
 	}
 	u.Respond(w, annotation)
