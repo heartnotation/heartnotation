@@ -6,28 +6,44 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
+
 	s "restapi/signal"
 	u "restapi/utils"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
 )
 
-func checkErrorCode(err error, w http.ResponseWriter) {
-	switch err {
-	case gorm.ErrRecordNotFound:
-		http.Error(w, err.Error(), 204)
-	case gorm.ErrInvalidSQL:
-		http.Error(w, err.Error(), 400)
-	case gorm.ErrInvalidTransaction:
-	case gorm.ErrCantStartTransaction:
-	case gorm.ErrUnaddressable:
-		http.Error(w, err.Error(), 500)
-	default:
-		return
+var templateURLAPI string
+
+func init() {
+	url := os.Getenv("API_URL")
+	if url == "" {
+		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
 	}
+	templateURLAPI = url
+}
+
+func checkErrorCode(err error, w http.ResponseWriter) bool {
+	if err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			http.Error(w, err.Error(), 204)
+		case gorm.ErrInvalidSQL:
+			http.Error(w, err.Error(), 400)
+		case gorm.ErrInvalidTransaction:
+		case gorm.ErrCantStartTransaction:
+		case gorm.ErrUnaddressable:
+		default:
+			http.Error(w, err.Error(), 500)
+			return true
+		}
+	}
+	return false
 }
 
 // DeleteAnnotation remove an annotation
@@ -39,9 +55,13 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		log.Print("unvalidate arguments")
 		return
 	}
-	checkErrorCode(db.First(&annotation, v["id"]).Error, w)
+	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
+		return
+	}
 	annotation.IsActive = false
-	checkErrorCode(db.Save(&annotation).Error, w)
+	if checkErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
 }
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
@@ -50,11 +70,26 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 
+	if annotation.SignalID == 0 || annotation.Name == "" {
+		http.Error(w, "Missing fields", 422)
+		return
+	}
+
+	id := strconv.Itoa(int(annotation.SignalID))
+	signalError := s.SendCheckSignal(id)
+	if signalError != nil {
+		http.Error(w, signalError.Error(), 404)
+		return
+	}
+
 	date := time.Now()
 	annotation.CreationDate = date
 	annotation.EditDate = date
+	annotation.IsActive = true
+	annotation.IsEditable = true
 
-	if *(annotation.OrganizationID) != 0 {
+	annotation.StatusID = new(uint)
+	if annotation.OrganizationID != nil {
 		*annotation.StatusID = 2
 	} else {
 		*annotation.StatusID = 1
@@ -65,7 +100,17 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 403)
 		return
 	}
-	u.Respond(w, annotation)
+	a := &Annotation{}
+	e := db.Preload("Status").Preload("Organization").First(&a, annotation.ID).Error
+	if e != nil {
+		http.Error(w, e.Error(), 400)
+		return
+	}
+	a.OrganizationID = nil
+	a.ParentID = nil
+	a.StatusID = nil
+	u.Respond(w, a)
+
 }
 
 // FindAnnotations receive request to get all annotations in database
@@ -86,7 +131,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-// FindAnnotationByID using GET Request
+// FindAnnotationByID Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
 	vars := mux.Vars(r)
@@ -107,13 +152,8 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
-	date := time.Now()
-	annotation.EditDate = date
-	annotation.IsActive = true
-
-	err := db.Save(&annotation).Error
-	if err != nil {
-		http.Error(w, err.Error(), 400)
+	annotation.EditDate = time.Now()
+	if checkErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 	u.Respond(w, annotation)
@@ -147,7 +187,7 @@ func formatToJSONFromAPI(api string) ([]byte, error) {
 
 //En attente de brancher avec le web (route de recuperation d'une annotation)
 func incompleteTestForSignal() {
-	response, err := formatToJSONFromAPI("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin") //A parametrer
+	response, err := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, 1))
 	if err != nil {
 		fmt.Println(" FAIL with \n", err)
 	}
