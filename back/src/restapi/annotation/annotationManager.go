@@ -186,8 +186,14 @@ func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	signalFormated, err := s.FormatData(dataBrut, 3)
+	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
+	var leads int64
+	if leadNumber == "" {
+		leads = 3
+	} else {
+		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
+	}
+	signalFormated, err := s.FormatData(dataBrut, int(leads))
 	if err != nil {
 		return nil, err
 	}
