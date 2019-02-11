@@ -1,10 +1,20 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, AutoComplete, Row, Col } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Select,
+  AutoComplete,
+  Row,
+  Col,
+  Alert
+} from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import axios, { AxiosResponse } from 'axios';
 import { API_URL } from '../utils';
 import 'antd/dist/antd.css';
+import { RouteComponentProps } from 'react-router';
 
 const { Option } = Select;
 
@@ -41,10 +51,14 @@ interface States {
   tagsSelected: Tag[];
   annotations: Annotation[];
   annotationValidateStatus: '' | 'success' | 'error';
+  loading: boolean;
+  error: string;
 }
 
-class CreateAnnotationForm extends Component<FormComponentProps, States> {
-  constructor(props: FormComponentProps) {
+interface Props extends FormComponentProps, RouteComponentProps {}
+
+class CreateAnnotationForm extends Component<Props, States> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       organizations: [],
@@ -53,7 +67,9 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       tagsSearch: [],
       tagsSelected: [],
       annotations: [],
-      annotationValidateStatus: ''
+      annotationValidateStatus: '',
+      loading: false,
+      error: ''
     };
   }
 
@@ -78,7 +94,6 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
 
     Promise.all([tagsAjax, organizationsAjax, annotationsAjax]).then(
       responses => {
-        console.log(responses);
         this.setState({
           tags: responses[0],
           organizations: responses[1],
@@ -144,7 +159,10 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
     const { tags } = this.state;
     const ids = tags.map(t => t.id);
 
-    if (values && values.filter(v => ids.includes(v)).length === 0) {
+    if (
+      values &&
+      values.filter(v => ids.includes(v)).length !== values.length
+    ) {
       callback('This tag doesn\'t exist');
     }
     callback();
@@ -192,6 +210,7 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
 
   public handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
+    this.setState({ loading: true });
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
       if (!err) {
@@ -210,8 +229,15 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
         }
         axios
           .post(`${API_URL}/annotations`, values)
-          .then(console.log)
-          .catch(error => console.log(error.message));
+          .then(() => {
+            this.props.history.push('/');
+          })
+          .catch(() =>
+            this.setState({
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
+            })
+          );
       }
     });
   }
@@ -222,7 +248,9 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
       tags,
       organizationsSearch,
       annotationValidateStatus,
-      tagsSelected
+      tagsSelected,
+      error,
+      loading
     } = this.state;
 
     const filteredTags = tags.filter(
@@ -321,10 +349,11 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
               )}
             </Form.Item>
             <Form.Item {...formTailLayout}>
-              <Button type='primary' htmlType='submit'>
+              <Button type='primary' htmlType='submit' disabled={loading}>
                 Create
               </Button>
             </Form.Item>
+            {error && <Alert message={error} type='error' showIcon={true} />}
           </Form>
         </Col>
       </Row>
