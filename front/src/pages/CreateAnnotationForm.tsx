@@ -252,7 +252,6 @@ class CreateAnnotationForm extends Component<Props, States> {
   public render() {
     const { getFieldDecorator } = this.props.form;
     const {
-<<<<<<< HEAD
       tags,
       organizationsSearch,
       annotationValidateStatus,
@@ -264,14 +263,7 @@ class CreateAnnotationForm extends Component<Props, States> {
     const filteredTags = tags.filter(
       t => !tagsSelected.map(tag => tag.id).includes(t.id)
     );
-=======
-      organizationsSearch,
-      tags,
-      tagsSelected,
-      annotationValidateStatus
-    } = this.state;
-    const filteredTags = tags.filter(t => !tagsSelected.includes(t));
->>>>>>> 32fa8d2c7bc309afdd439eaba395998415a1001e
+
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
