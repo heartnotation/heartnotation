@@ -176,8 +176,8 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 
-func formatToJSONFromAPI(api string) ([][]int16, error) {
-	httpResponse, err := http.Get(api) //A parametrer
+func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
+	httpResponse, err := http.Get(api)
 	if err != nil {
 		return nil, err
 	}
