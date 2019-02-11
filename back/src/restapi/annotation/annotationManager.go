@@ -59,7 +59,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
-	var a JSON
+	var a dto
 	json.NewDecoder(r.Body).Decode(&a)
 
 	tags := []t.Tag{}
