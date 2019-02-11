@@ -2,27 +2,11 @@ import React, { Component } from 'react';
 import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
+import { Annotation } from '../utils';
 
 interface Organization {
   id: number;
   name: string;
-  is_active: boolean;
-}
-
-interface Status {
-  id: number;
-  name: string;
-  is_active: boolean;
-}
-
-export interface Annotation {
-  id: number;
-  name: string;
-  organization: Organization;
-  status: Status;
-  signal_id: number;
-  creation_date: Date;
-  edit_date?: Date;
   is_active: boolean;
 }
 
