@@ -66,7 +66,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.IsActive = false
 	db.Save(&user)
-  
+}
  
 // ModifyUser modifies an annotation
 func ModifyUser(w http.ResponseWriter, r *http.Request) {
