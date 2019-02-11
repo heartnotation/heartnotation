@@ -65,6 +65,4 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user.IsActive = false
 	db.Save(&user)
-
-	u.Respond(w, user)
 }
