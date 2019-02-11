@@ -25,7 +25,9 @@ class App extends Component<any, State> {
       hiddenRoutes: [
         {
           path: '/annotations/:id',
-          component: SignalAnnotation,
+          component: () => (
+            <SignalAnnotation getAnnotation={api.getAnnotationById} />
+          ),
           title: 'Signal annotation'
         },
         {
@@ -38,7 +40,15 @@ class App extends Component<any, State> {
       routes: [
         {
           path: '/new/annotations',
-          component: AnnotationForm,
+          component: () => (
+            <AnnotationForm
+              getTags={api.getTags}
+              getOrganizations={api.getOrganizations}
+              getAnnotations={api.getAnnotations}
+              checkSignal={api.checkSignal}
+              sendAnnotation={api.sendAnnotation}
+            />
+          ),
           title: 'Create annotation',
           iconName: 'plus'
         },

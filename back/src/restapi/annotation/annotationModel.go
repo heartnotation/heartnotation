@@ -2,6 +2,7 @@ package annotation
 
 import (
 	o "restapi/organization"
+	sig "restapi/signal"
 	s "restapi/status"
 	t "restapi/tag"
 	"time"
@@ -9,13 +10,14 @@ import (
 
 // Annotation structure to represent an annotation
 type Annotation struct {
-	ID             uint            `json:"id"`
+	ID             int             `json:"id"`
 	Name           string          `json:"name"`
 	Organization   *o.Organization `gorm:"foreignkey:OrganizationID" json:"organization,omitempty"`
 	OrganizationID *int            `json:"organization_id,omitempty"`
 	Status         *s.Status       `json:"status"`
 	StatusID       *int            `gorm:"TYPE:integer REFERENCES status" json:"status_id,integer,omitempty"`
 	SignalID       int             `json:"signal_id"`
+	Signal         [][]*sig.Point  `gorm:"-" json:"signal,omitempty"`
 	CreationDate   time.Time       `json:"creation_date"`
 	EditDate       time.Time       `json:"edit_date"`
 	IsActive       bool            `json:"is_active"`
