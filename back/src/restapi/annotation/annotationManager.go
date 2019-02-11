@@ -27,19 +27,22 @@ func init() {
 	templateURLAPI = url
 }
 
-func checkErrorCode(err error, w http.ResponseWriter) {
-	switch err {
-	case gorm.ErrRecordNotFound:
-		http.Error(w, err.Error(), 204)
-	case gorm.ErrInvalidSQL:
-		http.Error(w, err.Error(), 400)
-	case gorm.ErrInvalidTransaction:
-	case gorm.ErrCantStartTransaction:
-	case gorm.ErrUnaddressable:
-		http.Error(w, err.Error(), 500)
-	default:
-		return
+func checkErrorCode(err error, w http.ResponseWriter) bool {
+	if err != nil {
+		switch err {
+		case gorm.ErrRecordNotFound:
+			http.Error(w, err.Error(), 204)
+		case gorm.ErrInvalidSQL:
+			http.Error(w, err.Error(), 400)
+		case gorm.ErrInvalidTransaction:
+		case gorm.ErrCantStartTransaction:
+		case gorm.ErrUnaddressable:
+		default:
+			http.Error(w, err.Error(), 500)
+			return true
+		}
 	}
+	return false
 }
 
 // DeleteAnnotation remove an annotation
@@ -51,9 +54,13 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		log.Print("unvalidate arguments")
 		return
 	}
-	checkErrorCode(db.First(&annotation, v["id"]).Error, w)
+	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
+		return
+	}
 	annotation.IsActive = false
-	checkErrorCode(db.Save(&annotation).Error, w)
+	if checkErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
 }
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
@@ -155,15 +162,9 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 	var annotation Annotation
-
 	json.NewDecoder(r.Body).Decode(&annotation)
-	date := time.Now()
-	annotation.EditDate = date
-	annotation.IsActive = true
-
-	err := db.Save(&annotation).Error
-	if err != nil {
-		http.Error(w, err.Error(), 400)
+	annotation.EditDate = time.Now()
+	if checkErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 	u.Respond(w, annotation)
