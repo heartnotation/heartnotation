@@ -217,7 +217,6 @@ class CreateAnnotationForm extends Component<Props, States> {
 
   public handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
-    this.setState({ loading: true });
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
       if (!err) {
@@ -234,6 +233,7 @@ class CreateAnnotationForm extends Component<Props, States> {
         } else {
           values.organization_id = null;
         }
+        this.setState({ loading: true, error: '' });
         axios
           .post(`${API_URL}/annotations`, values)
           .then(() => {
