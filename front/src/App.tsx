@@ -25,7 +25,9 @@ class App extends Component<any, State> {
       hiddenRoutes: [
         {
           path: '/annotations/:id',
-          component: SignalAnnotation,
+          component: () => (
+            <SignalAnnotation getAnnotation={api.getAnnotationById} />
+          ),
           title: 'Signal annotation'
         },
         {
