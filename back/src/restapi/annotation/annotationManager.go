@@ -7,15 +7,14 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	s "restapi/signal"
+	t "restapi/tag"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	_ "github.com/lib/pq"
 )
 
 var templateURLAPI string
@@ -67,50 +66,62 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
-	var annotation Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
+	var a dto
+	json.NewDecoder(r.Body).Decode(&a)
 
-	if annotation.SignalID == 0 || annotation.Name == "" {
-		http.Error(w, "Missing fields", 422)
-		return
-	}
+	tags := []t.Tag{}
 
-	id := strconv.Itoa(int(annotation.SignalID))
-	signalError := s.SendCheckSignal(id)
-	if signalError != nil {
-		http.Error(w, signalError.Error(), 404)
-		return
-	}
-
-	date := time.Now()
-	annotation.CreationDate = date
-	annotation.EditDate = date
-	annotation.IsActive = true
-	annotation.IsEditable = true
-
-	annotation.StatusID = new(uint)
-	if annotation.OrganizationID != nil {
-		*annotation.StatusID = 2
-	} else {
-		*annotation.StatusID = 1
-	}
-
-	err := db.Preload("Organization").Create(&annotation).Error
+	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		http.Error(w, err.Error(), 403)
+		checkErrorCode(err, w)
 		return
 	}
-	a := &Annotation{}
-	e := db.Preload("Status").Preload("Organization").First(&a, annotation.ID).Error
-	if e != nil {
-		http.Error(w, e.Error(), 400)
-		return
-	}
-	a.OrganizationID = nil
-	a.ParentID = nil
-	a.StatusID = nil
-	u.Respond(w, a)
 
+	if len(tags) != len(a.TagsID) {
+		http.Error(w, "Tag not found", 204)
+		return
+	}
+	if a.SignalID == 0 || a.Name == "" {
+		http.Error(w, "Missing field", 424)
+		return
+	}
+	if a.ParentID != 0 {
+		parent := &Annotation{ID: uint(a.ParentID)}
+		err = db.Find(&parent).Error
+		if err != nil {
+			checkErrorCode(err, w)
+			return
+		}
+	}
+	var status int
+	if a.OrganizationID != 0 {
+		status = 2
+	} else {
+		status = 1
+	}
+	date := time.Now()
+	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	if a.OrganizationID == 0 {
+		annotation.OrganizationID = nil
+	}
+	if a.ParentID == 0 {
+		annotation.ParentID = nil
+	}
+	err = db.Create(&annotation).Error
+	if err != nil {
+		checkErrorCode(err, w)
+		return
+	}
+	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
+	if err != nil {
+		checkErrorCode(err, w)
+		return
+	}
+	annotation.ParentID = nil
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
+
+	u.RespondCreate(w, annotation)
 }
 
 // FindAnnotations receive request to get all annotations in database
