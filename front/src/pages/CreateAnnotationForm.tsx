@@ -4,7 +4,6 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import axios, { AxiosResponse } from 'axios';
 import { API_URL } from '../utils';
-import 'antd/dist/antd.css';
 
 const { Option } = Select;
 
@@ -108,8 +107,16 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
   public validateId = (_: any, value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
       callback('You should write a number');
+    } else {
+      axios
+        .get(`${API_URL}/signal/${value}`)
+        .then(() => {
+          callback();
+        })
+        .catch(() => {
+          callback(`Signal n°${value} not found`);
+        });
     }
-    callback();
   }
 
   public handleSearchOrganization = (value: string) => {
@@ -202,10 +209,12 @@ class CreateAnnotationForm extends Component<FormComponentProps, States> {
 
   public render() {
     const { getFieldDecorator } = this.props.form;
-    const { organizationsSearch } = this.state;
-    const { tags } = this.state;
-    const { tagsSelected } = this.state;
-    const { annotationValidateStatus } = this.state;
+    const {
+      organizationsSearch,
+      tags,
+      tagsSelected,
+      annotationValidateStatus
+    } = this.state;
     const filteredTags = tags.filter(t => !tagsSelected.includes(t));
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
