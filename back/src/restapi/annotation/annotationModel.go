@@ -16,7 +16,6 @@ type Annotation struct {
 	Status         *s.Status       `json:"status"`
 	StatusID       *int            `gorm:"TYPE:integer REFERENCES status" json:"status_id,integer,omitempty"`
 	SignalID       int             `json:"signal_id"`
-	Signal         [][]int16       `gorm:"-"`
 	CreationDate   time.Time       `json:"creation_date"`
 	EditDate       time.Time       `json:"edit_date"`
 	IsActive       bool            `json:"is_active"`
