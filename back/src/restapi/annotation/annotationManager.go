@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	s "restapi/signal"
@@ -23,7 +24,7 @@ var templateURLAPI string
 func init() {
 	url := os.Getenv("API_URL")
 	if url == "" {
-		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%d\" where \\%d will be an integer")
+		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
 	}
 	templateURLAPI = url
 }

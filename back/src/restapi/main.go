@@ -4,6 +4,7 @@ import (
 	"net/http"
 	a "restapi/annotation"
 	o "restapi/organization"
+	s "restapi/signal"
 	t "restapi/tag"
 	u "restapi/user"
 	utils "restapi/utils"
@@ -23,6 +24,7 @@ func main() {
 	router.HandleFunc("/annotations", a.ModifyAnnotation).Methods("PUT")
 	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/annotations/{id}", a.DeleteAnnotation).Methods("DELETE")
+	router.HandleFunc("/signal/{id}", s.CheckSignal).Methods("GET")
 
 	// Organizations
 	router.HandleFunc("/organizations", o.GetOrganizations).Methods("GET")

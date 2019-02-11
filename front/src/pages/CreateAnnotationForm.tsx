@@ -13,7 +13,6 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import axios, { AxiosResponse } from 'axios';
 import { API_URL } from '../utils';
-import 'antd/dist/antd.css';
 import { RouteComponentProps } from 'react-router';
 
 const { Option } = Select;
@@ -115,8 +114,16 @@ class CreateAnnotationForm extends Component<Props, States> {
   public validateId = (_: any, value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
       callback('You should write a number');
+    } else {
+      axios
+        .get(`${API_URL}/signal/${value}`)
+        .then(() => {
+          callback();
+        })
+        .catch(() => {
+          callback(`Signal n°${value} not found`);
+        });
     }
-    callback();
   }
 
   public handleSearchOrganization = (value: string) => {
@@ -245,6 +252,7 @@ class CreateAnnotationForm extends Component<Props, States> {
   public render() {
     const { getFieldDecorator } = this.props.form;
     const {
+<<<<<<< HEAD
       tags,
       organizationsSearch,
       annotationValidateStatus,
@@ -256,6 +264,14 @@ class CreateAnnotationForm extends Component<Props, States> {
     const filteredTags = tags.filter(
       t => !tagsSelected.map(tag => tag.id).includes(t.id)
     );
+=======
+      organizationsSearch,
+      tags,
+      tagsSelected,
+      annotationValidateStatus
+    } = this.state;
+    const filteredTags = tags.filter(t => !tagsSelected.includes(t));
+>>>>>>> 32fa8d2c7bc309afdd439eaba395998415a1001e
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
