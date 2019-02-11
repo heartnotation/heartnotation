@@ -170,7 +170,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
-	fmt.Println(annotation)
+
 	if checkErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
