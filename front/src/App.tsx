@@ -54,7 +54,13 @@ class App extends Component<any, State> {
         },
         {
           path: '/new/users',
-          component: UserCreation,
+          component: () => (
+            <UserCreation
+              getOrganizations={api.getOrganizations}
+              getRoles={api.getRoles}
+              sendUser={api.sendUser}
+            />
+          ),
           title: 'Create User',
           iconName: 'user-add'
         },
