@@ -124,6 +124,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     focus
       .datum<MyData[]>(dataset2)
+      .append('g')
+      .attr('id', 'mainGraph')
       .append('path')
       .attr('class', 'line')
       .attr('d', lineMain1);
@@ -173,8 +175,25 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .brushX()
       .extent([[0, 0], [width, height]])
       .on('end', () => {
-        console.log(d3.event.selection.map(xScale.invert, xScale));
-        console.log('Il faut enregistrer les coordonnées')
+        const domain = d3.event.selection.map(xScale.invert, xScale);
+        const xStart = domain[0];
+        const xEnd = domain[1];
+        const areaData = [{xData: xStart, yData: yMin }, {xData: xEnd, yData: yMax}];
+        const area = d3
+          .area<MyData>()
+          .x(d => xScale(d.xData))
+          .y(d => yScale(d.yData));
+        focus
+          .datum<MyData[]>(areaData)
+          .select('#mainGraph')
+          .append('rect')
+          .attr('x', xScale(xStart))
+          .attr('y', yScale(yMax - yMin))
+          .attr('width', xScale(xEnd-xStart))
+          .attr('height', yScale(yMin))
+          .attr('fill', 'red')
+          .attr('d', area);
+        console.log(xStart + '     ' + xEnd);
       });
 
     focus

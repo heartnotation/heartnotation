@@ -142,3 +142,9 @@
   margin-top : 20px;
   text-align: center;
 }
+
+.area {
+  fill: orange;
+  stroke: orange;
+  stroke-width: 2px;
+}
