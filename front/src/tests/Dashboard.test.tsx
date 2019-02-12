@@ -19,13 +19,12 @@ describe('Dashboard page', () => {
   beforeEach(() => {
     mountedPage = mount(
       <Router
-        routes={[
-          {
-            path: '/',
-            component: () => <Dashboard getAnnotations={mockPromise} />,
-            title: 'Dashboard'
-          }
-        ]}
+        defaultRoute={{
+          path: '/',
+          component: () => <Dashboard getAnnotations={mockPromise} />,
+          title: 'Dashboard'
+        }}
+        routes={[]}
       />
     ).find(Dashboard);
   });
