@@ -39,13 +39,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user := &User{Mail: a.Mail, Role: role, Organizations: organizations, IsActive: true}
 
 	err = db.Preload("Role").Create(&user).Error
+
 	if err != nil {
 		http.Error(w, err.Error(), 403)
 		return
 	}
-
 	user.RoleID = nil
-
 	u.Respond(w, user)
 }
 
