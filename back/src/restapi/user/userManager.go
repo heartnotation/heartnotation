@@ -75,6 +75,7 @@ func FindUserByID(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, user)
 }
 
+
 // DeleteUser disable user give in URL information (IsActive -> false)
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
@@ -89,7 +90,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	user.IsActive = false
 	db.Save(&user)
 }
-
+ 
 // ModifyUser modifies an annotation
 func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
@@ -105,15 +106,4 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	user.RoleID = nil
 
 	u.Respond(w, user)
-}
-
-// GetAllRoles return users from database
-func GetAllRoles(w http.ResponseWriter, r *http.Request) {
-	roles := &[]Role{}
-	err := u.GetConnection().Where("is_active = ?", true).Find(&roles).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
-		return
-	}
-	u.Respond(w, roles)
 }

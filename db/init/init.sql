@@ -70,13 +70,14 @@ CREATE TABLE INTERVAL (
 	is_active boolean NOT NULL
 );
 
-DROP TABLE IF EXISTS ANNOTATIONINTERVAL_USER CASCADE;
-CREATE TABLE ANNOTATIONINTERVAL_USER (
+DROP TABLE IF EXISTS ANNOTATION_INTERVAL_USER CASCADE;
+CREATE TABLE ANNOTATION_INTERVAL_USER (
 	id SERIAL PRIMARY KEY,
 	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	interval_id bigint REFERENCES INTERVAL(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	user_id bigint REFERENCES USERPROFILE(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	comment_date timestamp NOT NULL
+	comment varchar(180),
+	date timestamp NOT NULL
 );
 
 DROP TABLE IF EXISTS TAG CASCADE;
@@ -111,6 +112,15 @@ CREATE TABLE OPERATOR_OF (
 	operation_time date
 );
 
+DROP TABLE IF EXISTS ANNOTATION_USER;
+CREATE TABLE ANNOTATION_USER (
+	id SERIAL PRIMARY KEY,
+	user_id bigint REFERENCES USERPROFILE(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	comment varchar(360),
+	date timestamp NOT NULL
+);
+
 ALTER TABLE ORGANIZATION OWNER TO heart;
 ALTER TABLE STATUS OWNER TO heart;
 ALTER TABLE USERROLE OWNER TO heart;
@@ -118,11 +128,13 @@ ALTER TABLE USERPROFILE OWNER TO heart;
 ALTER TABLE ORGANIZATION_USER OWNER TO heart;
 ALTER TABLE ANNOTATION OWNER TO heart;
 ALTER TABLE INTERVAL OWNER TO heart;
-ALTER TABLE ANNOTATIONINTERVAL_USER OWNER TO heart;
+ALTER TABLE ANNOTATION_INTERVAL_USER OWNER TO heart;
 ALTER TABLE TAG OWNER TO heart;
 ALTER TABLE INTERVAL_TAG OWNER TO heart;
 ALTER TABLE OPERATOR_OF OWNER TO heart;
 ALTER TABLE ANNOTATION_TAG OWNER TO heart;
+ALTER TABLE ANNOTATION_USER OWNER TO heart;
+
 
 -----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
@@ -215,16 +227,16 @@ INSERT INTO INTERVAL (timestamp_start, timestamp_end, is_active)
 INSERT INTO INTERVAL (timestamp_start, timestamp_end, is_active) 
 	VALUES (11, 29, TRUE);
 
--- ANNOTATIONINTERVAL_USER
+-- ANNOTATION_INTERVAL_USER
 
-INSERT INTO ANNOTATIONINTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 1, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment, date) 
+	VALUES (1, 1, 1, 'HOLLY', '2004-10-19 10:23:54');
 
-INSERT INTO ANNOTATIONINTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 2, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment, date) 
+	VALUES (1, 2, 1, 'MOLLY', '2004-10-19 10:23:54');
 
-INSERT INTO ANNOTATIONINTERVAL_USER (annotation_id, interval_id, user_id, comment_date) 
-	VALUES (1, 3, 1, '2004-10-19 10:23:54');
+INSERT INTO ANNOTATION_INTERVAL_USER (annotation_id, interval_id, user_id, comment, date) 
+	VALUES (1, 3, 1, 'gOdsAkE', '2004-10-19 10:23:54');
 
 -- TAG
 
@@ -238,6 +250,7 @@ INSERT INTO TAG (parent_id, name, color, is_active)
 	VALUES (2, 'Weird lungs', 'green', TRUE);
 
 -- ANNOTATION_TAG
+
 INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
 	VALUES (1, 1);
 INSERT INTO ANNOTATION_TAG(annotation_id, tag_id)
@@ -273,7 +286,16 @@ INSERT INTO OPERATOR_OF (user_id, status_id, annotation_id, operation_time)
 INSERT INTO OPERATOR_OF (user_id, status_id, annotation_id, operation_time) 
 	VALUES (1, 1, 1, '2004-10-19 10:23:54');
 
+-- ANNOTATION_USER
 
+INSERT INTO ANNOTATION_USER (annotation_id, user_id, comment, date) 
+	VALUES (1, 2, 'The lungs are presenting an incredible amount of water which is coming from an unresolved source', '2004-10-19 10:23:54');
+
+INSERT INTO ANNOTATION_USER (annotation_id, user_id, comment, date) 
+	VALUES (1, 3, 'Lungs are actually defectuous due to drugs injections and too much inhale of smoke', '2004-10-19 10:23:54');
+
+INSERT INTO ANNOTATION_USER (annotation_id, user_id, comment, date) 
+	VALUES (1, 1, '80% of the cause is daily smoke and sniffing white rails', '2004-10-19 10:23:54');
 
 
 

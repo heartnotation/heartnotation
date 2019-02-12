@@ -1,13 +1,14 @@
-import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
+import { Tag, Alert } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
+import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
+  changeAnnotation: (datas: Annotation) => Promise<Annotation>;
 }
 
 interface MyData {
@@ -15,18 +16,16 @@ interface MyData {
   xData: number;
 }
 interface State {
-  leads: Point[][];
+  annotation?: Annotation;
   loading: boolean;
-  error: string;
+  error?: string;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
     this.state = {
-      leads: [],
-      loading: true,
-      error: ''
+      loading: true
     };
   }
 
@@ -46,7 +45,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     } else {
       leads = l;
-      this.setState({ leads, loading: false });
+      this.setState({ loading: false, annotation });
     }
 
     const svgWidth = window.innerWidth;
@@ -213,8 +212,27 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
+  public handleClickValidate = async (
+    e: React.FormEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    const { annotation } = this.state;
+    if (annotation) {
+      try {
+        await this.props.changeAnnotation({
+          ...annotation,
+          status: { ...annotation.status, id: 4 }
+        });
+        this.props.history.push('/');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
   public render = () => {
-    const { loading } = this.state;
+    const { loading, annotation, error } = this.state;
+
     if (loading) {
       return (
         <img
@@ -224,70 +242,32 @@ class SignalAnnotation extends Component<RouteProps, State> {
         />
       );
     }
+    if (error) {
+      return <Alert message={error} type='error' />;
+    }
 
     return (
-      <div>
-        <div className='signal-header'>
-          <Row>
-            <Col span={4} className='text-left center-vertical-switch'>
-              <Switch
-                checkedChildren={<Icon type='check' />}
-                unCheckedChildren={<Icon type='close' />}
-                defaultChecked={true}
-              />{' '}
-              Display Leads
-            </Col>
-            <Col span={16} className='text-center'>
-              <Button
-                type='primary'
-                icon='box-plot'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              >
-                Intervals
-              </Button>
-              <Button
-                type='primary'
-                icon='undo'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              />
-              <Button
-                type='primary'
-                icon='redo'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              />
-            </Col>
-            <Col span={4} className='text-right'>
-              <Button
-                type='primary'
-                icon='check-circle'
-                size='large'
-                className='btn-space btn-heartnotation-secondary'
-              >
-                Validate
-              </Button>
-            </Col>
-          </Row>
-        </div>
-        <div className='signal-main-container'>
-          <div className='signal-legend-container'>
-            <Tag color='magenta'>magenta</Tag>
-            <Tag color='red'>red</Tag>
-            <Tag color='volcano'>volcano</Tag>
-            <Tag color='orange'>orange</Tag>
-            <Tag color='gold'>gold</Tag>
-            <Tag color='lime'>lime</Tag>
-            <Tag color='green'>green</Tag>
-            <Tag color='cyan'>cyan</Tag>
-            <Tag color='blue'>blue</Tag>
-            <Tag color='geekblue'>geekblue</Tag>
-            <Tag color='purple'>purple</Tag>
+      annotation && (
+        <div>
+          <HeaderSignalAnnotation annotation={annotation} />
+          <div className='signal-main-container'>
+            <div className='signal-legend-container'>
+              <Tag color='magenta'>magenta</Tag>
+              <Tag color='red'>red</Tag>
+              <Tag color='volcano'>volcano</Tag>
+              <Tag color='orange'>orange</Tag>
+              <Tag color='gold'>gold</Tag>
+              <Tag color='lime'>lime</Tag>
+              <Tag color='green'>green</Tag>
+              <Tag color='cyan'>cyan</Tag>
+              <Tag color='blue'>blue</Tag>
+              <Tag color='geekblue'>geekblue</Tag>
+              <Tag color='purple'>purple</Tag>
+            </div>
+            <div className='signal-graph-container' id='signal' />
           </div>
-          <div className='signal-graph-container' id='signal' />
         </div>
-      </div>
+      )
     );
   }
 }

@@ -6,13 +6,20 @@ import UserCreation from '../pages/UserCreation';
 Enzyme.configure({ adapter: new Adapter() });
 
 describe('User creation page', () => {
-  let mountedPage: Enzyme.ReactWrapper;
+  let mountedPage: Enzyme.ReactWrapper | undefined;
 
   beforeEach(() => {
-    mountedPage = mount(<UserCreation />);
+    mountedPage = undefined;
   });
 
-  it('renders', () => {
-    expect(mountedPage).not.toBeFalsy();
+  const page = () => {
+    if (!mountedPage) {
+      mountedPage = mount(<UserCreation />);
+    }
+    return mountedPage;
+  };
+
+  it('renders correct body', () => {
+    expect(page().html()).toEqual('<h2>User creation form</h2>');
   });
 });

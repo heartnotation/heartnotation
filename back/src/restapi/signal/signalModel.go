@@ -33,9 +33,6 @@ func FormatData(data []byte, leads int) ([][]*Point, error) {
 			if err := binary.Read(buffer, binary.BigEndian, &value); err != nil {
 				return nil, err
 			}
-			if value != 0 {
-				fmt.Println(value)
-			}
 			formatedDatas[lead][sample] = &Point{X: sample, Y: value}
 		}
 	}

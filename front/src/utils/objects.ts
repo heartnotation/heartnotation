@@ -3,6 +3,7 @@ export interface Annotation {
   name: string;
   organization: Organization;
   status: Status;
+  parent: Annotation;
   signal?: Point[][];
   signal_id: number;
   creation_date: Date;
