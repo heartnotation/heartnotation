@@ -15,6 +15,7 @@ interface MyData {
 interface State {
   leads: MyData[][];
   loading: boolean;
+  moving: boolean;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
@@ -22,8 +23,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
     super(props);
     this.state = {
       leads: [],
-      loading: true
+      loading: true,
+      moving: true
     };
+  }
+
+  public onChange = (checked: boolean) => {
+    if(checked === true) {
+      d3.select(".zoom").style("display", "none");
+    } else {
+      d3.select(".zoom").style("display", "block");
+    }
   }
 
   public componentDidMount = async () => {
@@ -145,26 +155,39 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .call(xAxis2)
       .attr('transform', 'translate(0,' + height2 + ')');
 
-    // add zoom
+ 
     const zoom: any = d3
       .zoom()
       .scaleExtent([1, Infinity])
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
-      .on('zoom', zoomed);
-
-    svg
-      .append('rect')
-      .attr('class', 'zoom')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      .call(zoom);
+      .on('zoom', zoomed)
+      .filter(() => this.state.moving);
 
     const brush: any = d3
       .brushX()
       .extent([[0, 0], [width, height2]])
       .on('brush end', brushed);
+
+    const brushAnnotation: any = d3
+      .brushX()
+      .extent([[0, 0], [width, height]])
+      .on('end', () => {
+        console.log(d3.event.selection.map(xScale.invert, xScale));
+        console.log('Il faut enregistrer les coordonnées')
+      });
+
+    focus
+      .append('g')
+      .attr('class', 'brush')
+      .call(brushAnnotation);
+
+    focus
+      .append('rect')
+      .attr('class', 'zoom')
+      .attr('width', width)
+      .attr('height', height)
+      .call(zoom);
 
     context
       .append('g')
@@ -212,8 +235,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .append('rect')
       .attr('width', width)
       .attr('height', height);
+
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
+
+  
 
   public render = () => {
     const { loading } = this.state;
@@ -245,6 +271,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
             <Tag color='blue'>blue</Tag>
             <Tag color='geekblue'>geekblue</Tag>
             <Tag color='purple'>purple</Tag>
+          </div>
+          <div className='signal-toolbox-container'>
+            Navigation Mode <Switch onChange={this.onChange} /> Annotation Mode
           </div>
           <div className='signal-graph-container' id='signal' />
         </div>
