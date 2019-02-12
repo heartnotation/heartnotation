@@ -32,7 +32,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
-	if len(r.URL.String()) < len(utils.CheckRoutes["annotations"]) || r.URL.String()[0:len(utils.CheckRoutes["annotations"])] != "/annotations/" {
+	if len(r.URL.String()) < len(u.CheckRoutes["annotations"]) || r.URL.String()[0:len(u.CheckRoutes["annotations"])] != "/annotations/" {
 		http.Error(w, "Bad request", 400)
 		return
 	}
