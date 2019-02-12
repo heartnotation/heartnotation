@@ -2,8 +2,9 @@ import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Row, Col, Icon, Switch, Button, Tag } from 'antd';
+import { Row, Col, Icon, Switch, Button, Tag, Steps } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
+import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {}
 
@@ -216,6 +217,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
   public render = () => {
     const { loading } = this.state;
+    const Step = Steps.Step;
+
     if (loading) {
       return (
         <img
@@ -228,50 +231,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     return (
       <div>
-        <div className='signal-header'>
-          <Row>
-            <Col span={4} className='text-left center-vertical-switch'>
-              <Switch
-                checkedChildren={<Icon type='check' />}
-                unCheckedChildren={<Icon type='close' />}
-                defaultChecked={true}
-              />{' '}
-              Display Leads
-            </Col>
-            <Col span={16} className='text-center'>
-              <Button
-                type='primary'
-                icon='box-plot'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              >
-                Intervals
-              </Button>
-              <Button
-                type='primary'
-                icon='undo'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              />
-              <Button
-                type='primary'
-                icon='redo'
-                size='large'
-                className='btn-space btn-heartnotation-primary'
-              />
-            </Col>
-            <Col span={4} className='text-right'>
-              <Button
-                type='primary'
-                icon='check-circle'
-                size='large'
-                className='btn-space btn-heartnotation-secondary'
-              >
-                Validate
-              </Button>
-            </Col>
-          </Row>
-        </div>
+        <HeaderSignalAnnotation annotation_id={123} />
         <div className='signal-main-container'>
           <div className='signal-legend-container'>
             <Tag color='magenta'>magenta</Tag>
