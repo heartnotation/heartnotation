@@ -156,7 +156,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	u.Respond(w, annotation)
