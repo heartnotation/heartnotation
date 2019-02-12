@@ -11,6 +11,7 @@ import SignalAnnotation from './pages/SignalAnnotation';
 import { api } from './utils';
 
 interface State {
+  defaultRoute: AppRoute;
   routes: AppRoute[];
   hiddenRoutes: AppRoute[];
 }
@@ -21,18 +22,19 @@ class App extends Component<any, State> {
     /**
      * TODO remplacer pour récupérer les routes en fonctions du rôle de l'utilisateur connecté.
      */
+    const defaultRoute = {
+      path: '/',
+      exact: true,
+      component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+      title: 'Dashboard'
+    };
     this.state = {
+      defaultRoute,
       hiddenRoutes: [
         {
           path: '/annotations/:id',
           component: SignalAnnotation,
           title: 'Signal annotation'
-        },
-        {
-          path: '/',
-          exact: true,
-          component: () => <Dashboard getAnnotations={api.getAnnotations} />,
-          title: 'Dashboard'
         }
       ],
       routes: [
@@ -79,10 +81,14 @@ class App extends Component<any, State> {
   }
 
   public render() {
-    const { routes, hiddenRoutes } = this.state;
+    const { defaultRoute, routes, hiddenRoutes } = this.state;
     return (
       <div>
-        <AppRouter routes={routes} hiddenRoutes={hiddenRoutes} />
+        <AppRouter
+          defaultRoute={defaultRoute}
+          routes={routes}
+          hiddenRoutes={hiddenRoutes}
+        />
       </div>
     );
   }
