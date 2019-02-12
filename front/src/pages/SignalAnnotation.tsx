@@ -1,27 +1,30 @@
-import axios from 'axios';
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Row, Col, Icon, Switch, Button, Tag, Steps } from 'antd';
+import { Tag, Alert } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
+import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 
-interface RouteProps extends RouteComponentProps<{ id: string }> {}
+interface RouteProps extends RouteComponentProps<{ id: string }> {
+  getAnnotation: (id: number) => Promise<Annotation>;
+  changeAnnotation: (datas: Annotation) => Promise<Annotation>;
+}
 
 interface MyData {
   yData: number;
   xData: number;
 }
 interface State {
-  leads: MyData[][];
+  annotation?: Annotation;
   loading: boolean;
+  error?: string;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
     this.state = {
-      leads: [],
       loading: true
     };
   }
@@ -30,29 +33,20 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const {
       match: {
         params: { id }
-      }
+      },
+      getAnnotation
     } = this.props;
-    const URL = `https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/${id}.bin`;
-    const { data, headers } = await axios.get(URL, {
-      responseType: 'arraybuffer'
-    });
-    const leadNumber = headers.LEAD_NUMBER ? headers.LEAD_NUMBER : 3;
-    const datas: Uint16Array = new Uint16Array(data);
 
-    const leads = new Array(leadNumber).fill(null).map(_ => new Array());
-
-    for (let i = 0; i < datas.length; i += leadNumber) {
-      for (let j = 0; j < leadNumber; j++) {
-        if (datas[i * leadNumber + j] !== undefined) {
-          leads[j].push({
-            xData: i * leadNumber + j,
-            yData: datas[i * leadNumber + j]
-          });
-        }
-      }
+    const annotation = await getAnnotation(parseInt(id, 10));
+    const l = annotation.signal;
+    let leads: Point[][];
+    if (!l) {
+      this.setState({ error: 'No signal found' });
+      return;
+    } else {
+      leads = l;
+      this.setState({ loading: false, annotation });
     }
-
-    await this.setState({ leads, loading: false });
 
     const svgWidth = window.innerWidth;
     const svgHeight = 600;
@@ -75,12 +69,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
 
-    const dataset2 = leads[2];
+    const dataset2: Point[] = leads[1];
 
-    const xMax = d3.max(dataset2, d => d.xData);
-    const yMax = d3.max(dataset2, d => d.yData) + 5000;
-    const xMin = d3.min(dataset2, d => d.xData);
-    const yMin = d3.min(dataset2, d => d.yData) - 5000;
+    const yMa = d3.max(dataset2, d => d.y);
+    const yMi = d3.min(dataset2, d => d.y);
+
+    const xMax = d3.max(dataset2, d => d.x);
+    const yMax = (yMa ? yMa : 0) + 100;
+    const xMin = d3.min(dataset2, d => d.x);
+    const yMin = (yMi ? yMi : 0) - 100;
 
     const xScale = d3
       .scaleLinear()
@@ -103,29 +100,29 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
 
     dataset2.sort((a, b) => {
-      return a.xData - b.xData;
+      return a.x - b.x;
     });
 
     const lineMain1 = d3
-      .line<MyData>()
-      .x(d => xScale(d.xData))
-      .y(d => yScale(d.yData))
+      .line<Point>()
+      .x(d => xScale(d.x))
+      .y(d => yScale(d.y))
       .curve(d3.curveBasis);
 
     focus
-      .datum<MyData[]>(dataset2)
+      .datum<Point[]>(dataset2)
       .append('path')
       .attr('class', 'line')
       .attr('d', lineMain1);
 
     const linePreview1 = d3
-      .line<MyData>()
-      .x(d => xScale2(d.xData))
-      .y(d => yScale2(d.yData))
+      .line<Point>()
+      .x(d => xScale2(d.x))
+      .y(d => yScale2(d.y))
       .curve(d3.curveBasis);
 
     context
-      .datum<MyData[]>(dataset2)
+      .datum<Point[]>(dataset2)
       .append('path')
       .attr('class', 'line')
       .attr('d', linePreview1);
@@ -176,7 +173,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
       focus
-        .datum<MyData[]>(dataset2)
+        .datum<Point[]>(dataset2)
         .select('.line')
         .attr('d', lineMain1);
       xAxisGroup.call(xAxis);
@@ -199,7 +196,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
 
       focus
-        .datum<MyData[]>(dataset2)
+        .datum<Point[]>(dataset2)
         .select('.line')
         .attr('d', lineMain1);
       xAxisGroup.call(xAxis);
@@ -215,9 +212,26 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
+  public handleClickValidate = async (
+    e: React.FormEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    const { annotation } = this.state;
+    if (annotation) {
+      try {
+        await this.props.changeAnnotation({
+          ...annotation,
+          status: { ...annotation.status, id: 4 }
+        });
+        this.props.history.push('/');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+
   public render = () => {
-    const { loading } = this.state;
-    const Step = Steps.Step;
+    const { loading, annotation, error } = this.state;
 
     if (loading) {
       return (
@@ -228,27 +242,32 @@ class SignalAnnotation extends Component<RouteProps, State> {
         />
       );
     }
+    if (error) {
+      return <Alert message={error} type='error' />;
+    }
 
     return (
-      <div>
-        <HeaderSignalAnnotation annotation_id={123} />
-        <div className='signal-main-container'>
-          <div className='signal-legend-container'>
-            <Tag color='magenta'>magenta</Tag>
-            <Tag color='red'>red</Tag>
-            <Tag color='volcano'>volcano</Tag>
-            <Tag color='orange'>orange</Tag>
-            <Tag color='gold'>gold</Tag>
-            <Tag color='lime'>lime</Tag>
-            <Tag color='green'>green</Tag>
-            <Tag color='cyan'>cyan</Tag>
-            <Tag color='blue'>blue</Tag>
-            <Tag color='geekblue'>geekblue</Tag>
-            <Tag color='purple'>purple</Tag>
+      annotation && (
+        <div>
+          <HeaderSignalAnnotation annotation={annotation} />
+          <div className='signal-main-container'>
+            <div className='signal-legend-container'>
+              <Tag color='magenta'>magenta</Tag>
+              <Tag color='red'>red</Tag>
+              <Tag color='volcano'>volcano</Tag>
+              <Tag color='orange'>orange</Tag>
+              <Tag color='gold'>gold</Tag>
+              <Tag color='lime'>lime</Tag>
+              <Tag color='green'>green</Tag>
+              <Tag color='cyan'>cyan</Tag>
+              <Tag color='blue'>blue</Tag>
+              <Tag color='geekblue'>geekblue</Tag>
+              <Tag color='purple'>purple</Tag>
+            </div>
+            <div className='signal-graph-container' id='signal' />
           </div>
-          <div className='signal-graph-container' id='signal' />
         </div>
-      </div>
+      )
     );
   }
 }

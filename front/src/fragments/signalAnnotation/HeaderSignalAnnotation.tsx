@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { Row, Col, Icon, Switch, Button, Steps } from 'antd';
-import axios, { AxiosResponse } from 'axios';
-import { API_URL } from '../../utils';
+import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
+import { Annotation, api } from '../../utils';
+import { RouteComponentProps, withRouter } from 'react-router';
 
 interface State {
   stepProcess: number;
+  error?: string;
 }
 
 interface Status {
@@ -13,51 +14,70 @@ interface Status {
   };
 }
 
-interface Props {
-  annotation_id: number;
+interface Props extends RouteComponentProps {
+  annotation: Annotation;
 }
 
 interface PropsButton {
   conditionnal_id: number;
-  setProcess: (n: number) => void;
+  annotation: Annotation;
+  handleSubmit: (a: Annotation) => void;
 }
 
-function ValidateButton(props: any) {
+function ValidateButton(props: PropsButton) {
+  const { annotation, handleSubmit } = props;
   return (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       className='btn-space btn-heartnotation-secondary'
-      onClick={() => props.setClick(2)}
+      onClick={() => {
+        handleSubmit({
+          ...annotation,
+          status: { ...annotation.status, id: 5 }
+        });
+      }}
     >
       Validate
     </Button>
   );
 }
 
-function InvalidateButton(props: any) {
+function InvalidateButton(props: PropsButton) {
+  const { annotation } = props;
   return (
     <Button
       type='primary'
       icon='close-circle'
       size='large'
       className='btn-space btn-heartnotation-secondary'
-      onClick={() => props.setClick(0)}
+      onClick={() => {
+        props.handleSubmit({
+          ...annotation,
+          status: { ...annotation.status, id: 3 }
+        });
+      }}
     >
       Invalidate
     </Button>
   );
 }
 
-function CompleteButton(props: any) {
+function CompleteButton(props: PropsButton) {
+  const { annotation, handleSubmit } = props;
   return (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       className='btn-space btn-heartnotation-secondary'
-      onClick={() => props.setClick(1)}
+      onClick={() => {
+        handleSubmit({
+          ...annotation,
+          status: { ...annotation.status, id: 4 }
+        });
+      }}
     >
       Complete
     </Button>
@@ -65,16 +85,17 @@ function CompleteButton(props: any) {
 }
 
 function ConditionalButton(props: PropsButton) {
-  if (props.conditionnal_id === 0) {
-    return <CompleteButton setClick={props.setProcess} />;
-  } else if (props.conditionnal_id === 1) {
+  const { conditionnal_id } = props;
+  if (conditionnal_id === 0) {
+    return <CompleteButton {...props} />;
+  } else if (conditionnal_id === 1) {
     return (
       <>
-        <ValidateButton setClick={props.setProcess} />
-        <InvalidateButton setClick={props.setProcess} />
+        <ValidateButton {...props} />
+        <InvalidateButton {...props} />
       </>
     );
-  } else if (props.conditionnal_id === 2) {
+  } else if (conditionnal_id === 2) {
     return null;
   }
   return null;
@@ -83,39 +104,40 @@ function ConditionalButton(props: PropsButton) {
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
+    let step = -1;
+    switch (props.annotation.status.name) {
+      case 'IN_PROCESS':
+        step = 0;
+        break;
+      case 'COMPLETED':
+        step = 1;
+        break;
+      case 'VALIDATED':
+        step = 2;
+        break;
+      default:
+        break;
+    }
     this.state = {
-      stepProcess: 0
+      stepProcess: step
     };
   }
 
-  public componentDidMount = () => {
-    const { annotation_id } = this.props;
-    axios
-      .get<Status>('/annotations/' + annotation_id)
-      .then((res: AxiosResponse<Status>) => {
-        switch (res.data.status.name) {
-          case 'IN_PROGRESS':
-            this.setState({ stepProcess: 0 });
-            break;
-          case 'COMPLETED':
-            this.setState({ stepProcess: 1 });
-            break;
-          case 'VALIDATED':
-            this.setState({ stepProcess: 2 });
-            break;
-          default: // error here
-        }
-        return res.data;
+  public handleSubmit = (annotation: Annotation) => {
+    api
+      .changeAnnotation(annotation)
+      .then(() => {
+        this.props.history.push('/');
+      })
+      .catch(error => {
+        this.setState({ error });
       });
-  }
-
-  public setProcess = (value: number) => {
-    this.setState({ stepProcess: value });
   }
 
   public render() {
     const { Step } = Steps;
-    const { stepProcess } = this.state;
+    const { annotation } = this.props;
+    const { stepProcess, error } = this.state;
     return (
       <div className='signal-header'>
         <Row>
@@ -159,8 +181,10 @@ class HeaderSignalAnnotation extends Component<Props, State> {
           <Col span={4} className='text-right'>
             <ConditionalButton
               conditionnal_id={stepProcess}
-              setProcess={this.setProcess}
+              annotation={annotation}
+              handleSubmit={this.handleSubmit}
             />
+            {error && <Alert message={error} type='error' />}
           </Col>
         </Row>
       </div>
@@ -168,4 +192,4 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   }
 }
 
-export default HeaderSignalAnnotation;
+export default withRouter(HeaderSignalAnnotation);
