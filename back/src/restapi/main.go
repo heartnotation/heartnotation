@@ -38,6 +38,6 @@ func main() {
 	router.HandleFunc("/users/{id}", u.FindUserByID).Methods("GET")
 	router.HandleFunc("/users/{id}", u.DeleteUser).Methods("DELETE")
 	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
-  
+
 	http.ListenAndServe("0.0.0.0:8000", router)
 }

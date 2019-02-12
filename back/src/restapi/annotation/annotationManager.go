@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 
 	s "restapi/signal"
 	t "restapi/tag"
+	"restapi/utils"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
@@ -48,13 +48,21 @@ func checkErrorCode(err error, w http.ResponseWriter) bool {
 
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
-	db := u.GetConnection()
-	var annotation Annotation
-	v := mux.Vars(r)
-	if len(v) != 1 {
-		log.Print("unvalidate arguments")
+	if r.Method != "DELETE" {
+		http.Error(w, "Bad request", 400)
 		return
 	}
+	if len(r.URL.String()) < len(utils.CheckRoutes["annotations"]) || r.URL.String()[0:len(utils.CheckRoutes["annotations"])] != "/annotations/" {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	v := mux.Vars(r)
+	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	var annotation Annotation
+	db := u.GetConnection()
 	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
 		return
 	}
