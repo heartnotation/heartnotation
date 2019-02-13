@@ -18,6 +18,12 @@ interface State {
   error?: string;
 }
 
+interface GraphElement {
+  selector:string;
+  data:Point[];
+  object: d3.Line<Point> | d3.Area<Point>;
+}
+
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
@@ -46,8 +52,10 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const annotation = await getAnnotation(parseInt(id, 10));
     const l = annotation.signal;
     let leads: Point[][];
+    const GraphElements:GraphElement[] = [];
+
     if (!l) {
-      this.setState({ error: 'No signal found' });
+      this.setState({ error: 'No signal found', loading: false });
       return;
     } else {
       leads = l;
@@ -117,6 +125,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     focus
       .datum<Point[]>(dataset2)
+      .append('g')
+      .attr('id', 'mainGraph')
       .append('path')
       .attr('class', 'line')
       .attr('d', lineMain1);
@@ -127,8 +137,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .y(d => yScale2(d.y))
       .curve(d3.curveBasis);
 
+    GraphElements.push({ selector:'.line', data: dataset2, object: lineMain1});
+
     context
       .datum<Point[]>(dataset2)
+      .append('g')
+      .attr('id', 'previewGraph')
       .append('path')
       .attr('class', 'line')
       .attr('d', linePreview1);
@@ -169,12 +183,13 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-        const areaData = [{x: xStart, y: yMin }, {x: xEnd, y: yMax}];
-        const area = d3
+        const areaData = [{x: xStart, y: yMax }, {x: xEnd, y: yMax}];
+        
+        /*const area = d3
           .area<Point>()
           .x(d => xScale(d.x))
-          .y(d => yScale(d.y));
-        focus
+          .y(d => yScale(d.y))*/
+       /* focus
           .datum<Point[]>(areaData)
           .select('#mainGraph')
           .append('rect')
@@ -182,8 +197,29 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .attr('y', yScale(yMax - yMin))
           .attr('width', xScale(xEnd-xStart))
           .attr('height', yScale(yMin))
-          .attr('fill', 'red')
-          .attr('d', area);
+          .attr('fill', 'red');
+          // .attr('d', area);*/
+        const areaMainGraph = d3.area<Point>()
+          .x(d => xScale(d.x))
+          .y0(yScale(yMin))
+          .y1(d => yScale(d.y));
+
+        const areaPreviewGraph = d3.area<Point>()
+          .x(d => xScale2(d.x))
+          .y0(yScale2(yMin))
+          .y1(d => yScale2(d.y));
+
+        focus.select('#mainGraph').append('path')
+          .datum<Point[]>(areaData)
+          .attr('class', 'interval-area')
+          .attr('d', areaMainGraph);
+
+        context.select('#previewGraph').append('path')
+          .datum<Point[]>(areaData)
+          .attr('class', 'interval-area-preview')
+          .attr('d', areaPreviewGraph);
+        
+        GraphElements.push({ selector:'.interval-area', data: areaData, object: areaMainGraph});
         console.log(xStart + '     ' + xEnd);
       });
 
@@ -301,12 +337,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
               <Tag color='geekblue'>geekblue</Tag>
               <Tag color='purple'>purple</Tag>
             </div>
+            <div className='signal-toolbox-container'>
+              Navigation Mode <Switch onChange={this.onChange} /> Annotation Mode
+            </div>
             <div className='signal-graph-container' id='signal' />
           </div>
-          <div className='signal-toolbox-container'>
-            Navigation Mode <Switch onChange={this.onChange} /> Annotation Mode
-          </div>
-          <div className='signal-graph-container' id='signal' />
         </div>
       )
     );

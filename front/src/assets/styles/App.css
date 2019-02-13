@@ -26,6 +26,11 @@
   font-size: 20px !important;
 }
 
+.anticon-edit-dashboard {
+  font-size: 20px !important;
+  cursor: pointer;
+}
+
 .page-title {
   color: #dddddd !important;
   float: left;
@@ -139,12 +144,16 @@
 }
 
 .signal-toolbox-container {
-  margin-top : 20px;
+  margin-top: 20px;
   text-align: center;
 }
 
-.area {
-  fill: orange;
-  stroke: orange;
-  stroke-width: 2px;
+.interval-area {
+  fill: rgba(255, 165, 0, 0.5);
+  stroke: rgba(255, 165, 0, 1);
+  stroke-width: -2px;
+}
+
+.interval-area-preview {
+  fill: rgba(255, 165, 0, 0.5);
 }
