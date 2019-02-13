@@ -28,6 +28,7 @@ jobs:
       before_script: 
         - docker-compose up -d database
       script: 
+        - sudo /etc/init.d/postgresql stop
         - go test -v -cover ./... 
       after_script:
         - docker-compose down
