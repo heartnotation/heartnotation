@@ -2,50 +2,139 @@
 
 
 [[projects]]
+  digest = "1:9153856b9aa81e56a547858818d3d952578a8ff2e02acf64a80b488435e40b37"
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata"]
+  pruneopts = "U"
+  revision = "c9474f2f8deb81759839474b6bd1726bbfe1c1c4"
+  version = "v0.36.0"
+
+[[projects]]
+  digest = "1:2f7f7dc60a1e4160196e4ba7e773ace2ffd874fedcc4e79682863892d6362e1f"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = "U"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:f4415850a800c71a2dcd2c4dac97bfda4b5d8443644e54214525e64468fc57e3"
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  pruneopts = "U"
+  revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
+  version = "v1.2.0"
+
+[[projects]]
+  digest = "1:6d6273c5c440fbbb2559d9dbb12367c5dd584de36015efda220a48bfe3275e9b"
   name = "github.com/gorilla/mux"
   packages = ["."]
+  pruneopts = "U"
   revision = "a7962380ca08b5a188038c69871b8d3fbdf31e89"
   version = "v1.7.0"
 
 [[projects]]
+  digest = "1:30a8c589d8bf2f13d9b0cc988702a9b2dbc06fd237c8939e029519b990e51042"
   name = "github.com/jinzhu/gorm"
-  packages = [".","dialects/postgres"]
+  packages = [
+    ".",
+    "dialects/postgres",
+  ]
+  pruneopts = "U"
   revision = "472c70caa40267cb89fd8facb07fe6454b578626"
   version = "v1.9.2"
 
 [[projects]]
   branch = "master"
+  digest = "1:d9a7385b84d8187fd94e0357045c6fa1147ca94caa56fdd539336c7c102fc728"
   name = "github.com/jinzhu/inflection"
   packages = ["."]
+  pruneopts = "U"
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
+  digest = "1:a8711284f606a36fc933c2e02cf0340df59e9d80b7635be8532679c9ed20cc60"
   name = "github.com/lib/pq"
-  packages = [".","hstore","oid"]
+  packages = [
+    ".",
+    "hstore",
+    "oid",
+  ]
+  pruneopts = "U"
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:97f2e3987902ab89b6fe5cff761b3b318aed6fb3c0d9cc31986073e7fae2444a"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = "U"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:60b8a408647f8ecbba6fa153d55db9f0a57b985cdbefa5399a03dffaa322ea03"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
+  pruneopts = "U"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:67146e50d68f89d1ecb5453e3dbf61f59baea54f5cff4a830a7f23c9619c1eba"
+  name = "golang.org/x/net"
+  packages = [
+    "context",
+    "context/ctxhttp",
+  ]
+  pruneopts = "U"
+  revision = "65e2d4e15006aab9813ff8769e768bbf4bb667a0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:d2c70ae025c0047d45be7e6e0afe39fc7f289c5b67cc0ac0db86e8e1d3b914d0"
+  name = "golang.org/x/oauth2"
+  packages = [
+    ".",
+    "google",
+    "internal",
+    "jws",
+    "jwt",
+  ]
+  pruneopts = "U"
+  revision = "5f6b76b7c9ddc07924f32b15de8f03ceec72d74b"
+
+[[projects]]
+  digest = "1:21754615244b991cb9885876259024c10d67f86992ec13ad6e7d6f844af839b8"
+  name = "google.golang.org/appengine"
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch",
+  ]
+  pruneopts = "U"
+  revision = "e9657d882bb81064595ca3b56cbe2546bbabf7b1"
+  version = "v1.4.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cbd00ba01b8a622a1106586084a2fccc00b1532337777a283e9027647dc7f897"
+  input-imports = [
+    "github.com/gorilla/mux",
+    "github.com/jinzhu/gorm",
+    "github.com/jinzhu/gorm/dialects/postgres",
+    "github.com/lib/pq",
+    "github.com/stretchr/testify/assert",
+    "golang.org/x/oauth2",
+    "golang.org/x/oauth2/google",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

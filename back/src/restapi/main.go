@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	a "restapi/annotation"
+	auth "restapi/auth"
 	o "restapi/organization"
 	s "restapi/signal"
 	t "restapi/tag"
@@ -38,6 +39,10 @@ func main() {
 	router.HandleFunc("/users/{id}", u.FindUserByID).Methods("GET")
 	router.HandleFunc("/users/{id}", u.DeleteUser).Methods("DELETE")
 	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
-  
+
+	// Auth
+	router.HandleFunc("/login", auth.HandleAuth).Methods("GET")
+	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("GET")
+
 	http.ListenAndServe("0.0.0.0:8000", router)
 }
