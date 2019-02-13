@@ -51,7 +51,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 // GetAllUsers return users from database
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	users := &[]User{}
-	err := u.GetConnection().Preload("Role").Find(&users).Error
+	err := u.GetConnection().Preload("Role").Preload("Organizations").Find(&users).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
