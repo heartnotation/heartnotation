@@ -158,12 +158,15 @@ class Users extends Component<Props, State> {
           return false;
         }
       }
-      // const organizations = searches.get('organizations');
-      // if (organizations) {
-      //   if (!record.organizations.toLowerCase().startsWith(organizations.toLowerCase())) {
-      //     return false;
-      //   }
-      // }
+      const organizations = searches.get('organizations');
+      if (organizations) {
+        for(const o of record.organizations) {
+          if (o.name.toLowerCase().startsWith(organizations.toLowerCase())) {
+            return true;
+          }
+        }
+        return false;
+      }
       return true;
     });
 
