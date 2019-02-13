@@ -5,6 +5,7 @@ import { Tag, Alert, Switch, message, Card, Button } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
+import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -375,8 +376,9 @@ const Popper = (props: any) => {
     <div className='full-screen-popper'>
       <Card
         title="Informations on interval"
-        style={{position:'absolute', top: props.top, left: props.left}}
+        style={{position:'absolute', top: props.top-400, left: props.left}}
       >
+        <FormIntervalSignalAnnotation />
         <Button type="danger" onClick={props.confirmDelete}>Delete</Button>
         <Button type="primary" onClick={props.confirmCreate}>Create</Button>
       </Card>
