@@ -56,6 +56,12 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 404)
 		return
 	}
+
+	for i := range *users {
+		arr := *users
+		arr[i].RoleID = nil
+	}
+
 	u.Respond(w, users)
 }
 
