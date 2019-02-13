@@ -45,5 +45,6 @@ export interface User {
   id: number;
   mail: string;
   role: Role;
+  organizations: Organization[];
   is_active: boolean;
 }
