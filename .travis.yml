@@ -15,7 +15,8 @@ jobs:
     - stage: test 
       name: Backend Tests 
       language: go 
-      go: - "1.11.4" 
+      go: 
+        - "1.11.4" 
       before_install: 
         - export GOPATH="${TRAVIS_BUILD_DIR}/back" 
         - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin 
