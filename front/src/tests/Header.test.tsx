@@ -9,6 +9,14 @@ Enzyme.configure({ adapter: new Adapter() });
 
 const voidFunction = () => <div />;
 
+const defaultRoute: AppRoute = {
+  path: '/',
+  exact: true,
+  component: voidFunction,
+  title: 'Dashboard',
+  iconName: 'plus'
+};
+
 const routes: AppRoute[] = [
   {
     path: '/annotations/new',
@@ -39,7 +47,9 @@ describe('Header', () => {
 
   const router = () => {
     if (!mountedRouter) {
-      mountedRouter = mount(<Router routes={routes} />);
+      mountedRouter = mount(
+        <Router defaultRoute={defaultRoute} routes={routes} />
+      );
     }
     return mountedRouter;
   };
@@ -55,11 +65,11 @@ describe('Header', () => {
   });
 
   it('focus the right tab', () => {
-    const routeIndex = 2;
+    const routeIndex = 'About';
     window.history.pushState(
       {},
       'Header component test',
-      routes[routeIndex].path
+      routes[2].path
     );
     expect(
       router()

@@ -1,16 +1,27 @@
 package user
 
-// Profile represent a user in database
-type Profile struct {
-	ID       uint   `gorm:"AUTO_INCREMENT" json:"id"`
-	Mail     string `gorm:"type:varchar(100);unique_index" json:"mail"`
-	Role     Role   `gorm:"foreignkey:RoleID" json:"role"`
-	RoleID   *uint  `json:"role_id,omitempty"`
-	IsActive bool   `json:"is_active"`
+import (
+	o "restapi/organization"
+)
+
+// User represent a user in database
+type User struct {
+	ID            uint             `gorm:"AUTO_INCREMENT" json:"id"`
+	Mail          string           `gorm:"type:varchar(100);unique_index" json:"mail"`
+	Role          Role             `json:"role"`
+	RoleID        *int             `gorm:"TYPE:integer REFERENCES userrole" json:"role_id,integer,omitempty"`
+	Organizations []o.Organization `gorm:"many2many:organization_user" json:"organizations,omitempty"`
+	IsActive      bool             `json:"is_active"`
+}
+
+type dto struct {
+	Mail            string `json:"mail"`
+	RoleID          int    `json:"role_id"`
+	OrganizationsID []int  `json:"organizations"`
 }
 
 // TableName sets table name of the struct
-func (Profile) TableName() string {
+func (User) TableName() string {
 	return "userprofile"
 }
 

@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import {
+  Link,
+  RouteComponentProps,
+  withRouter,
+  matchPath
+} from 'react-router-dom';
 import { Menu, Icon, Row, Col } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
@@ -7,35 +12,54 @@ import logo from '../assets/images/logo.png';
 import '../assets/styles/App.css';
 import { AppRoute } from '../Routes';
 
-interface Props {
+interface Props extends RouteComponentProps {
+  defaultRoute: AppRoute;
   routes: AppRoute[];
+  hiddenRoutes: AppRoute[];
 }
 
 interface State {
-  current: number;
+  current: AppRoute;
 }
+
+const matchedRoute = (
+  currentPath: string,
+  routes: AppRoute[]
+): AppRoute | undefined =>
+  routes.find(
+    r =>
+      matchPath(currentPath, {
+        path: r.path,
+        exact: r.exact,
+        strict: true,
+        sensitive: false
+      }) !== null
+  );
 
 // this is a class because it needs state
 class Header extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    const currentRoute = props.routes.filter(
-      r => r.path === window.location.pathname
-    )[0];
+    const c = matchedRoute(props.location.pathname, [
+      ...props.routes,
+      ...props.hiddenRoutes
+    ]);
     this.state = {
-      current: currentRoute ? props.routes.indexOf(currentRoute) : -1
+      current: c ? c : props.defaultRoute
     };
   }
 
   public handleClick = (e: ClickParam) => {
+    const { routes, defaultRoute } = this.props;
+    const c = routes.find(r => r.title === e.key);
     this.setState({
-      current: Number.parseInt(e.key, 10)
+      current: c ? c : defaultRoute
     });
   }
 
   public handleClickHome = () => {
     this.setState({
-      current: -1
+      current: this.props.defaultRoute
     });
   }
 
@@ -51,22 +75,24 @@ class Header extends Component<Props, State> {
         <div className='menu-container'>
           <Row>
             <Col span={8}>
-              <h1 className='page-title'>
-                {routes[current] ? routes[current].title : 'Home'}
-              </h1>
+              <h1 className='page-title'>{current.title}</h1>
             </Col>
             <Col span={16}>
               <Menu
                 onClick={this.handleClick}
-                selectedKeys={current >= 0 ? [current.toString()] : ['Home']}
+                selectedKeys={[current.title]}
                 mode='horizontal'
                 className='main-menu'
               >
-                {routes.map((r, key) => (
-                  <Menu.Item key={key}>
+                {routes.map(r => (
+                  <Menu.Item key={r.title}>
                     <Link to={r.path}>
                       <span className='main-menu-item-text'>
-                        {r.iconName ? <Icon className='anticon-title' type={r.iconName} /> : ''}
+                        {r.iconName ? (
+                          <Icon className='anticon-title' type={r.iconName} />
+                        ) : (
+                          ''
+                        )}
                         {r.title}
                       </span>
                     </Link>
@@ -81,4 +107,4 @@ class Header extends Component<Props, State> {
   }
 }
 
-export default Header;
+export default withRouter(Header);

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	s "restapi/signal"
@@ -14,7 +14,6 @@ import (
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 )
 
 var templateURLAPI string
@@ -27,38 +26,28 @@ func init() {
 	templateURLAPI = url
 }
 
-func checkErrorCode(err error, w http.ResponseWriter) bool {
-	if err != nil {
-		switch err {
-		case gorm.ErrRecordNotFound:
-			http.Error(w, err.Error(), 204)
-		case gorm.ErrInvalidSQL:
-			http.Error(w, err.Error(), 400)
-		case gorm.ErrInvalidTransaction:
-		case gorm.ErrCantStartTransaction:
-		case gorm.ErrUnaddressable:
-		default:
-			http.Error(w, err.Error(), 500)
-			return true
-		}
-	}
-	return false
-}
-
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
-	db := u.GetConnection()
-	var annotation Annotation
-	v := mux.Vars(r)
-	if len(v) != 1 {
-		log.Print("unvalidate arguments")
+	if r.Method != "DELETE" {
+		http.Error(w, "Bad request", 400)
 		return
 	}
-	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
+	if len(r.URL.String()) < len(u.CheckRoutes["annotations"]) || r.URL.String()[0:len(u.CheckRoutes["annotations"])] != "/annotations/" {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	v := mux.Vars(r)
+	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	var annotation Annotation
+	db := u.GetConnection()
+	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {
 		return
 	}
 	annotation.IsActive = false
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 }
@@ -73,7 +62,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 
@@ -86,10 +75,10 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a.ParentID != 0 {
-		parent := &Annotation{ID: uint(a.ParentID)}
+		parent := &Annotation{ID: a.ParentID}
 		err = db.Find(&parent).Error
 		if err != nil {
-			checkErrorCode(err, w)
+			u.CheckErrorCode(err, w)
 			return
 		}
 	}
@@ -109,12 +98,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Create(&annotation).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	annotation.ParentID = nil
@@ -152,6 +141,11 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))
+	if e != nil {
+		http.Error(w, e.Error(), 500)
+	}
+	annotation.Signal = signal
 	annotation.OrganizationID = nil
 	annotation.StatusID = nil
 
@@ -164,14 +158,19 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
+	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
+		u.CheckErrorCode(err, w)
 		return
 	}
 	u.Respond(w, annotation)
 }
 
-func formatToJSONFromAPI(api string) ([]byte, error) {
-	httpResponse, err := http.Get(api) //A parametrer
+func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
+	httpResponse, err := http.Get(api)
 	if err != nil {
 		return nil, err
 	}
@@ -180,28 +179,17 @@ func formatToJSONFromAPI(api string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	signalFormated, err := s.FormatData(dataBrut, 3)
+	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
+	var leads int64
+	if leadNumber == "" {
+		leads = 3
+	} else {
+		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
+	}
+	signalFormated, err := s.FormatData(dataBrut, int(leads))
 	if err != nil {
 		return nil, err
 	}
 
-	var gui Gui
-	gui.Signal = signalFormated
-
-	jsonDatas, err := json.Marshal(gui)
-	if err != nil {
-		return nil, err
-	}
-	return jsonDatas, nil
-}
-
-//En attente de brancher avec le web (route de recuperation d'une annotation)
-func incompleteTestForSignal() {
-	response, err := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, 1))
-	if err != nil {
-		fmt.Println(" FAIL with \n", err)
-	}
-
-	fmt.Println(string(response))
+	return signalFormated, nil
 }
