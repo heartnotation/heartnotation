@@ -157,3 +157,16 @@
 .interval-area-preview {
   fill: rgba(255, 165, 0, 0.5);
 }
+
+.full-screen-popper {
+  position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(75, 75, 75, 0.5);
+}
+
+.ant-btn {
+  margin: 8px;
+}

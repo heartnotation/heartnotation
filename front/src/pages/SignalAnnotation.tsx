@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Tag, Alert, Switch } from 'antd';
+import { Tag, Alert, Switch, message, Card, Button } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
@@ -16,6 +16,8 @@ interface State {
   loading: boolean;
   moving: boolean;
   error?: string;
+  popperVisible: boolean;
+  cursorPosition: Point;
 }
 
 interface GraphElement {
@@ -29,7 +31,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
     super(props);
     this.state = {
       loading: true,
-      moving: true
+      moving: true,
+      popperVisible: false,
+      cursorPosition: {x:0, y:0}
     };
   }
 
@@ -63,7 +67,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       this.setState({ loading: false, annotation });
     }
 
-    const svgWidth = window.innerWidth;
+    const svgWidth = window.innerWidth - 20;
     const svgHeight = 600;
     const margin = { top: 20, right: 50, bottom: 100, left: 50 };
     const margin2 = { top: svgHeight - 70, right: 50, bottom: 30, left: 50 };
@@ -212,6 +216,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
         graphElements.push({ selector:'#interval-area-' + idGraphElement, data: areaData, object: areaMainGraph});
         idGraphElement++;
+
+        console.log(d3.event);
+        this.setState({popperVisible: true, cursorPosition:{x: d3.event.sourceEvent.clientX, y:d3.event.sourceEvent.clientY}});
+
+
         console.log(xStart + '     ' + xEnd);
       });
 
@@ -302,6 +311,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
     }
   }
 
+  public confirmDelete = () => {
+    this.setState({popperVisible: false});
+    message.error('Interval has been deleted.', 10);
+  }
+
+  public confirmCreate = () => {
+    this.setState({popperVisible: false});
+    message.success('Interval has been created with the information entered.', 10);
+  }
+
   public render = () => {
     const { loading, annotation, error } = this.state;
 
@@ -341,6 +360,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
             </div>
             <div className='signal-graph-container' id='signal' />
           </div>
+          { this.state.popperVisible && <Popper top={this.state.cursorPosition.y} left={this.state.cursorPosition.x} confirmCreate={this.confirmCreate} confirmDelete={this.confirmDelete} />}
         </div>
       )
     );
@@ -348,3 +368,18 @@ class SignalAnnotation extends Component<RouteProps, State> {
 }
 
 export default withRouter(SignalAnnotation);
+
+
+const Popper = (props: any) => {
+  return (
+    <div className='full-screen-popper'>
+      <Card
+        title="Informations on interval"
+        style={{position:'absolute', top: props.top, left: props.left}}
+      >
+        <Button type="danger" onClick={props.confirmDelete}>Delete</Button>
+        <Button type="primary" onClick={props.confirmCreate}>Create</Button>
+      </Card>
+    </div>
+  )
+}
