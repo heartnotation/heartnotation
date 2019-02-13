@@ -72,34 +72,47 @@ class Users extends Component<Props, State> {
       ]
     },
     {
-      title: 'Organizations',
-      dataIndex: 'organizations',
-      render: (organizations: Organization[]) => {
-        organizations.sort();
-        const colors = [
-          'geekblue',
-          'green',
-          'volcano',
-          'orange',
-          'yellow',
-          'gold',
-          'lime',
-          'cyan',
-          'goldenpurple',
-          'magenta',
-          'red'
-        ];
-        const ui = (
-          <span>
-            {organizations.map(organization => (
-              <Tag color={colors[organization.id - 1]} key={organization.name}>
-                {organization.name}
-              </Tag>
-            ))}
-          </span>
-        );
-        return ui;
-      }
+      title: () => this.getColumnSearchBox('organizations', 'Organizations'),
+      children: [
+        {
+          title: 'Organizations',
+          dataIndex: 'organizations',
+          render: (organizations: Organization[]) => {
+            organizations.sort();
+            const colors = [
+              'geekblue',
+              'green',
+              'volcano',
+              'orange',
+              'yellow',
+              'gold',
+              'lime',
+              'cyan',
+              'goldenpurple',
+              'magenta',
+              'red'
+            ];
+            const ui = (
+              <span>
+                {organizations.map(organization => (
+                  <Tag
+                    color={colors[organization.id - 1]}
+                    key={organization.name}
+                  >
+                    {organization.name}
+                  </Tag>
+                ))}
+              </span>
+            );
+            return ui;
+          }
+          // sorter: (a: Organization, b: Organization) =>
+          // a.name.localeCompare(b.name, 'en', {
+          //   sensitivity: 'base',
+          //   ignorePunctuation: true
+          // })
+        }
+      ]
     },
     {
       title: 'Edit',
@@ -145,6 +158,12 @@ class Users extends Component<Props, State> {
           return false;
         }
       }
+      // const organizations = searches.get('organizations');
+      // if (organizations) {
+      //   if (!record.organizations.toLowerCase().startsWith(organizations.toLowerCase())) {
+      //     return false;
+      //   }
+      // }
       return true;
     });
 
