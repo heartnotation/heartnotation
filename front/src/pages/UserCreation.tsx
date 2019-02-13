@@ -110,8 +110,6 @@ class UserCreation extends Component<Props, States> {
     const { roles } = this.state;
     const ids = roles.map(o => o.id);
 
-    console.log('', value, ids);
-
     if (
       value &&
       !ids.includes(value)
