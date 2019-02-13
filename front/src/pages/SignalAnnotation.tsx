@@ -361,7 +361,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
             </div>
             <div className='signal-graph-container' id='signal' />
           </div>
-          { this.state.popperVisible && <Popper top={this.state.cursorPosition.y} left={this.state.cursorPosition.x} confirmCreate={this.confirmCreate} confirmDelete={this.confirmDelete} />}
+          { this.state.popperVisible && <Popper top={450} left={this.state.cursorPosition.x + 50} confirmCreate={this.confirmCreate} confirmDelete={this.confirmDelete} />}
         </div>
       )
     );
