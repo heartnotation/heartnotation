@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, AutoComplete, Row, Col } from 'antd';
+import { Form, Input, Button, Select, Row, Col, Alert } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
-import axios, { AxiosResponse } from 'axios';
-import { API_URL } from '../utils';
+import { RouteComponentProps, withRouter } from 'react-router';
+import { Organization, Role, User } from '../utils';
 
 const { Option } = Select;
 
@@ -16,37 +16,43 @@ const formTailLayout = {
   wrapperCol: { span: 14, offset: 10 }
 };
 
-interface Organization {
-  id: number;
-  name: string;
-  is_active: boolean;
-}
-
 interface States {
   organizations: Organization[];
   organizationsSearch: string[];
+  organizationsSelected: Organization[];
+  roles: Role[];
+  rolesSearch: string[];
+  roleSelected?: Role;
+  loading: boolean;
+  error: string;
 }
 
-class UserCreation extends Component<FormComponentProps, States> {
-  constructor(props: FormComponentProps) {
+interface Props extends FormComponentProps, RouteComponentProps {
+  getOrganizations: () => Promise<Organization[]>;
+  getRoles: () => Promise<Role[]>;
+  sendUser: (datas: User) => Promise<User>;
+}
+
+class UserCreation extends Component<Props, States> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       organizations: [],
-      organizationsSearch: []
+      organizationsSearch: [],
+      organizationsSelected: [],
+      roles: [],
+      rolesSearch: [],
+      loading: false,
+      error: ''
     };
   }
 
   public componentDidMount = () => {
-    const organizationsAjax: Promise<Organization[]> = axios
-      .get<Organization[]>(`${API_URL}/organizations`)
-      .then((res: AxiosResponse<Organization[]>) => {
-        return res.data;
-      });
-
-    Promise.all([organizationsAjax]).then((allResponse: Organization[][]) => {
-      console.log(allResponse);
+    const { getOrganizations, getRoles } = this.props;
+    Promise.all([getOrganizations(), getRoles()]).then(responses => {
       this.setState({
-        organizations: allResponse[0]
+        organizations: responses[0],
+        roles: responses[1]
       });
     });
   }
@@ -54,18 +60,19 @@ class UserCreation extends Component<FormComponentProps, States> {
   public handleSubmit = (e: React.FormEvent<any>) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
-      const { organizations } = this.state;
       if (!err) {
-        if (values.organization_id) {
-          const findOrgaId = organizations.find(
-            (o: Organization) => o.name === values.organization_id
+        this.setState({ loading: true, error: '' });
+        this.props
+          .sendUser(values)
+          .then(() => {
+            this.props.history.push('/users');
+          })
+          .catch(() =>
+            this.setState({
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
+            })
           );
-          values.organization_id =
-            findOrgaId === undefined ? null : findOrgaId.id;
-        } else {
-          values.organization_id = null;
-        }
-        console.log('Received values of form: ', values); // à envoyer vers la route du back
       }
     });
   }
@@ -75,34 +82,97 @@ class UserCreation extends Component<FormComponentProps, States> {
     return items.filter(i => i.toLowerCase().startsWith(v));
   }
 
-  public handleSearchOrganization = (value: string) => {
-    const { organizations } = this.state;
-    const organizationsSearch = this.filterNoCaseSensitive(
+  public handleSearchRole = (value: string) => {
+    const { roles } = this.state;
+    const rolesSearch = this.filterNoCaseSensitive(
       value,
-      organizations.map((o: Organization) => o.name)
+      roles.map((r: Role) => r.name)
     );
     this.setState({
-      organizationsSearch:
-        organizationsSearch.length !== organizations.length
-          ? organizationsSearch
-          : []
+      rolesSearch: rolesSearch.length !== roles.length ? rolesSearch : []
     });
   }
 
-  public validateOrganization = (_: any, value: any, callback: any) => {
+  public validateOrganization = (_: any, values: number[], callback: any) => {
     const { organizations } = this.state;
+    const ids = organizations.map(o => o.id);
+
     if (
-      value &&
-      !organizations.map((o: Organization) => o.name).includes(value)
+      values &&
+      values.filter(v => ids.includes(v)).length !== values.length
     ) {
       callback('This organization doesn\'t exist');
     }
     callback();
   }
 
+  public validateRole = (_: any, value: number, callback: any) => {
+    const { roles } = this.state;
+    const ids = roles.map(o => o.id);
+
+    if (
+      value &&
+      !ids.includes(value)
+    ) {
+      callback('This role doesn\'t exist');
+    }
+    callback();
+  }
+
+  public filterSearchRole = (
+    inputValue: string,
+    option: React.ReactElement<OptionProps>
+  ) => {
+    const v = option.props.children;
+    if (v && typeof v === 'string') {
+      return v.toLowerCase().startsWith(inputValue.toLowerCase());
+    }
+    return false;
+  }
+
+  public filterSearchOrganization = (
+    inputValue: string,
+    option: React.ReactElement<OptionProps>
+  ) => {
+    const v = option.props.children;
+    if (v && typeof v === 'string') {
+      return v.toLowerCase().startsWith(inputValue.toLowerCase());
+    }
+    return false;
+  }
+
+  public handleChangeRole = (role: Role) => {
+    this.setState({ roleSelected: role });
+  }
+
+  public handleChangeOrganization = (organization: Organization[]) => {
+    this.setState({ organizationsSelected: organization });
+  }
+
   public render() {
     const { getFieldDecorator } = this.props.form;
-    const { organizationsSearch } = this.state;
+    const {
+      roles,
+      organizations,
+      roleSelected,
+      organizationsSelected,
+      error,
+      loading
+    } = this.state;
+
+    const filteredRoles = roleSelected
+      ? roles.filter(r => {
+          return r.id !== roleSelected.id;
+        })
+      : roles;
+
+    const filteredOrganizations = organizations.filter(
+      o =>
+        !organizationsSelected
+          .map(organization => organization.id)
+          .includes(o.id)
+    );
+
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
@@ -110,11 +180,11 @@ class UserCreation extends Component<FormComponentProps, States> {
         <Col span={8}>
           <Form layout='horizontal' onSubmit={this.handleSubmit}>
             <Form.Item {...formItemLayout} label='Email Address'>
-              {getFieldDecorator('email', {
+              {getFieldDecorator('mail', {
                 rules: [
                   {
-                    whitespace: true,
-                    message: msgEmpty
+                    type: 'email',
+                    message: 'The input is not a valid e-mail.'
                   },
                   {
                     required: true,
@@ -124,41 +194,57 @@ class UserCreation extends Component<FormComponentProps, States> {
               })(<Input />)}
             </Form.Item>
             <Form.Item {...formItemLayout} label='Role'>
-              {getFieldDecorator('role', {
+              {getFieldDecorator('role_id', {
                 rules: [
-                  {
-                    whitespace: true,
-                    message: msgEmpty
-                  },
                   {
                     required: true,
                     message: msgRequired
-                  }
+                  },
+                  { validator: this.validateRole }
                 ]
-              })(<Input />)}
+              })(
+                <Select<Role>
+                  mode='simple'
+                  onChange={this.handleChangeRole}
+                  filterOption={this.filterSearchRole}
+                >
+                  {filteredRoles.map((role: Role) => (
+                    <Option key='key' value={role.id}>
+                      {role.name}
+                    </Option>
+                  ))}
+                </Select>
+              )}
             </Form.Item>
             <Form.Item {...formItemLayout} label='Organization'>
-              {getFieldDecorator('organization_id', {
-                initialValue: null,
+              {getFieldDecorator('organizations', {
                 rules: [
                   {
-                    whitespace: true,
+                    required: false,
                     message: msgEmpty
                   },
                   { validator: this.validateOrganization }
                 ]
               })(
-                <AutoComplete
-                  dataSource={organizationsSearch}
-                  onSearch={this.handleSearchOrganization}
-                />
+                <Select<Organization[]>
+                  mode='multiple'
+                  onChange={this.handleChangeOrganization}
+                  filterOption={this.filterSearchOrganization}
+                >
+                  {filteredOrganizations.map((organization: Organization) => (
+                    <Option key='key' value={organization.id}>
+                    {organization.name}
+                  </Option>
+                  ))}
+                </Select>
               )}
             </Form.Item>
             <Form.Item {...formTailLayout}>
-              <Button type='primary' htmlType='submit'>
+              <Button type='primary' htmlType='submit' disabled={loading}>
                 Create
               </Button>
             </Form.Item>
+            {error && <Alert message={error} type='error' showIcon={true} />}
           </Form>
         </Col>
       </Row>
@@ -166,4 +252,4 @@ class UserCreation extends Component<FormComponentProps, States> {
   }
 }
 
-export default Form.create()(UserCreation);
+export default Form.create()(withRouter(UserCreation));
