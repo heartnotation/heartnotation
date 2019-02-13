@@ -201,14 +201,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area')
           .attr('id', 'interval-area-' + idGraphElement)
-          .attr('d', areaMainGraph);
+          .attr('d', areaMainGraph)
+          .attr('clip-path', 'url(#clip)');
 
         context.select('#previewGraph').append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area-preview')
           .attr('id', 'interval-area-preview-' + idGraphElement)
           .attr('d', areaPreviewGraph);
-          
+
         graphElements.push({ selector:'#interval-area-' + idGraphElement, data: areaData, object: areaMainGraph});
         idGraphElement++;
         console.log(xStart + '     ' + xEnd);
