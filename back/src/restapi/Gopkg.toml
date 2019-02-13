@@ -49,5 +49,5 @@
   name = "golang.org/x/oauth2"
 
 [[constraint]]
-  name = "google.golang.org/api"
-  version = "0.1.0"
+  name = "github.com/gorilla/context"
+  version = "1.1.1"

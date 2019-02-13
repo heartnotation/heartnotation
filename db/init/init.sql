@@ -174,6 +174,8 @@ INSERT INTO USERPROFILE (role_id, mail, is_active)
 
 INSERT INTO USERPROFILE (role_id, mail, is_active)  
 	VALUES (2, 'sophie@gmail.com', TRUE);
+INSERT INTO USERPROFILE (role_id, mail, is_active)
+	VALUES (3, 'holandertheo@gmail.com', TRUE);
 
 -- STATUS
 
@@ -205,6 +207,8 @@ INSERT INTO ORGANIZATION_USER (organization_id, user_id)
 
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
 	VALUES (3, 2);
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (3, 4);
 
 -- ANNOTATION
 
