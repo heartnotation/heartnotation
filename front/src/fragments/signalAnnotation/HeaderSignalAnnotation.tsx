@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Row, Col, Icon, Switch, Button, Steps } from 'antd';
 import axios, { AxiosResponse } from 'axios';
 import { API_URL } from '../../utils';
+import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
   stepProcess: number;
@@ -127,7 +128,10 @@ class HeaderSignalAnnotation extends Component<Props, State> {
             />{' '}
             Display Leads
           </Col>
-          <Col span={4} className='text-center'>
+          <Col span={2} className='text-center'>
+            <ChatDrawerAnnotation />
+          </Col>
+          <Col span={6} className='text-center'>
             <Button
               type='primary'
               icon='box-plot'
@@ -149,7 +153,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
               className='btn-space btn-heartnotation-primary'
             />
           </Col>
-          <Col span={12} className='text-centered'>
+          <Col span={8} className='text-centered'>
             <Steps progressDot={true} current={stepProcess}>
               <Step title='In Progress' />
               <Step title='Completed' />
