@@ -25,9 +25,11 @@ jobs:
       install: 
         - dep ensure -vendor-only 
       before_script: 
-        - docker-compose up database 
+        - docker-compose up -d database
       script: 
-        - go test -v -cover ./...    
+        - go test -v -cover ./... 
+      after_script:
+        - docker-compose down
 
     # Deploying the API
     - stage: deploy
