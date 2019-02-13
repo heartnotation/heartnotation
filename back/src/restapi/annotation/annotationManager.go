@@ -11,11 +11,9 @@ import (
 
 	s "restapi/signal"
 	t "restapi/tag"
-	"restapi/utils"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 )
 
 var templateURLAPI string
@@ -28,31 +26,13 @@ func init() {
 	templateURLAPI = url
 }
 
-func checkErrorCode(err error, w http.ResponseWriter) bool {
-	if err != nil {
-		switch err {
-		case gorm.ErrRecordNotFound:
-			http.Error(w, err.Error(), 204)
-		case gorm.ErrInvalidSQL:
-			http.Error(w, err.Error(), 400)
-		case gorm.ErrInvalidTransaction:
-		case gorm.ErrCantStartTransaction:
-		case gorm.ErrUnaddressable:
-		default:
-			http.Error(w, err.Error(), 500)
-			return true
-		}
-	}
-	return false
-}
-
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, "Bad request", 400)
 		return
 	}
-	if len(r.URL.String()) < len(utils.CheckRoutes["annotations"]) || r.URL.String()[0:len(utils.CheckRoutes["annotations"])] != "/annotations/" {
+	if len(r.URL.String()) < len(u.CheckRoutes["annotations"]) || r.URL.String()[0:len(u.CheckRoutes["annotations"])] != "/annotations/" {
 		http.Error(w, "Bad request", 400)
 		return
 	}
@@ -63,11 +43,11 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var annotation Annotation
 	db := u.GetConnection()
-	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
+	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {
 		return
 	}
 	annotation.IsActive = false
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 }
@@ -82,7 +62,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 
@@ -98,7 +78,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		parent := &Annotation{ID: a.ParentID}
 		err = db.Find(&parent).Error
 		if err != nil {
-			checkErrorCode(err, w)
+			u.CheckErrorCode(err, w)
 			return
 		}
 	}
@@ -118,12 +98,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Create(&annotation).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	annotation.ParentID = nil
@@ -179,11 +159,11 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
 
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	u.Respond(w, annotation)

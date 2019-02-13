@@ -34,3 +34,17 @@ export interface Tag {
   name: string;
   is_active: boolean;
 }
+
+export interface Role {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
+export interface User {
+  id: number;
+  mail: string;
+  role: Role;
+  organizations: Organization[];
+  is_active: boolean;
+}

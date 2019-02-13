@@ -11,22 +11,25 @@ branches:
 
 jobs:
   include:
-    # Testing the API
-    - stage: test
-      name: Backend Tests
-      language: go
-      go:
-        - "1.11.4"
-      before_install:
-        - export GOPATH="${TRAVIS_BUILD_DIR}/back"
-        - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin
-        - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH"
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-        - cd back/src/restapi
-      install:
-        - dep ensure -vendor-only
-      script:
-        - go test -v -cover ./...
+    # Testing the API 
+    - stage: test 
+      name: Backend Tests 
+      language: go 
+      go: - "1.11.4" 
+      before_install: 
+        - export GOPATH="${TRAVIS_BUILD_DIR}/back" 
+        - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin 
+        - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH" 
+        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
+        - cd back/src/restapi 
+      install: 
+        - dep ensure -vendor-only 
+      before_script: 
+        - docker-compose up -d database
+      script: 
+        - go test -v -cover ./... 
+      after_script:
+        - docker-compose down
 
     # Deploying the API
     - stage: deploy
