@@ -96,7 +96,7 @@ class Users extends Component<Props, State> {
               <span>
                 {organizations.map(organization => (
                   <Tag
-                    color={colors[organization.id - 1]}
+                    color={colors[(organization.id % colors.length) - 1]}
                     key={organization.name}
                   >
                     {organization.name}
@@ -106,11 +106,6 @@ class Users extends Component<Props, State> {
             );
             return ui;
           }
-          // sorter: (a: Organization, b: Organization) =>
-          // a.name.localeCompare(b.name, 'en', {
-          //   sensitivity: 'base',
-          //   ignorePunctuation: true
-          // })
         }
       ]
     },
@@ -160,7 +155,7 @@ class Users extends Component<Props, State> {
       }
       const organizations = searches.get('organizations');
       if (organizations) {
-        for(const o of record.organizations) {
+        for (const o of record.organizations) {
           if (o.name.toLowerCase().startsWith(organizations.toLowerCase())) {
             return true;
           }
