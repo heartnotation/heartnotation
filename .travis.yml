@@ -26,9 +26,9 @@ jobs:
       install: 
         - dep ensure -vendor-only 
       before_script: 
+        - sudo /etc/init.d/postgresql stop
         - docker-compose up -d database
       script: 
-        - sudo /etc/init.d/postgresql stop
         - go test -v -cover ./... 
       after_script:
         - docker-compose down
