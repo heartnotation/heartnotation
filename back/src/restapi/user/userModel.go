@@ -4,7 +4,7 @@ import (
 	o "restapi/organization"
 )
 
-// Profile represent a user in database
+// User represent a user in database
 type User struct {
 	ID            uint             `gorm:"AUTO_INCREMENT" json:"id"`
 	Mail          string           `gorm:"type:varchar(100);unique_index" json:"mail"`

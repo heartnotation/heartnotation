@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, Row, Col } from 'antd';
+import { Form, Input, Button, Select, Row, Col, Alert } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -107,7 +107,15 @@ class UserCreation extends Component<Props, States> {
   }
 
   public validateRole = (_: any, value: number, callback: any) => {
-    if (!value) {
+    const { roles } = this.state;
+    const ids = roles.map(o => o.id);
+
+    console.log('', value, ids);
+
+    if (
+      value &&
+      !ids.includes(value)
+    ) {
       callback('This role doesn\'t exist');
     }
     callback();
@@ -149,7 +157,9 @@ class UserCreation extends Component<Props, States> {
       roles,
       organizations,
       roleSelected,
-      organizationsSelected
+      organizationsSelected,
+      error,
+      loading
     } = this.state;
 
     const filteredRoles = roleSelected
@@ -232,10 +242,11 @@ class UserCreation extends Component<Props, States> {
               )}
             </Form.Item>
             <Form.Item {...formTailLayout}>
-              <Button type='primary' htmlType='submit'>
+              <Button type='primary' htmlType='submit' disabled={loading}>
                 Create
               </Button>
             </Form.Item>
+            {error && <Alert message={error} type='error' showIcon={true} />}
           </Form>
         </Col>
       </Row>
