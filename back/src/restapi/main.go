@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	a "restapi/annotation"
+	i "restapi/interval"
 	o "restapi/organization"
 	s "restapi/signal"
 	t "restapi/tag"
@@ -39,6 +40,13 @@ func main() {
 	router.HandleFunc("/users/{id}", u.DeleteUser).Methods("DELETE")
 	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
 	router.HandleFunc("/roles", u.GetAllRoles).Methods("GET")
+
+	// Interval
+	router.HandleFunc("/intervals", i.GetIntervals).Methods("GET")
+	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
+	router.HandleFunc("/intervals/comments", i.Comments).Methods("GET")
+	router.HandleFunc("/intervals/comments", i.CreateComment).Methods("POST")
+	router.HandleFunc("/intervals/all", i.CreateAll).Methods("POST")
 
 	http.ListenAndServe("0.0.0.0:8000", router)
 }
