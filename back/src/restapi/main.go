@@ -39,6 +39,7 @@ func main() {
 	router.HandleFunc("/users/{id}", u.FindUserByID).Methods("GET")
 	router.HandleFunc("/users/{id}", u.DeleteUser).Methods("DELETE")
 	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
+	router.HandleFunc("/roles", u.GetAllRoles).Methods("GET")
 
 	// Auth
 	router.HandleFunc("/login", auth.HandleAuth).Methods("GET")
