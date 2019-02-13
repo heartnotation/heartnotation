@@ -52,7 +52,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const annotation = await getAnnotation(parseInt(id, 10));
     const l = annotation.signal;
     let leads: Point[][];
-    const GraphElements:GraphElement[] = [];
+    const graphElements:GraphElement[] = [];
+    let idGraphElement:number = 0;
 
     if (!l) {
       this.setState({ error: 'No signal found', loading: false });
@@ -129,6 +130,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('id', 'mainGraph')
       .append('path')
       .attr('class', 'line')
+      .attr('id', 'line')
       .attr('d', lineMain1);
 
     const linePreview1 = d3
@@ -137,7 +139,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .y(d => yScale2(d.y))
       .curve(d3.curveBasis);
 
-    GraphElements.push({ selector:'.line', data: dataset2, object: lineMain1});
+    graphElements.push({ selector:'#line', data: dataset2, object: lineMain1});
 
     context
       .datum<Point[]>(dataset2)
@@ -184,21 +186,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const xStart = domain[0];
         const xEnd = domain[1];
         const areaData = [{x: xStart, y: yMax }, {x: xEnd, y: yMax}];
-        
-        /*const area = d3
-          .area<Point>()
-          .x(d => xScale(d.x))
-          .y(d => yScale(d.y))*/
-       /* focus
-          .datum<Point[]>(areaData)
-          .select('#mainGraph')
-          .append('rect')
-          .attr('x', xScale(xStart))
-          .attr('y', yScale(yMax - yMin))
-          .attr('width', xScale(xEnd-xStart))
-          .attr('height', yScale(yMin))
-          .attr('fill', 'red');
-          // .attr('d', area);*/
+
         const areaMainGraph = d3.area<Point>()
           .x(d => xScale(d.x))
           .y0(yScale(yMin))
@@ -212,14 +200,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
         focus.select('#mainGraph').append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area')
+          .attr('id', 'interval-area-' + idGraphElement)
           .attr('d', areaMainGraph);
 
         context.select('#previewGraph').append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area-preview')
+          .attr('id', 'interval-area-preview-' + idGraphElement)
           .attr('d', areaPreviewGraph);
-        
-        GraphElements.push({ selector:'.interval-area', data: areaData, object: areaMainGraph});
+          
+        graphElements.push({ selector:'#interval-area-' + idGraphElement, data: areaData, object: areaMainGraph});
+        idGraphElement++;
         console.log(xStart + '     ' + xEnd);
       });
 
@@ -244,10 +235,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
     function zoomed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
-      focus
-        .datum<Point[]>(dataset2)
-        .select('.line')
-        .attr('d', lineMain1);
+
+      for(const g of graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+      
       xAxisGroup.call(xAxis);
 
       context
@@ -267,10 +262,13 @@ class SignalAnnotation extends Component<RouteProps, State> {
         ]);
       }
 
-      focus
-        .datum<Point[]>(dataset2)
-        .select('.line')
-        .attr('d', lineMain1);
+      for(const g of graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+
       xAxisGroup.call(xAxis);
     }
 
