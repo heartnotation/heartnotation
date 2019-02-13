@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
-import { Comment, Tooltip, List, Input, Form, Button, Avatar } from 'antd';
-import moment from 'moment';
+import {
+  Comment,
+  Tooltip,
+  List,
+  Input,
+  Form,
+  Button,
+  Avatar,
+  Layout
+} from 'antd';
+import { AnnotationCommentPayload } from '../../utils/objects';
 /*
 const data = [
   {
@@ -49,18 +58,21 @@ const data = [
   }
 ];
 */
+const { Header, Footer, Content } = Layout;
 
 const TextArea = Input.TextArea;
 
 const CommentList = (props: { comments: DataComment[] }) => (
-  <List
-    dataSource={props.comments}
-    header={`${props.comments.length} ${
-      props.comments.length > 1 ? 'replies' : 'reply'
-    }`}
-    itemLayout='horizontal'
-    renderItem={(p: any) => <Comment {...p} />}
-  />
+  <div>
+    <List
+      dataSource={props.comments}
+      header={`${props.comments.length} ${
+        props.comments.length > 1 ? 'replies' : 'reply'
+      }`}
+      itemLayout='horizontal'
+      renderItem={(p: any) => <Comment {...p} />}
+    />
+  </div>
 );
 /*
 const Editor = (
@@ -93,7 +105,7 @@ interface DataComment {
 }
 interface State {
   comments: DataComment[];
-  value: string;
+  payload: AnnotationCommentPayload;
 }
 
 class CommentChatAnnotation extends Component<any, State> {
@@ -101,21 +113,22 @@ class CommentChatAnnotation extends Component<any, State> {
     super(props);
     this.state = {
       comments: [],
-      value: ''
+      payload: { content: '' }
     };
   }
 
   public handleSubmit = () => {
-    if (!this.state.value) {
+    if (!this.state.payload.content) {
       return;
     }
-    console.log({ comments: this.state.value });
+    const { payload } = this.state;
+    console.log(payload);
     this.setState({
-      value: '',
+      payload: { content: '' },
       comments: [
         {
           author: 'Yann Yolo',
-          content: <p>{this.state.value}</p>
+          content: <p>{this.state.payload.content}</p>
         },
         ...this.state.comments
       ]
@@ -124,31 +137,35 @@ class CommentChatAnnotation extends Component<any, State> {
 
   public handleChange = (e: any) => {
     this.setState({
-      value: e.target.value
+      payload: { content: e.target.value }
     });
   }
 
   public render() {
-    const { comments, value } = this.state;
+    const { comments, payload } = this.state;
     console.log(comments);
     return (
       <div>
-        {comments.length > 0 && <CommentList comments={comments} />}
-        <Comment
-          avatar={
-            <Avatar
-              src='https://storenotrefamilleprod.blob.core.windows.net/images/cms/article/16731/16731_large.jpg'
-              alt='Podologs'
-            />
-          }
-          content={
-            <Editor
-              onChange={this.handleChange}
-              onSubmit={this.handleSubmit}
-              value={value}
-            />
-          }
-        />
+        <div className='comments-container'>
+          {comments.length > 0 && <CommentList comments={comments} />}
+        </div>
+        <div>
+          <Comment
+            avatar={
+              <Avatar
+                src='https://storenotrefamilleprod.blob.core.windows.net/images/cms/article/16731/16731_large.jpg'
+                alt='Podologs'
+              />
+            }
+            content={
+              <Editor
+                onChange={this.handleChange}
+                onSubmit={this.handleSubmit}
+                value={payload.content}
+              />
+            }
+          />
+        </div>
       </div>
     );
   }
