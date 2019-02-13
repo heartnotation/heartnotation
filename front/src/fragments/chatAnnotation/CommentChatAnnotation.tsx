@@ -102,6 +102,7 @@ const Editor = (props: {
 interface DataComment {
   author: string;
   content: any;
+  avatar: any;
 }
 interface State {
   comments: DataComment[];
@@ -128,6 +129,9 @@ class CommentChatAnnotation extends Component<any, State> {
       comments: [
         {
           author: 'Yann Yolo',
+          avatar: (
+            <Avatar src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1' />
+          ),
           content: <p>{this.state.payload.content}</p>
         },
         ...this.state.comments
@@ -153,7 +157,8 @@ class CommentChatAnnotation extends Component<any, State> {
           <Comment
             avatar={
               <Avatar
-                src='https://storenotrefamilleprod.blob.core.windows.net/images/cms/article/16731/16731_large.jpg'
+                size='large'
+                src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1'
                 alt='Podologs'
               />
             }

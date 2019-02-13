@@ -140,7 +140,6 @@
 .comments-container {
   padding: 24px;
   background-color: #f9fbf2;
-  min-height: 200px;
-  max-height: 400px;
+  height: 65vh;
   overflow-y: scroll;
 }
