@@ -27,8 +27,7 @@ jobs:
         - dep ensure -vendor-only
       before_script:
         - sudo /etc/init.d/postgresql stop
-        - sudo docker system prune --volumes
-        - sudo docker system prune
+        - go run main.go
         - docker-compose up -d database
       script:
         - go test -v -cover ./...
