@@ -2,12 +2,15 @@ import React, { Component } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { User, Organization } from '../utils';
+import { User, Organization, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
+import EditUserForm from './EditUserForm';
 export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
   currentUsers: User[];
+  user?: User;
+  modalVisible: boolean;
 }
 
 interface Props extends RouteComponentProps {
@@ -18,7 +21,8 @@ class Users extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
     initialUsers: [],
-    currentUsers: []
+    currentUsers: [],
+    modalVisible: false
   };
 
   public async componentDidMount() {
@@ -112,7 +116,15 @@ class Users extends Component<Props, State> {
     {
       title: 'Edit',
       dataIndex: 'edit',
-      render: _ => <Icon type='edit' theme='twoTone' />
+      render: (_, user: User) => (
+        <Icon
+          type='edit'
+          theme='twoTone'
+          onClick={() => {
+            this.setState({ modalVisible: true, user });
+          }}
+        />
+      )
     }
   ];
 
@@ -170,10 +182,25 @@ class Users extends Component<Props, State> {
     });
   }
 
+  public handleCancel = () => {
+    this.closeModal();
+  }
+
+  public handleOk = () => {
+    this.closeModal();
+  }
+
+  public closeModal() {
+    this.setState({
+      modalVisible: false
+    });
+  }
+
   public render() {
-    const { currentUsers } = this.state;
-    return (
+    const { currentUsers, user, modalVisible } = this.state;
+    return [
       <Table<User>
+        key={1}
         rowKey='id'
         columns={this.columns}
         dataSource={currentUsers}
@@ -187,8 +214,18 @@ class Users extends Component<Props, State> {
         // onRow={a => ({
         //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
         // })}
-      />
-    );
+      />,
+      user && (
+        <EditUserForm
+          key={2}
+          getOrganizations={api.getOrganizations}
+          getRoles={api.getRoles}
+          sendUser={api.sendUser}
+          handleCancel={this.handleCancel}
+          modalVisible={modalVisible}
+        />
+      )
+    ];
   }
 }
 
