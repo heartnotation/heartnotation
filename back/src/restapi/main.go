@@ -45,6 +45,7 @@ func main() {
 	router.HandleFunc("/intervals", i.GetInterval).Methods("GET")
 	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
 	router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
+	router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
 	router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
 
 	http.ListenAndServe("0.0.0.0:8000", router)

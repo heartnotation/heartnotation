@@ -9,24 +9,29 @@ import (
 
 // Interval ORM interval
 type Interval struct {
-	ID             uint     `gorm:"AUTO_INCREMENT" json:"id"`
-	TimestampStart int64    `json:"start"`
-	TimestampEnd   int64    `json:"end"`
-	Tags           []t.Tag  `json:"tags,omitempty" gorm:"many2many:interval_tag;"`
-	Comment        *Comment `json:"comments,omitempty" gorm:"many2many:annotation_interval_user;"`
+	ID             uint    `gorm:"AUTO_INCREMENT;primary_key:true;" json:"id"`
+	TimestampStart int64   `json:"start"`
+	TimestampEnd   int64   `json:"end"`
+	Tags           []t.Tag `json:"tags,omitempty" gorm:"many2many:interval_tag;"`
 }
 
 // Comment ORM interval_comment
 type Comment struct {
-	ID           uint         `json:"id" gorm:"AUTO_INCREMENT"`
+	ID           uint         `json:"id" gorm:"AUTO_INCREMENT;primary_key:true;"`
 	AnnotationID uint         `json:"annotation_id"`
 	Annotation   a.Annotation `json:"annotation" gorm:"foreignkey:AnnotationID"`
-	IntervalID   uint         `json:"interval_id"`
-	Interval     Interval     `json:"interval" gorm:"foreignkey:IntervalID;PRELOAD:false;"`
+	IntervalID   *uint        `json:"interval_id,omitempty"`
+	Interval     Interval     `json:"interval" gorm:"foreignkey:IntervalID"`
 	UserID       uint         `json:"user_id"`
 	User         u.User       `json:"user" gorm:"foreignkey:UserID"`
 	Comment      string       `json:"comment,omitempty"`
 	Date         time.Time    `json:"date"`
+}
+
+// IntCom ORM interval comment
+type IntCom struct {
+	Interval Interval  `json:"interval"`
+	Comment  []Comment `json:"comment"`
 }
 
 // Payload interval payload

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,10 +33,12 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v := mux.Vars(r)
-	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+	log.Println(u.IsStringInt(v["id"]))
+	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
+	log.Println("youpih")
 	var annotation Annotation
 	db := u.GetConnection()
 	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {

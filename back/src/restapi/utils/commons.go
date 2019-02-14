@@ -5,9 +5,9 @@ import "strconv"
 // IsStringInt check if a string is an int
 func IsStringInt(v string) bool {
 	if _, err := strconv.Atoi(v); err == nil {
-		return true
+		return false
 	}
-	return false
+	return true
 }
 
 // MapValues give the values of the map in array format
