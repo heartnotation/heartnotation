@@ -137,3 +137,9 @@
   fill: none;
   pointer-events: all;
 }
+.comments-container {
+  padding: 24px;
+  background-color: #f9fbf2;
+  height: 65vh;
+  overflow-y: scroll;
+}
