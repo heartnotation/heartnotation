@@ -77,8 +77,7 @@ class App extends Component<any, State> {
         },
         {
           path: '/users',
-          component: Users,
-          exact: true,
+          component: () => <Users getAllUsers={api.getAllUsers} />,
           title: 'Users',
           iconName: 'user'
         },

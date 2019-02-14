@@ -66,6 +66,10 @@ export const getRoles = (): Promise<Role[]> => {
   return get<Role[]>(urls.roles);
 };
 
+export const getAllUsers = (): Promise<User[]> => {
+  return get<User[]>(urls.users);
+};
+
 const urls = {
   annotations: 'annotations',
   organizations: 'organizations',
