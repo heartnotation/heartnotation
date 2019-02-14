@@ -229,6 +229,22 @@ class Dashboard extends Component<Props, State> {
     });
   }
 
+  public handleCancel = () => {
+    console.log('Cancel clicked...');
+    this.closeModal();
+  }
+
+  public handleOk = () => {
+    console.log('Ok clicked...');
+    this.closeModal();
+  }
+
+  public closeModal() {
+    this.setState({
+      modalVisibility: false
+    });
+  }
+
   public render() {
     const { currentAnnotations, annotation, modalVisibility } = this.state;
     return [
@@ -257,7 +273,9 @@ class Dashboard extends Component<Props, State> {
           getTags={api.getTags}
           annotation={annotation}
           checkSignal={api.checkSignal}
-          // modalVisibility={modalVisibility}
+          handleOk={this.handleOk}
+          handleCancel={this.handleCancel}
+          modalVisibility={modalVisibility}
         />
       )
 

@@ -36,7 +36,6 @@ interface States {
   annotationValidateStatus: '' | 'success' | 'error';
   loading: boolean;
   error: string;
-  modalVisibility: boolean;
 }
 
 interface Props extends FormComponentProps, RouteComponentProps {
@@ -46,8 +45,9 @@ interface Props extends FormComponentProps, RouteComponentProps {
   getOrganizations: () => Promise<Organization[]>;
   annotation: Annotation;
   checkSignal: (id: number) => Promise<any>;
-  // onSubmit: (values: Annotation) => void;
-  // modalVisibility: boolean;
+  handleOk: () => void;
+  handleCancel: () => void;
+  modalVisibility: boolean;
 }
 
 class EditAnnotationForm extends Component<Props, States> {
@@ -62,8 +62,7 @@ class EditAnnotationForm extends Component<Props, States> {
       annotationsParents: [],
       annotationValidateStatus: '',
       loading: false,
-      error: '',
-      modalVisibility: true
+      error: ''
     };
   }
 
@@ -228,12 +227,6 @@ class EditAnnotationForm extends Component<Props, States> {
     });
   }
 
-  public closeModal() {
-    this.setState({
-      modalVisibility: false
-    });
-  }
-
   public handleOk = (e: React.FormEvent<any>) => {
     console.log('ok clicked...');
     e.preventDefault();
@@ -259,15 +252,11 @@ class EditAnnotationForm extends Component<Props, States> {
         values.creation_date = this.props.annotation.creation_date;
         values.status = this.props.annotation.status;
         this.setState({ loading: true, error: '' });
-        this.props.changeAnnotation(values);
+        this.props.changeAnnotation(values).then(() => {
+          this.props.handleOk();
+        });
       }
     });
-    this.closeModal();
-  }
-
-  public handleCancel = (e: any) => {
-    console.log('Cancel clicked...');
-    this.closeModal();
   }
 
   public render() {
@@ -278,8 +267,7 @@ class EditAnnotationForm extends Component<Props, States> {
       annotationValidateStatus,
       tagsSelected,
       error,
-      loading,
-      modalVisibility
+      loading
     } = this.state;
 
     const filteredTags = tags.filter(
@@ -291,9 +279,9 @@ class EditAnnotationForm extends Component<Props, States> {
     return (
       <Modal
         key={2}
-        visible={modalVisibility}
+        visible={this.props.modalVisibility}
         onOk={this.handleOk}
-        onCancel={this.handleCancel}
+        onCancel={this.props.handleCancel}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
