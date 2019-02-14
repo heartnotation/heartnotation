@@ -70,6 +70,10 @@ export const getAllUsers = (): Promise<User[]> => {
   return get<User[]>(urls.users);
 };
 
+export const modifyUser = (datas: User): Promise<User> => {
+  return put<User>(`${urls.users}`, datas);
+};
+
 const urls = {
   annotations: 'annotations',
   organizations: 'organizations',
