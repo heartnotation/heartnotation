@@ -6,6 +6,7 @@ import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
+import { color } from 'd3';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -53,17 +54,18 @@ class SignalAnnotation extends Component<RouteProps, State> {
       },
       getAnnotation
     } = this.props;
+
+    const colors = ['blue', 'green', 'red'];
     const annotation = await getAnnotation(parseInt(id, 10));
-    const l = annotation.signal;
     let leads: Point[][];
     const graphElements: GraphElement[] = [];
     let idGraphElement: number = 0;
 
-    if (!l) {
+    if (!annotation.signal) {
       this.setState({ error: 'No signal found', loading: false });
       return;
     } else {
-      leads = l;
+      leads = annotation.signal;
       this.setState({ loading: false, annotation });
     }
 
@@ -84,18 +86,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const focus = svg
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      
     const context = svg
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
 
-    const dataset2: Point[] = leads[1];
+    const yMa = d3.max(leads, lead => d3.max(lead, data => data.y));
+    const yMi = d3.min(leads, lead => d3.min(lead, data => data.y));
 
-    const yMa = d3.max(dataset2, d => d.y);
-    const yMi = d3.min(dataset2, d => d.y);
-
-    const xMax = d3.max(dataset2, d => d.x);
+    const xMax = d3.max(leads, lead => d3.max(lead, data => data.x));
     const yMax = (yMa ? yMa : 0) + 100;
-    const xMin = d3.min(dataset2, d => d.x);
+    const xMin = d3.min(leads, lead => d3.min(lead, data => data.x));
     const yMin = (yMi ? yMi : 0) - 100;
 
     const xScale = d3
@@ -118,44 +119,58 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .range([0, height2])
       .domain(yScale.domain());
 
-    dataset2.sort((a, b) => {
-      return a.x - b.x;
-    });
-
-    const lineMain1 = d3
-      .line<Point>()
-      .x(d => xScale(d.x))
-      .y(d => yScale(d.y))
-      .curve(d3.curveBasis);
-
     focus
-      .datum<Point[]>(dataset2)
       .append('g')
-      .attr('id', 'mainGraph')
-      .append('path')
-      .attr('class', 'line')
-      .attr('id', 'line')
-      .attr('d', lineMain1);
-
-    const linePreview1 = d3
-      .line<Point>()
-      .x(d => xScale2(d.x))
-      .y(d => yScale2(d.y))
-      .curve(d3.curveBasis);
-
-    graphElements.push({
-      selector: '#line',
-      data: dataset2,
-      object: lineMain1
-    });
+      .attr('id', 'mainGraph');
 
     context
-      .datum<Point[]>(dataset2)
       .append('g')
-      .attr('id', 'previewGraph')
-      .append('path')
-      .attr('class', 'line')
-      .attr('d', linePreview1);
+      .attr('id', 'previewGraph');
+
+    let i = 0;
+    for(const lead of leads) {
+      lead.sort((a, b) => {
+        return a.x - b.x;
+      });
+
+      const lineMain = d3
+        .line<Point>()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.y))
+        .curve(d3.curveBasis);
+      
+      focus
+        .datum<Point[]>(lead)
+        .select('#mainGraph')
+        .append('path')
+        .attr('class', 'line')
+        .attr('id', 'line' + i)
+        .attr('d', lineMain)
+        .attr('stroke', _ => colors[i % colors.length])
+        .attr('clip-path', 'url(#clip)');
+      
+      const linePreview = d3
+        .line<Point>()
+        .x(d => xScale2(d.x))
+        .y(d => yScale2(d.y))
+        .curve(d3.curveBasis);
+
+      graphElements.push({
+        selector: '#line' + i,
+        data: lead,
+        object: lineMain
+      });
+
+      context
+        .datum<Point[]>(lead)
+        .select('#previewGraph')
+        .append('path')
+        .attr('class', 'line')
+        .attr('d', linePreview)
+        .attr('stroke', _ => colors[i % colors.length]);
+
+      i++;
+    }    
 
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
