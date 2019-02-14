@@ -22,8 +22,8 @@ interface State {
 }
 
 interface GraphElement {
-  selector:string;
-  data:Point[];
+  selector: string;
+  data: Point[];
   object: d3.Line<Point> | d3.Area<Point>;
 }
 
@@ -34,12 +34,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
       loading: true,
       moving: true,
       popperVisible: false,
-      cursorPosition: {x:0, y:0}
+      cursorPosition: { x: 0, y: 0 }
     };
   }
 
   public onChange = (checked: boolean) => {
-    if(checked === true) {
+    if (checked === true) {
       d3.select('.zoom').style('display', 'none');
     } else {
       d3.select('.zoom').style('display', 'block');
@@ -53,12 +53,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       },
       getAnnotation
     } = this.props;
-
     const annotation = await getAnnotation(parseInt(id, 10));
     const l = annotation.signal;
     let leads: Point[][];
-    const graphElements:GraphElement[] = [];
-    let idGraphElement:number = 0;
+    const graphElements: GraphElement[] = [];
+    let idGraphElement: number = 0;
 
     if (!l) {
       this.setState({ error: 'No signal found', loading: false });
@@ -144,7 +143,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .y(d => yScale2(d.y))
       .curve(d3.curveBasis);
 
-    graphElements.push({ selector:'#line', data: dataset2, object: lineMain1});
+    graphElements.push({
+      selector: '#line',
+      data: dataset2,
+      object: lineMain1
+    });
 
     context
       .datum<Point[]>(dataset2)
@@ -169,7 +172,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('transform', 'translate(0,' + height2 + ')')
       .call(xAxis2);
 
- 
     const zoom: any = d3
       .zoom()
       .scaleExtent([1, 50]) // Zoom x1 to x50
@@ -190,37 +192,52 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-        const areaData = [{x: xStart, y: yMax }, {x: xEnd, y: yMax}];
+        const areaData = [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }];
 
-        const areaMainGraph = d3.area<Point>()
+        const areaMainGraph = d3
+          .area<Point>()
           .x(d => xScale(d.x))
           .y0(yScale(yMin))
           .y1(d => yScale(d.y));
 
-        const areaPreviewGraph = d3.area<Point>()
+        const areaPreviewGraph = d3
+          .area<Point>()
           .x(d => xScale2(d.x))
           .y0(yScale2(yMin))
           .y1(d => yScale2(d.y));
 
-        focus.select('#mainGraph').append('path')
+        focus
+          .select('#mainGraph')
+          .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area')
           .attr('id', 'interval-area-' + idGraphElement)
           .attr('d', areaMainGraph)
           .attr('clip-path', 'url(#clip)');
 
-        context.select('#previewGraph').append('path')
+        context
+          .select('#previewGraph')
+          .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area-preview')
           .attr('id', 'interval-area-preview-' + idGraphElement)
           .attr('d', areaPreviewGraph);
 
-        graphElements.push({ selector:'#interval-area-' + idGraphElement, data: areaData, object: areaMainGraph});
+        graphElements.push({
+          selector: '#interval-area-' + idGraphElement,
+          data: areaData,
+          object: areaMainGraph
+        });
         idGraphElement++;
 
         console.log(d3.event);
-        this.setState({popperVisible: true, cursorPosition:{x: d3.event.sourceEvent.clientX, y:d3.event.sourceEvent.clientY}});
-
+        this.setState({
+          popperVisible: true,
+          cursorPosition: {
+            x: d3.event.sourceEvent.clientX,
+            y: d3.event.sourceEvent.clientY
+          }
+        });
 
         console.log(xStart + '     ' + xEnd);
       });
@@ -247,13 +264,13 @@ class SignalAnnotation extends Component<RouteProps, State> {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
 
-      for(const g of graphElements) {
+      for (const g of graphElements) {
         focus
           .datum<Point[]>(g.data)
           .select(g.selector)
           .attr('d', g.object);
       }
-      
+
       xAxisGroup.call(xAxis);
 
       context
@@ -278,7 +295,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .translate(-d3.event.selection[0], 0));
       }
 
-      for(const g of graphElements) {
+      for (const g of graphElements) {
         focus
           .datum<Point[]>(g.data)
           .select(g.selector)
@@ -318,13 +335,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public confirmDelete = () => {
-    this.setState({popperVisible: false});
+    this.setState({ popperVisible: false });
     message.error('Interval has been deleted.', 10);
   }
 
   public confirmCreate = () => {
-    this.setState({popperVisible: false});
-    message.success('Interval has been created with the information entered.', 10);
+    this.setState({ popperVisible: false });
+    message.success(
+      'Interval has been created with the information entered.',
+      10
+    );
   }
 
   public render = () => {
@@ -362,11 +382,19 @@ class SignalAnnotation extends Component<RouteProps, State> {
               <Tag color='purple'>purple</Tag>
             </div>
             <div className='signal-toolbox-container'>
-              Navigation Mode <Switch onChange={this.onChange} /> Annotation Mode
+              Navigation Mode <Switch onChange={this.onChange} /> Annotation
+              Mode
             </div>
             <div className='signal-graph-container' id='signal' />
           </div>
-          { this.state.popperVisible && <Popper top={450} left={this.state.cursorPosition.x + 50} confirmCreate={this.confirmCreate} confirmDelete={this.confirmDelete} />}
+          {this.state.popperVisible && (
+            <Popper
+              top={450}
+              left={this.state.cursorPosition.x + 50}
+              confirmCreate={this.confirmCreate}
+              confirmDelete={this.confirmDelete}
+            />
+          )}
         </div>
       )
     );
@@ -375,18 +403,20 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
 export default withRouter(SignalAnnotation);
 
-
 const Popper = (props: any) => {
   return (
     <div className='full-screen-popper'>
       <Card
-        title='Informations on interval'
-        style={{position:'absolute', top: props.top-400, left: props.left}}
+        style={{ position: 'absolute', top: props.top - 400, left: props.left }}
       >
         <FormIntervalSignalAnnotation />
-        <Button type='danger' onClick={props.confirmDelete}>Delete</Button>
-        <Button type='primary' onClick={props.confirmCreate}>Create</Button>
+        <Button type='danger' onClick={props.confirmDelete}>
+          Delete
+        </Button>
+        <Button type='primary' onClick={props.confirmCreate}>
+          Create
+        </Button>
       </Card>
     </div>
-  )
-}
+  );
+};
