@@ -131,7 +131,7 @@ class Dashboard extends Component<Props, State> {
     {
       title: 'Edit',
       dataIndex: 'edit',
-      render: _ => <Icon type='edit' theme='twoTone' />
+      render: _ => <Icon className='anticon-edit-dashboard' type='edit' theme='twoTone' />
     }
   ];
 
