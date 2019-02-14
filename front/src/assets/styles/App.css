@@ -142,8 +142,7 @@
   fill: none;
   pointer-events: all;
 }
-
-.signal-toolbox-container {
+<<<<<<< head .signal-toolbox-container {
   margin-top: 20px;
   text-align: center;
 }
@@ -160,13 +159,20 @@
 
 .full-screen-popper {
   position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(75, 75, 75, 0.5);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(75, 75, 75, 0.5);
 }
 
 .ant-btn {
   margin: 8px;
+}
+
+.comments-container {
+  padding: 24px;
+  background-color: #f9fbf2;
+  height: 65vh;
+  overflow-y: scroll;
 }

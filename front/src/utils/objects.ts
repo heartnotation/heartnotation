@@ -48,3 +48,7 @@ export interface User {
   organizations: Organization[];
   is_active: boolean;
 }
+
+export interface AnnotationCommentPayload {
+  content: string;
+}
