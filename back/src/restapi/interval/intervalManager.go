@@ -43,7 +43,7 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 func CreateIntervalTag(w http.ResponseWriter, r *http.Request) {
 	var i Payload
 	err := json.NewDecoder(r.Body).Decode(&i)
-	if err != nil || i.TagsID == nil || len(i.TagsID) == 0 || i.ID == nil {
+	if err != nil || i.TagsID == nil || len(i.TagsID) == 0 || i.ID == nil || i.Start == nil || i.End == nil {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
@@ -56,7 +56,7 @@ func CreateIntervalTag(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-	interval := Interval{ID: *i.ID, Tags: tags}
+	interval := Interval{ID: *i.ID, Tags: tags, TimestampStart: *i.Start, TimestampEnd: *i.End}
 	if u.CheckErrorCode(db.Save(&interval).Error, w) {
 		return
 	}
