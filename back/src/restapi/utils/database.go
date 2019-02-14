@@ -19,9 +19,25 @@ func init() {
 	dbName := os.Getenv("DB_NAME")
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+	if dbPort == "" {
+		dbPort = "5432"
+	}
+	if dbName == "" {
+		dbName = "heartnotation"
+	}
+	if username == "" {
+		username = "heart"
+	}
+	if password == "" {
+		password = "cardiologs"
+	}
 
 	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%s", dbHost, username, dbName, password, dbPort)
 	log.Print("Connection pending...")
+
 	conn, err := gorm.Open("postgres", dbURI)
 	for err != nil {
 		conn, err = gorm.Open("postgres", dbURI)
