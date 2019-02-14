@@ -1,13 +1,16 @@
 import React, { Component } from 'react';
-import { Table, Input, Icon } from 'antd';
+import { Table, Input, Icon, Modal, Button } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation } from '../utils';
+import { Annotation, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
+import EditAnnotationForm from './EditAnnotationForm';
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
   currentAnnotations: Annotation[];
+  annotation?: Annotation;
+  modalVisibility: boolean;
 }
 
 interface Props extends RouteComponentProps {
@@ -18,7 +21,8 @@ class Dashboard extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
     initialAnnotations: [],
-    currentAnnotations: []
+    currentAnnotations: [],
+    modalVisibility: false
   };
 
   public async componentDidMount() {
@@ -131,7 +135,15 @@ class Dashboard extends Component<Props, State> {
     {
       title: 'Edit',
       dataIndex: 'edit',
-      render: _ => <Icon type='edit' theme='twoTone' />
+      render: (_, annotation: Annotation) => (
+        <Icon
+          type='edit'
+          theme='twoTone'
+          onClick={() => {
+            this.setState({ modalVisibility: true, annotation });
+          }}
+        />
+      )
     }
   ];
 
@@ -218,9 +230,10 @@ class Dashboard extends Component<Props, State> {
   }
 
   public render() {
-    const { currentAnnotations } = this.state;
-    return (
+    const { currentAnnotations, annotation, modalVisibility } = this.state;
+    return [
       <Table<Annotation>
+        key={1}
         rowKey='id'
         columns={this.columns}
         dataSource={currentAnnotations}
@@ -232,10 +245,33 @@ class Dashboard extends Component<Props, State> {
             `${range[0]}-${range[1]} of ${total} items`
         }}
         onRow={a => ({
-          onClick: () => this.props.history.push(`/annotations/${a.id}`)
+          // onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
-      />
-    );
+      />,
+      annotation && (
+        <EditAnnotationForm
+          key={2}
+          getAnnotations={api.getAnnotations}
+          getOrganizations={api.getOrganizations}
+          changeAnnotation={api.changeAnnotation}
+          getTags={api.getTags}
+          annotation={annotation}
+          checkSignal={api.checkSignal}
+          // modalVisibility={modalVisibility}
+        />
+      )
+
+      // {annotation && (
+      //   <EditAnnotationForm
+      //     getAnnotations={api.getAnnotations}
+      //     getOrganizations={api.getOrganizations}
+      //     changeAnnotation={api.changeAnnotation}
+      //     getTags={api.getTags}
+      //     annotation={annotation}
+
+      //   />
+      // )}
+    ];
   }
 }
 

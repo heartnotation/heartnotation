@@ -4,6 +4,7 @@ import AppRouter, { AppRoute } from './Routes';
 import AnnotationForm from './pages/CreateAnnotationForm';
 import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
+import EditAnnotationForm from './pages/EditAnnotationForm';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
@@ -41,6 +42,19 @@ class App extends Component<any, State> {
           ),
           title: 'Signal annotation'
         }
+        // {
+        //   path: '/edit/annotations',
+        //   component: () => (
+        //     <EditAnnotationForm
+        //       changeAnnotation={api.changeAnnotation}
+        //       getAnnotations={api.getAnnotations}
+        //       getTags={api.getTags}
+        //       getOrganizations={api.getOrganizations}
+        //     />
+        //   ),
+        //   exact: true,
+        //   title: 'Edit annotation'
+        // }
       ],
       routes: [
         {
@@ -57,6 +71,7 @@ class App extends Component<any, State> {
           title: 'Create annotation',
           iconName: 'plus'
         },
+
         {
           path: '/new/users',
           component: UserCreation,
