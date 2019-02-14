@@ -30,8 +30,10 @@ interface States {
 interface Props extends FormComponentProps, RouteComponentProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
-  sendUser: (datas: User) => Promise<User>;
+  modifyUser: (datas: User) => Promise<User>;
   handleCancel: () => void;
+  handleOk: () => void;
+  user: User;
   modalVisible: boolean;
 }
 
@@ -63,18 +65,14 @@ class EditUserForm extends Component<Props, States> {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
+        values.id = this.props.user.id;
+        values.mail = this.props.user.mail;
+        values.role_id = this.props.user.role.id;
+        values.organizations = this.props.user.organizations.map(o => o.name);
         this.setState({ loading: true, error: '' });
-        this.props
-          .sendUser(values)
-          .then(() => {
-            this.props.history.push('/users');
-          })
-          .catch(() =>
-            this.setState({
-              error: 'Problem while sending datas, please retry later...',
-              loading: false
-            })
-          );
+        this.props.modifyUser(values).then(() => {
+          this.props.handleOk();
+        });
       }
     });
   }
@@ -148,6 +146,22 @@ class EditUserForm extends Component<Props, States> {
     this.setState({ organizationsSelected: organization });
   }
 
+  public handleOk = (e: React.FormEvent<any>) => {
+    e.preventDefault();
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        values.id = this.props.user.id;
+        values.mail = this.props.user.mail;
+        values.role_id = this.props.user.role.id;
+        values.organizations = this.props.user.organizations.map(o => o.name);
+        this.setState({ loading: true, error: '' });
+        this.props.modifyUser(values).then(() => {
+          this.props.handleOk();
+        });
+      }
+    });
+  }
+
   public render() {
     const { getFieldDecorator } = this.props.form;
     const {
@@ -172,19 +186,33 @@ class EditUserForm extends Component<Props, States> {
           .includes(o.id)
     );
 
+    // this.setState({ organizationsSelected: this.props.user.organizations });
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
       <Modal
         key={2}
         visible={this.props.modalVisible}
-        onCancel={this.props.handleCancel}
+        footer={[
+          <Button key='back' onClick={this.props.handleCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key='submit'
+            type='primary'
+            loading={loading}
+            onClick={this.handleOk}
+          >
+            Modify
+          </Button>
+        ]}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={8}>
             <Form layout='horizontal' onSubmit={this.handleSubmit}>
               <Form.Item {...formItemLayout} label='Email Address'>
                 {getFieldDecorator('mail', {
+                  initialValue: this.props.user.mail,
                   rules: [
                     {
                       type: 'email',
@@ -199,6 +227,7 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Role'>
                 {getFieldDecorator('role_id', {
+                  initialValue: this.props.user.role.name,
                   rules: [
                     {
                       required: true,
@@ -222,6 +251,9 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organizations', {
+                  initialValue: this.props.user.organizations
+                    ? this.props.user.organizations.map(o => o.name)
+                    : [],
                   rules: [
                     {
                       required: false,
@@ -242,11 +274,6 @@ class EditUserForm extends Component<Props, States> {
                     ))}
                   </Select>
                 )}
-              </Form.Item>
-              <Form.Item {...formTailLayout}>
-                <Button type='primary' htmlType='submit' disabled={loading}>
-                  Create
-                </Button>
               </Form.Item>
               {error && <Alert message={error} type='error' showIcon={true} />}
             </Form>

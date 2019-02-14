@@ -82,7 +82,9 @@ class Users extends Component<Props, State> {
           title: 'Organizations',
           dataIndex: 'organizations',
           render: (organizations: Organization[]) => {
-            organizations.sort();
+            if (organizations !== undefined) {
+              organizations.sort();
+            }
             const colors = [
               'geekblue',
               'green',
@@ -211,17 +213,19 @@ class Users extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
-        // onRow={a => ({
-        //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
-        // })}
+        onRow={a => ({
+          //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        })}
       />,
       user && (
         <EditUserForm
           key={2}
           getOrganizations={api.getOrganizations}
           getRoles={api.getRoles}
-          sendUser={api.sendUser}
+          modifyUser={api.modifyUser}
           handleCancel={this.handleCancel}
+          handleOk={this.handleCancel}
+          user={user}
           modalVisible={modalVisible}
         />
       )
