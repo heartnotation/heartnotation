@@ -111,12 +111,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const xScale2 = d3
       .scaleLinear()
       .range([0, width])
-      .domain([0, xMax ? xMax : 0]);
+      .domain(xScale.domain());
 
     const yScale2 = d3
       .scaleLinear()
       .range([0, height2])
-      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
+      .domain(yScale.domain());
 
     dataset2.sort((a, b) => {
       return a.x - b.x;
@@ -163,18 +163,18 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const xAxis = d3.axisBottom(xScale).tickSize(-height);
     const xAxisGroup = focus
       .append('g')
-      .call(xAxis)
-      .attr('transform', 'translate(0,' + height + ')');
+      .attr('transform', 'translate(0,' + height + ')')
+      .call(xAxis);
 
     const xAxis2 = d3.axisBottom(xScale2);
     const xAxisGroup2 = context
       .append('g')
-      .call(xAxis2)
-      .attr('transform', 'translate(0,' + height2 + ')');
+      .attr('transform', 'translate(0,' + height2 + ')')
+      .call(xAxis2);
 
     const zoom: any = d3
       .zoom()
-      .scaleExtent([1, Infinity])
+      .scaleExtent([1, 50]) // Zoom x1 to x50
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
       .on('zoom', zoomed)
@@ -283,11 +283,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     function brushed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+
       if (d3.event.selection) {
         xScale.domain([
           xScale2.invert(d3.event.selection[0]),
           xScale2.invert(d3.event.selection[1])
         ]);
+        // Change graph zone when brush moved
+        focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
+          .scale(width / (d3.event.selection[1] - d3.event.selection[0]))
+          .translate(-d3.event.selection[0], 0));
       }
 
       for (const g of graphElements) {
