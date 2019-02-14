@@ -53,7 +53,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       },
       getAnnotation
     } = this.props;
-
     const annotation = await getAnnotation(parseInt(id, 10));
     const l = annotation.signal;
     let leads: Point[][];

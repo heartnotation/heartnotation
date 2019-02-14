@@ -176,3 +176,7 @@
   height: 65vh;
   overflow-y: scroll;
 }
+
+.popup-comment-tag-container {
+  width: 400px;
+}

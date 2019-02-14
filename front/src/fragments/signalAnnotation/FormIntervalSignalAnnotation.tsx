@@ -2,14 +2,22 @@ import React, { Component } from 'react';
 import { Form, Icon, Tabs, Select } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
+import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
+import { Tag, api } from '../../utils';
 
 interface Props extends FormComponentProps, RouteComponentProps {}
 
-class FormIntervalSignalAnnotation extends Component<Props> {
-  public state = {
-    confirmDirty: false,
-    autoCompleteResult: []
-  };
+interface States {
+  tags: Tag[];
+}
+
+class FormIntervalSignalAnnotation extends Component<Props, States> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      tags: []
+    };
+  }
 
   public handleSubmit = (e: any) => {
     e.preventDefault();
@@ -24,18 +32,28 @@ class FormIntervalSignalAnnotation extends Component<Props> {
     console.log(`selected ${value}`);
   }
 
+  public componentDidMount = () => {
+    console.log('yoooo');
+    api.getTags().then(res => this.setState({ tags: res }));
+  }
+
   public render() {
     const TabPane = Tabs.TabPane;
     const Option = Select.Option;
-    const children = [];
-    for (let i = 10; i < 36; i++) {
+    const { tags } = this.state;
+    const tagValues = tags.map((val: Tag) => (
+      <Option key={val.name} value={val.id}>
+        {val.name}
+      </Option>
+    ));
+    /*for (let i = 10; i < 36; i++) {
       children.push(
         <Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>
       );
-    }
+    }*/
 
     return (
-      <div>
+      <div className='popup-comment-tag-container'>
         {' '}
         <Tabs defaultActiveKey='2'>
           <TabPane
@@ -51,10 +69,9 @@ class FormIntervalSignalAnnotation extends Component<Props> {
               mode='multiple'
               style={{ width: '100%' }}
               placeholder='Please select'
-              defaultValue={['a10', 'c12']}
               onChange={this.handleChange}
             >
-              {children}
+              {tagValues}
             </Select>
           </TabPane>
           <TabPane
@@ -66,7 +83,9 @@ class FormIntervalSignalAnnotation extends Component<Props> {
             }
             key='2'
           >
-            ermHazerDDeEee
+            <div className='popup-comment'>
+              <CommentChatAnnotation />
+            </div>
           </TabPane>
         </Tabs>
       </div>
