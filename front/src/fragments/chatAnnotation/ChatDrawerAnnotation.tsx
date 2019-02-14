@@ -27,7 +27,7 @@ class ChatDrawerAnnotation extends Component {
           onClick={this.showDrawer}
           className='btn-space btn-heartnotation-primary'
         >
-          Chat Drawer
+          Comments
         </Button>
         <Drawer
           title='Annotation Comments'
