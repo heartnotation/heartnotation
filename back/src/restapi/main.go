@@ -21,29 +21,28 @@ func main() {
 
 	// Annotations
 	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(a.FindAnnotationByID)).Methods("GET") //Revoir le format de l'URL /annotations/{id}
-	router.HandleFunc("/annotations", a.FindAnnotations).Methods("GET")
-	router.HandleFunc("/annotations", a.ModifyAnnotation).Methods("PUT")
-	router.HandleFunc("/annotations", a.CreateAnnotation).Methods("POST")
-	router.HandleFunc("/annotations/{id}", a.DeleteAnnotation).Methods("DELETE")
-	router.HandleFunc("/signal/{id}", s.CheckSignal).Methods("GET")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.FindAnnotations)).Methods("GET")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.ModifyAnnotation)).Methods("PUT")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.CreateAnnotation)).Methods("POST")
+	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(a.DeleteAnnotation)).Methods("DELETE")
+	router.HandleFunc("/signal/{id}", auth.ValidateMiddleware(s.CheckSignal)).Methods("GET")
 
 	// Organizations
-	router.HandleFunc("/organizations", o.GetOrganizations).Methods("GET")
+	router.HandleFunc("/organizations", auth.ValidateMiddleware(o.GetOrganizations)).Methods("GET")
 
 	// Tags
-	router.HandleFunc("/tags", t.GetTags).Methods("GET")
+	router.HandleFunc("/tags", auth.ValidateMiddleware(t.GetTags)).Methods("GET")
 
 	// Users
-	router.HandleFunc("/users", u.CreateUser).Methods("POST")
-	router.HandleFunc("/users", u.GetAllUsers).Methods("GET")
-	router.HandleFunc("/users/{id}", u.FindUserByID).Methods("GET")
-	router.HandleFunc("/users/{id}", u.DeleteUser).Methods("DELETE")
-	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
-	router.HandleFunc("/roles", u.GetAllRoles).Methods("GET")
+	router.HandleFunc("/users", auth.ValidateMiddleware(u.CreateUser)).Methods("POST")
+	router.HandleFunc("/users", auth.ValidateMiddleware(u.GetAllUsers)).Methods("GET")
+	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.FindUserByID)).Methods("GET")
+	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.DeleteUser)).Methods("DELETE")
+	router.HandleFunc("/users", auth.ValidateMiddleware(u.ModifyUser)).Methods("PUT")
+	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")
 
 	// Auth
-	router.HandleFunc("/login", auth.HandleAuth).Methods("GET")
-	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("GET")
+	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
 
 	http.ListenAndServe("0.0.0.0:8000", router)
 }

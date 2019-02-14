@@ -11,7 +11,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/context"
+	c "github.com/gorilla/context"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -39,15 +39,9 @@ func init() {
 	}
 }
 
-// HandleAuth receive authentication request
-func HandleAuth(w http.ResponseWriter, r *http.Request) {
-	url := googleOauthConfig.AuthCodeURL(oauthStateString)
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
-
 // HandleGoogleCallback receive request from Google after API validating credentials
 func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
-	content, err := getUserInfo(r.FormValue("state"), r.FormValue("code"))
+	content, err := getUserInfo(r.FormValue("access_token"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusTemporaryRedirect)
 		return
@@ -59,12 +53,20 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := createJWTFromCredentials(googleUser)
+	userFound := u.User{}
+	err = utils.GetConnection().Preload("Role").Where("mail=?", googleUser.Email).Find(&userFound).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	t, err := createJWTFromCredentials(googleUser)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	utils.Respond(w, token)
+	auth := &AuthResponse{User: userFound, Token: t}
+	utils.Respond(w, auth)
 }
 
 func createJWTFromCredentials(user GoogleUser) (string, error) {
@@ -83,17 +85,9 @@ func createJWTFromCredentials(user GoogleUser) (string, error) {
 	return tokenString, nil
 }
 
-func getUserInfo(state string, code string) ([]byte, error) {
-	if state != oauthStateString {
-		return nil, fmt.Errorf("invalid oauth state")
-	}
+func getUserInfo(authToken string) ([]byte, error) {
 
-	token, err := googleOauthConfig.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		return nil, fmt.Errorf("code exchange failed: %s", err.Error())
-	}
-
-	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + authToken)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting user info: %s", err.Error())
 	}
@@ -118,23 +112,29 @@ func ValidateMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 						return nil, fmt.Errorf("Wrong signing method")
 					}
-					return []byte(signingKey), nil
+					return signingKey, nil
 				})
 				if err != nil {
-					json.NewEncoder(w).Encode(err.Error())
+					http.Error(w, err.Error(), 400)
 					return
 				}
-				if token.Valid {
-					user, err := getUserFromClaims(token.Claims)
-					if err != nil {
-						http.Error(w, "Access refused", 403)
-						return
-					}
-					context.Set(r, "user", user)
-					next(w, r)
+				if !token.Valid {
+					http.Error(w, "Not a valid token", 403)
 				}
+				user, err := getUserFromClaims(token.Claims)
+				if err != nil {
+					http.Error(w, "No user found for this token", 403)
+					return
+				}
+				c.Set(r, "user", user)
+				next(w, r)
+				return
 			}
+			http.Error(w, "Bad token format, expected \"Bearer <token>\"", 400)
+			return
 		}
+		http.Error(w, "No token provided", 400)
+		return
 	})
 }
 
@@ -143,7 +143,7 @@ func getUserFromClaims(claims jwt.Claims) (*u.User, error) {
 
 	var googleUser GoogleUser
 	mapstructure.Decode(claims.(jwt.MapClaims), &googleUser)
-	fmt.Printf("%v", googleUser)
+
 	var u u.User
 
 	if err := db.Preload("Role").Where("mail=?", googleUser.Email).Find(&u).Error; err != nil {

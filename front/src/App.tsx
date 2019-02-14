@@ -8,7 +8,10 @@ import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
-import { api } from './utils';
+import { api, User } from './utils';
+import GoogleLogin from 'react-google-login';
+import { Authenticated, authenticate } from './utils/auth';
+import loadingGif from './assets/images/loading.gif';
 
 const r = {
   defaultRoute: {
@@ -84,21 +87,82 @@ const r = {
     }
   ]
 };
-
-export default class App extends Component {
+class App extends Component<
+  { clientId: string },
+  { user?: User; logged: boolean; token?: string }
+> {
   constructor(props: any) {
     super(props);
+    const token = localStorage.getItem('access_token');
     this.state = {
-      user: undefined
+      user: undefined,
+      logged: false,
+      token: token ? token : undefined
     };
   }
+  public componentDidMount = () => {
+    const { token } = this.state;
+    if (token) {
+      authenticate(token)
+        .then(user => {
+          this.setState({ user, logged: true });
+        })
+        .catch(() => {
+          this.setState({ logged: false, user: undefined });
+        });
+    }
+  }
+
+  private handleSuccess = (response: any) => {
+    const form = new FormData();
+    const accessToken = response.getAuthResponse().access_token;
+    form.set('access_token', accessToken);
+
+    authenticate(response.getAuthResponse().access_token)
+      .then(user => {
+        this.setState({ user, logged: true });
+      })
+      .catch(() => {
+        alert('Unrecognized token');
+      });
+  }
   public render = () => {
-    return (
-      <AppRouter
-        defaultRoute={r.defaultRoute}
-        routes={r.routes}
-        hiddenRoutes={r.hiddenRoutes}
-      />
-    );
+    const { logged, token, user } = this.state;
+    const { clientId } = this.props;
+
+    if (token && !logged) {
+      return (
+        <img
+          style={{ width: '50%', display: 'block', margin: 'auto' }}
+          src={loadingGif}
+          alt='Loading'
+        />
+      );
+    }
+
+    if (!logged) {
+      return (
+        <GoogleLogin
+          clientId={clientId}
+          buttonText='Log in'
+          onSuccess={this.handleSuccess}
+          onFailure={err => console.log(err.details)}
+        />
+      );
+    }
+    if (user) {
+      return (
+        user && (
+          <Authenticated user={user}>
+            <AppRouter
+              defaultRoute={r.defaultRoute}
+              routes={r.routes}
+              hiddenRoutes={r.hiddenRoutes}
+            />
+          </Authenticated>
+        )
+      );
+    }
   }
 }
+export default App;
