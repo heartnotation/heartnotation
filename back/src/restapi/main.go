@@ -42,12 +42,10 @@ func main() {
 	router.HandleFunc("/roles", u.GetAllRoles).Methods("GET")
 
 	// Interval
-	router.HandleFunc("/intervals/tag", i.GetIntervalTag).Methods("GET")
-	router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
-	router.HandleFunc("/intervals/comment", i.GetIntervalComment).Methods("GET")
-	router.HandleFunc("/intervals/comment", i.CreateIntervalComment).Methods("POST")
-	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
 	router.HandleFunc("/intervals", i.GetInterval).Methods("GET")
+	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
+	router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
+	router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
 
 	http.ListenAndServe("0.0.0.0:8000", router)
 }

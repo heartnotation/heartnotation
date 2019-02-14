@@ -15,7 +15,7 @@ import (
 var checkMethods = [4]string{"GET", "POST", "PUT", "DELETE"}
 
 // CheckRoutes const to test all route
-var CheckRoutes = map[string]string{"annotations": "/annotations", "intervals": "/intervals", "intervalscomment": "/intervals/comment", "intervalstag": "/intervals/tag", "signal": "/signal", "organizations": "/organizations", "tags": "/tags", "users": "/users", "roles": "/roles"}
+var CheckRoutes = map[string]string{"annotations": "/annotations", "intervals": "/intervals", "intervalscomment": "/intervals/comment", "intervalstag": "/intervals/tag", "intervalstagcomment": "/intervals/tag/comment", "signal": "/signal", "organizations": "/organizations", "tags": "/tags", "users": "/users", "roles": "/roles"}
 
 // CheckPayloadInt payload to test int path url
 var CheckPayloadInt = []string{"aa", "", "a3B", "'3afea'"}
