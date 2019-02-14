@@ -36,3 +36,12 @@ type Role struct {
 func (Role) TableName() string {
 	return "userrole"
 }
+
+type OrganizationUser struct {
+	IDOrganization uint `json:"organization_id`
+	IDUser         uint `json:"user_id`
+}
+
+func (OrganizationUser) TableName() string {
+	return "organization_user"
+}

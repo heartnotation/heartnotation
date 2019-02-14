@@ -102,6 +102,7 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	user := &User{}
 	organizations := []o.Organization{}
 	role := &Role{}
+	organizationuser := OrganizationUser{}
 	vars := mux.Vars(r)
 	json.NewDecoder(r.Body).Decode(&a)
 
@@ -134,6 +135,12 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 
 	if organizations == nil {
 		organizations = user.Organizations
+	}
+
+	err = db.Where("user_id = ?", user.ID).Delete(&organizationuser).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
 	}
 
 	user = &User{ID: user.ID, Mail: a.Mail, Role: *role, Organizations: organizations, IsActive: true}
