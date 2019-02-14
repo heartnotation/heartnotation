@@ -28,7 +28,9 @@ jobs:
       before_script:
         - sudo /etc/init.d/postgresql stop
         - docker-compose up -d database &
+        - sleep 5
         - go run main.go &
+        - sleep 5
       script:
         - go test -v -cover ./...
       after_script:
