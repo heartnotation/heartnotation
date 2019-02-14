@@ -5,6 +5,7 @@
 
 .logo {
   margin-left: 30px;
+  width: 300px;
 }
 
 .main-menu {
@@ -160,11 +161,11 @@
 
 .full-screen-popper {
   position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(75, 75, 75, 0.5);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(75, 75, 75, 0.5);
 }
 
 .ant-btn {
