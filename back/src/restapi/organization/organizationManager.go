@@ -11,6 +11,9 @@ import (
 
 // GetOrganizations receive request to get all organizations in database
 func GetOrganizations(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["organizations"], w, r) {
+		return
+	}
 	organization := &[]Organization{}
 	err := u.GetConnection().Find(&organization).Error
 	if err != nil {

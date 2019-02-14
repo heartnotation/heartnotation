@@ -28,12 +28,7 @@ func init() {
 
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		http.Error(w, "Bad request", 400)
-		return
-	}
-	if len(r.URL.String()) < len(u.CheckRoutes["annotations"]) || r.URL.String()[0:len(u.CheckRoutes["annotations"])] != "/annotations/" {
-		http.Error(w, "Bad request", 400)
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
 	v := mux.Vars(r)
@@ -54,6 +49,9 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	db := u.GetConnection()
 	var a dto
 	json.NewDecoder(r.Body).Decode(&a)
@@ -115,6 +113,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	annotations := &[]Annotation{}
 	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
 	if err != nil {
@@ -133,6 +134,9 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 
 // FindAnnotationByID Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
 	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
@@ -154,6 +158,9 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	db := u.GetConnection()
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)

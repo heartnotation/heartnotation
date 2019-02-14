@@ -2,36 +2,25 @@ package user
 
 import (
 	"restapi/utils"
+	u "restapi/utils"
 	"strings"
 	"testing"
 )
 
 func TestGetUserByIdMethod(t *testing.T) {
-	utils.CheckMethod("GET", "/users/", FindUserByID, t)
+	utils.CheckMethod("GET", u.CheckRoutes["users"], FindUserByID, t)
 }
 
 func TestGetUserByIdPath(t *testing.T) {
-	utils.CheckPath("GET", "/users/", FindUserByID, t)
-}
-
-func TestGetUserByIdPayload(t *testing.T) {
-	utils.CheckPayload("GET", "/users/", FindUserByID, "id", utils.CheckPayloadInt, t)
+	utils.CheckPath("GET", u.CheckRoutes["users"], FindUserByID, t)
 }
 
 func TestDeleteUserByIdMethod(t *testing.T) {
-	utils.CheckMethod("DELETE", "/users/", DeleteUser, t)
+	utils.CheckMethod("DELETE", u.CheckRoutes["users"], DeleteUser, t)
 }
 
 func TestDeleteUserByIdPath(t *testing.T) {
-	utils.CheckPath("DELETE", "/users/", DeleteUser, t)
-}
-
-func TestDeleteUserByIdPayload(t *testing.T) {
-	utils.CheckPayload("DELETE", "/users/", DeleteUser, "id", utils.CheckPayloadInt, t)
-}
-
-func TestCreateUser(t *testing.T) {
-	//utils.CreateTest("http://localhost:8000/users")
+	utils.CheckPath("DELETE", u.CheckRoutes["users"], DeleteUser, t)
 }
 
 func TestReadUsers(t *testing.T) {

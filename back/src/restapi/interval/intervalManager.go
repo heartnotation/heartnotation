@@ -8,17 +8,23 @@ import (
 	"time"
 )
 
-// GetIntervals get all intervals
-func GetIntervals(w http.ResponseWriter, r *http.Request) {
-	interval := &[]Interval{}
+// GetIntervalTag get all intervals
+func GetIntervalTag(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervalstag"], w, r) {
+		return
+	}
+	interval := []Tag{}
 	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&interval).Error, w) {
 		return
 	}
 	u.Respond(w, interval)
 }
 
-// CreateInterval create an interval
-func CreateInterval(w http.ResponseWriter, r *http.Request) {
+// CreateIntervalTag create an interval
+func CreateIntervalTag(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervalstag"], w, r) {
+		return
+	}
 	var i Payload
 	err := json.NewDecoder(r.Body).Decode(&i)
 	if err != nil || i.Start >= i.End || len(i.TagsID) == 0 {
@@ -34,14 +40,17 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-	interval := Interval{TimestampStart: i.Start, TimestampEnd: i.End, IsActive: true, Tags: tags}
+	interval := Tag{TimestampStart: i.Start, TimestampEnd: i.End, IsActive: true, Tags: tags}
 	if u.CheckErrorCode(db.Create(&interval).Error, w) {
 		return
 	}
 }
 
-// Comments get all comments of every interval
-func Comments(w http.ResponseWriter, r *http.Request) {
+// GetIntervalComment get all comments of every interval
+func GetIntervalComment(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervalscomment"], w, r) {
+		return
+	}
 	c := []Comment{}
 	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&c).Error, w) {
 		return
@@ -49,8 +58,11 @@ func Comments(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, c)
 }
 
-// CreateComment create an interval and
-func CreateComment(w http.ResponseWriter, r *http.Request) {
+// CreateIntervalComment create an interval and
+func CreateIntervalComment(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervalscomment"], w, r) {
+		return
+	}
 	var i Payload
 	err := json.NewDecoder(r.Body).Decode(&i)
 	if err != nil || i.ID != 0 {
@@ -64,8 +76,23 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CreateAll create full info interval
-func CreateAll(w http.ResponseWriter, r *http.Request) {
+// GetInterval get full info interval
+func GetInterval(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
+		return
+	}
+	i := []Interval{}
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&i).Error, w) {
+		return
+	}
+	u.Respond(w, i)
+}
+
+// CreateInterval create full info interval
+func CreateInterval(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervals"], w, r) {
+		return
+	}
 	var i Payload
 	err := json.NewDecoder(r.Body).Decode(&i)
 	if err != nil || i.Start >= i.End || len(i.TagsID) == 0 {
@@ -81,7 +108,7 @@ func CreateAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-	interval := Interval{TimestampStart: i.Start, TimestampEnd: i.End, IsActive: true, Tags: tags}
+	interval := Tag{TimestampStart: i.Start, TimestampEnd: i.End, IsActive: true, Tags: tags}
 	if u.CheckErrorCode(db.Create(&interval).Error, w) {
 		return
 	}

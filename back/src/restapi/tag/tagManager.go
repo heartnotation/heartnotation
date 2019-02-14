@@ -8,6 +8,9 @@ import (
 
 // GetTags receive request to get all tags in database
 func GetTags(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["tags"], w, r) {
+		return
+	}
 	tag := &[]Tag{}
 	err := u.GetConnection().Preload("Parent").Find(&tag).Error
 	if err != nil {
