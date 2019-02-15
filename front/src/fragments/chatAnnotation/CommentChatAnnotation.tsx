@@ -88,14 +88,16 @@ const Editor = (props: {
   value: string;
 }) => (
   <div>
-    <Form.Item>
-      <TextArea rows={4} onChange={props.onChange} value={props.value} />
-    </Form.Item>
-    <Form.Item>
-      <Button htmlType='submit' onClick={props.onSubmit} type='primary'>
-        Add Comment
-      </Button>
-    </Form.Item>
+    <Form>
+      <Form.Item>
+        <TextArea rows={4} onChange={props.onChange} value={props.value} />
+      </Form.Item>
+      <Form.Item>
+        <Button htmlType='submit' onClick={props.onSubmit} type='primary'>
+          Add Comment
+        </Button>
+      </Form.Item>
+    </Form>
   </div>
 );
 

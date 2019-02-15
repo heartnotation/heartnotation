@@ -171,7 +171,7 @@
   margin: 8px;
 }
 
-.comments-container {
+.ant-drawer-body > div > .comments-container {
   padding: 24px;
   background-color: #f9fbf2;
   height: 65vh;
@@ -180,4 +180,17 @@
 
 .popup-comment-tag-container {
   width: 400px;
+}
+
+.modal-comments-container {
+  margin-bottom: 25px;
+  padding: 25px;
+  background-color: #f9fbf2;
+  height: 250px;
+  overflow-y: scroll;
+}
+
+.modal-signal-footer {
+  text-align: right;
+  margin-top: 15px;
 }

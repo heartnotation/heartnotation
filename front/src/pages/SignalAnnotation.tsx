@@ -6,7 +6,6 @@ import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
-import { color } from 'd3';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -19,7 +18,8 @@ interface State {
   moving: boolean;
   error?: string;
   popperVisible: boolean;
-  cursorPosition: Point;
+  xIntervalStart?: number;
+  xIntervalEnd?: number;
 }
 
 interface GraphElement {
@@ -34,8 +34,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     this.state = {
       loading: true,
       moving: true,
-      popperVisible: false,
-      cursorPosition: { x: 0, y: 0 }
+      popperVisible: false
     };
   }
 
@@ -248,13 +247,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
         console.log(d3.event);
         this.setState({
           popperVisible: true,
-          cursorPosition: {
-            x: d3.event.sourceEvent.clientX,
-            y: d3.event.sourceEvent.clientY
-          }
+          xIntervalStart: xStart,
+          xIntervalEnd: xEnd
         });
-
-        console.log(xStart + '     ' + xEnd);
       });
 
     focus
@@ -362,6 +357,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
+  public confirmReturn = () => {
+    this.setState({ popperVisible: false });
+    message.success(
+      'Interval has been created without informations.',
+      10
+    );
+  }
+
   public render = () => {
     const { loading, annotation, error } = this.state;
 
@@ -402,12 +405,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
             </div>
             <div className='signal-graph-container' id='signal' />
           </div>
-          {this.state.popperVisible && (
-            <Popper
-              top={450}
-              left={this.state.cursorPosition.x + 50}
+          {this.state.popperVisible && this.state.annotation && this.state.xIntervalStart && this.state.xIntervalEnd && (
+            <FormIntervalSignalAnnotation
+              start={this.state.xIntervalStart}
+              end={this.state.xIntervalEnd}
+              annotation={this.state.annotation}
               confirmCreate={this.confirmCreate}
               confirmDelete={this.confirmDelete}
+              confirmReturn={this.confirmReturn}
             />
           )}
         </div>
@@ -417,7 +422,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
 }
 
 export default withRouter(SignalAnnotation);
-
+/*
+{this.state.popperVisible && (
+            <Popper
+              top={450}
+              left={this.state.cursorPosition.x + 50}
+              confirmCreate={this.confirmCreate}
+              confirmDelete={this.confirmDelete}
+            />
+          )}
 const Popper = (props: any) => {
   return (
     <div className='full-screen-popper'>
@@ -434,4 +447,4 @@ const Popper = (props: any) => {
       </Card>
     </div>
   );
-};
+};*/
