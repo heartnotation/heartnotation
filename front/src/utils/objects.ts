@@ -55,7 +55,7 @@ export interface AnnotationCommentPayload {
 
 export interface Interval {
   id?: number;
-  annotation_id?: number;
+  annotation_id: number;
   user_id?: number;
   comment?: string;
   start: number;

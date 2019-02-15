@@ -91,56 +91,19 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
   }
 
   public handleSubmit = (e: any) => {
-
     const interval: Interval = {
       annotation_id: this.props.annotation.id,
       start: Math.round(this.props.start),
       end: Math.round(this.props.end)
     };
-    api.sendInterval(interval).then(response => console.log(response));
-
-    /*
-    e.preventDefault();
-    console.log(this.state.selectedTags);
-    console.log(this.state.comments);
-    console.log(
-      Math.round(this.props.start) + '     ' + Math.round(this.props.end)
-    );
-
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        this.setState({ confirmLoading: true, error: '' });*/
-        
-        
-        /*
-        console.log(values);*/
-        /* this.props
-          .sendUser(values)
-          .then(() => {
-            this.props.history.push('/users');
-          })
-          .catch(() =>
-            this.setState({
-              error: 'Problem while sending datas, please retry later...',
-              loading: false
-            })
-          );*/
-  
-    /*
-    console.log(this.state.selectedTags);
-    console.log(this.state.comments);
-    console.log(
-      Math.round(this.props.start) + '     ' + Math.round(this.props.end)
-    );
-    this.setState({
-      confirmLoading: true
-    });
-    setTimeout(() => {
-      this.setState({
-        confirmLoading: false
-      });
+    this.setState({ confirmLoading: true });
+    api.sendInterval(interval).then(response => {
+      interval.id = response.id;
+      interval.tags = this.state.selectedTags;
+      api.sendIntervalTags(interval);
+      this.setState({ confirmLoading: false });
       this.props.confirmCreate();
-    }, 2000);*/
+    });
   }
 
   public handleReturn = () => {
@@ -178,7 +141,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
           onCancel={this.props.confirmDelete}
           footer={null}
         >
-          <Form onSubmit={this.handleSubmit}>
+          <Form>
             <Tabs defaultActiveKey='1'>
               <TabPane
                 tab={
@@ -244,7 +207,6 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
               <Button
                 key='submit'
                 type='primary'
-                htmlType='submit'
                 loading={this.state.confirmLoading}
                 onClick={this.handleSubmit}
               >
@@ -255,7 +217,6 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
         </Modal>
       </div>
     );
-    return <Form onSubmit={this.handleSubmit} />;
   }
 }
 
