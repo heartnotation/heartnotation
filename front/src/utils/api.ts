@@ -2,11 +2,21 @@ import axios from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
 
 const get = <T>(url: string): Promise<T> => {
-  return axios.get<T>(`${API_URL}/${url}`).then(res => res.data);
+  const jwt = localStorage.getItem('auth_token');
+  return axios
+    .get<T>(`${API_URL}/${url}`, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    })
+    .then(res => res.data);
 };
 
 const post = <T>(url: string, values: any): Promise<T> => {
-  return axios.post<T>(`${API_URL}/${url}`, values).then(res => res.data);
+  const jwt = localStorage.getItem('auth_token');
+  return axios
+    .post<T>(`${API_URL}/${url}`, values, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    })
+    .then(res => res.data);
 };
 
 export const put = <T>(url: string, values: any): Promise<T> => {

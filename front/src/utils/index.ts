@@ -1,4 +1,5 @@
 import * as a from './api';
+import * as au from './auth';
 import {
   Annotation,
   Organization,
@@ -21,3 +22,5 @@ export type Tag = Tag;
 export type Point = Point;
 export type Role = Role;
 export type User = User;
+
+export const auth = au;
