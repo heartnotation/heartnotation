@@ -192,6 +192,7 @@ class Users extends Component<Props, State> {
     this.closeModal();
     const users = await this.getDatas();
     this.setState({
+      user: undefined,
       initialUsers: users,
       currentUsers: users.slice()
     });
@@ -199,6 +200,7 @@ class Users extends Component<Props, State> {
 
   public closeModal() {
     this.setState({
+      user: undefined,
       modalVisible: false
     });
   }
