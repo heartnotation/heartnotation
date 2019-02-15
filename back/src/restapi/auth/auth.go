@@ -25,18 +25,16 @@ var (
 	signingKey        = []byte("h3ar7n07a710n")
 )
 
-const oauthStateString = "pseudo-random"
-
 func init() {
-	c, err := ioutil.ReadFile(os.Getenv("GOPATH") + "/credentials.json")
-	if err != nil {
-		log.Fatal("Error while reading credentials. Please put the credentials file at $GOPATH/credentials.json")
+	json := os.Getenv("OAUTH_JSON")
+	if json == json {
+		log.Fatal("Please set the OAUTH_JSON environment variable")
 	}
-
-	googleOauthConfig, err = google.ConfigFromJSON(c, "openid", "profile", "email")
+	config, err := google.ConfigFromJSON([]byte(json), "openid", "profile", "email")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	googleOauthConfig = config
 }
 
 // HandleGoogleCallback receive request from Google after API validating credentials

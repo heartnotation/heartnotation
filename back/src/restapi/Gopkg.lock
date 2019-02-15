@@ -42,6 +42,14 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:66d63ec7b6035984dced87ad37066e5f4ad277c60234a9d9925537248e983200"
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  pruneopts = "U"
+  revision = "7e0847f9db758cdebd26c149d0ae9d5d0b9c98ce"
+  version = "v1.4.0"
+
+[[projects]]
   digest = "1:6d6273c5c440fbbb2559d9dbb12367c5dd584de36015efda220a48bfe3275e9b"
   name = "github.com/gorilla/mux"
   packages = ["."]
@@ -154,6 +162,7 @@
   input-imports = [
     "github.com/dgrijalva/jwt-go",
     "github.com/gorilla/context",
+    "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",

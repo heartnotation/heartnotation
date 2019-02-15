@@ -12,7 +12,7 @@ ARG api=""
 ENV REACT_APP_API=${api}
 
 ARG client_id
-ENV REACT_APP_CLIENT_ID=${client_id}}
+ENV REACT_APP_CLIENT_ID=${client_id}
 
 RUN npm run build
 

@@ -51,3 +51,7 @@
 [[constraint]]
   name = "github.com/gorilla/context"
   version = "1.1.1"
+
+[[constraint]]
+  name = "github.com/gorilla/handlers"
+  version = "1.4.0"
