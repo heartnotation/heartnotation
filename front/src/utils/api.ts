@@ -28,8 +28,13 @@ const del = <T>(url: string, values: any): Promise<T> => {
     .then(res => res.data);
 };
 
-export const put = <T>(url: string, values: any): Promise<T> => {
-  return axios.put<T>(`${API_URL}/${url}`, values).then(res => res.data);
+const put = <T>(url: string, values: any): Promise<T> => {
+  const jwt = localStorage.getItem('auth_token');
+  return axios
+    .put(`${API_URL}/${url}`, values, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    })
+    .then(res => res.data);
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
