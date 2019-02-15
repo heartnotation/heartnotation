@@ -36,7 +36,7 @@ export default (props: Props) => {
           routes={routes}
           hiddenRoutes={hiddens}
         />
-        {[defaultRoute, ...hiddens, ...routes].map((r, index) => (
+        {[...hiddens, ...routes].map((r, index) => (
           <Route
             key={index}
             path={r.path}

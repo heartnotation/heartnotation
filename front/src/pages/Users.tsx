@@ -5,6 +5,7 @@ import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import EditUserForm from './EditUserForm';
+import AddButton from '../fragments/fixedButton/AddButton';
 export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
@@ -269,6 +270,7 @@ class Users extends Component<Props, State> {
         />
       )
     ];
+        <AddButton url='/new/users' />
   }
 }
 
