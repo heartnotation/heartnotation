@@ -114,10 +114,6 @@ class App extends Component<
   }
 
   private handleSuccess = (response: any) => {
-    const form = new FormData();
-    const accessToken = response.getAuthResponse().access_token;
-    form.set('access_token', accessToken);
-
     authenticate(response.getAuthResponse().access_token)
       .then(user => {
         this.setState({ user, logged: true });
