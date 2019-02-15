@@ -70,7 +70,7 @@ const r = {
       exact: true,
       component: () => <Dashboard getAnnotations={api.getAnnotations} />,
       title: 'Dashboard',
-      iconName: 'Dashboard'
+      iconName: 'dashboard'
     },
     {
       path: '/users',

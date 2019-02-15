@@ -240,24 +240,25 @@ class Users extends Component<Props, State> {
 
   public render() {
     const { currentUsers, user, modalVisible } = this.state;
-    return [
-      <Table<User>
-        key={1}
-        rowKey='id'
-        columns={this.columns}
-        dataSource={currentUsers}
-        pagination={{
-          position: 'bottom',
-          pageSizeOptions: ['10', '20', '30', '40'],
-          showSizeChanger: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`
-        }}
-        onRow={a => ({
-          //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
-        })}
-      />,
-      user && (
+    return (
+      <div>
+        <Table<User>
+          key={1}
+          rowKey='id'
+          columns={this.columns}
+          dataSource={currentUsers}
+          pagination={{
+            position: 'bottom',
+            pageSizeOptions: ['10', '20', '30', '40'],
+            showSizeChanger: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+          }}
+          onRow={a => ({
+            //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
+          })}
+        />
+        , user && (
         <EditUserForm
           key={2}
           getOrganizations={this.props.getOrganizations}
@@ -268,9 +269,10 @@ class Users extends Component<Props, State> {
           user={user}
           modalVisible={modalVisible}
         />
-      )
-    ];
+        )
         <AddButton url='/new/users' />
+      </div>
+    );
   }
 }
 
