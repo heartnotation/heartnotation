@@ -6,9 +6,9 @@ import (
 	u "restapi/utils"
 )
 
-// GetAll list all comments of annotations
-func GetAll(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["annotationcomments"], w, r) {
+// GetAllAnnotationComment list all comments of annotations
+func GetAllAnnotationComment(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotationscomments"], w, r) {
 		return
 	}
 	comments := []m.AnnotationComment{}

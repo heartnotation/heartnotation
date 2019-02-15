@@ -6,12 +6,12 @@ import (
 	u "restapi/utils"
 )
 
-// GetAll list all tags
-func GetAll(w http.ResponseWriter, r *http.Request) {
+// GetAllTags list all tags
+func GetAllTags(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["tags"], w, r) {
 		return
 	}
-	tags := []m.Tag
+	tags := []m.Tag{}
 	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&tags).Error, w) {
 		return
 	}

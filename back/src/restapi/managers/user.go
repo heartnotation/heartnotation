@@ -6,12 +6,12 @@ import (
 	u "restapi/utils"
 )
 
-// GetAll users
-func GetAll(w http.ResponseWriter, r *http.Request) {
+// GetAllUsers users
+func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
 		return
 	}
-	users := []m.User
+	users := []m.User{}
 	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&users).Error, w) {
 		return
 	}

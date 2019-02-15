@@ -6,8 +6,8 @@ import (
 	u "restapi/utils"
 )
 
-// GetAll list all enum status
-func getAll(w http.ResponseWriter, r *http.Request) {
+// GetAllEnumStatus list all enum status
+func GetAllEnumStatus(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["enumstatus"], w, r) {
 		return
 	}
