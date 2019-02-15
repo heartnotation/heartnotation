@@ -188,8 +188,13 @@ class Users extends Component<Props, State> {
     this.closeModal();
   }
 
-  public handleOk = () => {
+  public handleOk =async  () => {
     this.closeModal();
+    const users = await this.getDatas();
+    this.setState({
+      initialUsers: users,
+      currentUsers: users.slice()
+    });
   }
 
   public closeModal() {
@@ -224,7 +229,7 @@ class Users extends Component<Props, State> {
           getRoles={api.getRoles}
           modifyUser={api.modifyUser}
           handleCancel={this.handleCancel}
-          handleOk={this.handleCancel}
+          handleOk={this.handleOk}
           user={user}
           modalVisible={modalVisible}
         />
