@@ -117,14 +117,14 @@ class Users extends Component<Props, State> {
       ]
     },
     {
-        title: 'Active',
-        dataIndex: 'is_active',
-        render: (active: boolean) => (
-          <Icon
-            type={active ? 'check' : 'close'}
-            style={{ color: active ? 'green' : 'red' }}
-          />
-        )
+      title: 'Active',
+      dataIndex: 'is_active',
+      render: (active: boolean) => (
+        <Icon
+          type={active ? 'check' : 'close'}
+          style={{ color: active ? 'green' : 'red' }}
+        />
+      )
     },
     {
       title: 'Actions',
@@ -134,6 +134,7 @@ class Users extends Component<Props, State> {
           key={1}
           type='edit'
           theme='twoTone'
+          style={{ marginLeft: 10 }}
           onClick={() => {
             this.setState({ modalVisible: true, user });
           }}
@@ -142,6 +143,7 @@ class Users extends Component<Props, State> {
           key={2}
           type='delete'
           theme='twoTone'
+          style={{ marginLeft: 10 }}
           onClick={async () => {
             this.props.deleteUser(user).then(async () => {
               const users = await this.getDatas();
