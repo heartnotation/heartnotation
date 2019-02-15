@@ -15,6 +15,7 @@ import { RouteComponentProps, withRouter } from 'react-router';
 import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
 import { Tag, api, Annotation } from '../../utils';
 import TextArea from 'antd/lib/input/TextArea';
+import { cpus } from 'os';
 
 interface Props extends FormComponentProps, RouteComponentProps {
   start: number;
@@ -36,6 +37,7 @@ interface States {
   confirmLoading: boolean;
   comments: DataComment[];
   textAreaContent: string;
+  selectedTags: number[];
 }
 
 const CommentList = (props: { comments: DataComment[] }) => (
@@ -58,7 +60,8 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
       tags: [],
       confirmLoading: false,
       comments: [],
-      textAreaContent: ''
+      textAreaContent: '',
+      selectedTags: []
     };
   }
 
@@ -86,11 +89,11 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
 
   public handleSubmit = (e: any) => {
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-      }
-    });
+    console.log(this.state.selectedTags);
+    console.log(this.state.comments);
+    console.log(
+      Math.round(this.props.start) + '     ' + Math.round(this.props.end)
+    );
     this.setState({
       confirmLoading: true
     });
@@ -110,12 +113,11 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
     this.props.confirmDelete();
   }
 
-  public handleChange(value: any) {
-    console.log(`selected ${value}`);
+  public handleChangeSelectTags = (values: number[]) => {
+    this.setState({ selectedTags: values });
   }
 
   public componentDidMount = () => {
-    console.log('yoooo');
     api.getTags().then(res => this.setState({ tags: res }));
   }
 
@@ -159,7 +161,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
                   mode='multiple'
                   style={{ width: '100%' }}
                   placeholder='Please select'
-                  onChange={this.handleChange}
+                  onChange={this.handleChangeSelectTags}
                 >
                   {tagValues}
                 </Select>
