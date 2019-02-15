@@ -91,7 +91,7 @@ class Users extends Component<Props, State> {
               'gold',
               'lime',
               'cyan',
-              'goldenpurple',
+              'purple',
               'magenta',
               'red'
             ];
