@@ -14,6 +14,7 @@ import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
 import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
 import { Tag, api, Annotation } from '../../utils';
+import { Interval } from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
 import { cpus } from 'os';
 
@@ -38,6 +39,7 @@ interface States {
   comments: DataComment[];
   textAreaContent: string;
   selectedTags: number[];
+  error: string;
 }
 
 const CommentList = (props: { comments: DataComment[] }) => (
@@ -61,7 +63,8 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
       confirmLoading: false,
       comments: [],
       textAreaContent: '',
-      selectedTags: []
+      selectedTags: [],
+      error: ''
     };
   }
 
@@ -88,7 +91,42 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
   }
 
   public handleSubmit = (e: any) => {
+
+    const interval: Interval = {
+      annotation_id: this.props.annotation.id,
+      start: Math.round(this.props.start),
+      end: Math.round(this.props.end)
+    };
+    api.sendInterval(interval).then(response => console.log(response));
+
+    /*
     e.preventDefault();
+    console.log(this.state.selectedTags);
+    console.log(this.state.comments);
+    console.log(
+      Math.round(this.props.start) + '     ' + Math.round(this.props.end)
+    );
+
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        this.setState({ confirmLoading: true, error: '' });*/
+        
+        
+        /*
+        console.log(values);*/
+        /* this.props
+          .sendUser(values)
+          .then(() => {
+            this.props.history.push('/users');
+          })
+          .catch(() =>
+            this.setState({
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
+            })
+          );*/
+  
+    /*
     console.log(this.state.selectedTags);
     console.log(this.state.comments);
     console.log(
@@ -102,7 +140,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
         confirmLoading: false
       });
       this.props.confirmCreate();
-    }, 2000);
+    }, 2000);*/
   }
 
   public handleReturn = () => {

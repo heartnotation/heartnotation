@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
+import { Interval } from './objects';
 
 const get = <T>(url: string): Promise<T> => {
   return axios.get<T>(`${API_URL}/${url}`).then(res => res.data);
@@ -23,6 +24,18 @@ export const getAnnotationById = (id: number): Promise<Annotation> => {
 
 export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
   return post<Annotation>(`${urls.annotations}`, datas);
+};
+
+export const sendInterval = (datas: Interval): Promise<Interval> => {
+  return post<Interval>(`${urls.intervals}`, datas);
+};
+
+export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
+  return post<Interval>(`${urls.intervalsComment}`, datas);
+};
+
+export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
+  return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
@@ -76,5 +89,8 @@ const urls = {
   tags: 'tags',
   signal: 'signal',
   roles: 'roles',
-  users: 'users'
+  users: 'users',
+  intervals: 'intervals',
+  intervalsTags: 'intervals/tags',
+  intervalsComment: 'intervals/comment'
 };
