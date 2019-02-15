@@ -27,7 +27,7 @@ var (
 
 func init() {
 	json := os.Getenv("OAUTH_JSON")
-	if json == json {
+	if json == "" {
 		log.Fatal("Please set the OAUTH_JSON environment variable")
 	}
 	config, err := google.ConfigFromJSON([]byte(json), "openid", "profile", "email")
