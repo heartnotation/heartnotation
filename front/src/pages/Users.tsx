@@ -82,9 +82,6 @@ class Users extends Component<Props, State> {
           title: 'Organizations',
           dataIndex: 'organizations',
           render: (organizations: Organization[]) => {
-            if (organizations !== undefined) {
-              organizations.sort();
-            }
             const colors = [
               'geekblue',
               'green',
@@ -98,19 +95,22 @@ class Users extends Component<Props, State> {
               'magenta',
               'red'
             ];
-            const ui = (
-              <span>
-                {organizations.map(organization => (
-                  <Tag
-                    color={colors[(organization.id % colors.length) - 1]}
-                    key={organization.name}
-                  >
-                    {organization.name}
-                  </Tag>
-                ))}
-              </span>
-            );
-            return ui;
+            if (organizations !== undefined) {
+              organizations.sort();
+              const ui = (
+                <span>
+                  {organizations.map(organization => (
+                    <Tag
+                      color={colors[(organization.id % colors.length) - 1]}
+                      key={organization.name}
+                    >
+                      {organization.name}
+                    </Tag>
+                  ))}
+                </span>
+              );
+              return ui;
+            }
           }
         }
       ]
