@@ -15,7 +15,7 @@ type User struct {
 }
 
 type dto struct {
-	ID uint `json:"id"`
+	ID              uint   `json:"id"`
 	Mail            string `json:"mail"`
 	RoleID          int    `json:"role_id"`
 	OrganizationsID []int  `json:"organizations"`
