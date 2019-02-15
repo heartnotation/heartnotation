@@ -2,23 +2,31 @@ import React, { Component } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { User, Organization } from '../utils';
+import { User, Organization, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
+import EditUserForm from './EditUserForm';
 export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
   currentUsers: User[];
+  user?: User;
+  modalVisible: boolean;
 }
 
 interface Props extends RouteComponentProps {
+  getOrganizations: () => Promise<Organization[]>;
+  getRoles: () => Promise<Role[]>;
+  modifyUser: (datas: User) => Promise<User>;
   getAllUsers: () => Promise<User[]>;
+  deleteUser: (datas: User) => Promise<User>;
 }
 
 class Users extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
     initialUsers: [],
-    currentUsers: []
+    currentUsers: [],
+    modalVisible: false
   };
 
   public async componentDidMount() {
@@ -78,7 +86,6 @@ class Users extends Component<Props, State> {
           title: 'Organizations',
           dataIndex: 'organizations',
           render: (organizations: Organization[]) => {
-            organizations.sort();
             const colors = [
               'geekblue',
               'green',
@@ -88,31 +95,70 @@ class Users extends Component<Props, State> {
               'gold',
               'lime',
               'cyan',
-              'goldenpurple',
+              'purple',
               'magenta',
               'red'
             ];
-            const ui = (
-              <span>
-                {organizations.map(organization => (
-                  <Tag
-                    color={colors[(organization.id % colors.length) - 1]}
-                    key={organization.name}
-                  >
-                    {organization.name}
-                  </Tag>
-                ))}
-              </span>
-            );
-            return ui;
+            if (organizations !== undefined) {
+              organizations.sort();
+              const ui = (
+                <span>
+                  {organizations.map(organization => (
+                    <Tag
+                      color={colors[(organization.id % colors.length) - 1]}
+                      key={organization.name}
+                    >
+                      {organization.name}
+                    </Tag>
+                  ))}
+                </span>
+              );
+              return ui;
+            }
           }
         }
       ]
     },
     {
-      title: 'Edit',
-      dataIndex: 'edit',
-      render: _ => <Icon type='edit' theme='twoTone' />
+      title: 'Active',
+      dataIndex: 'is_active',
+      render: (active: boolean) => (
+        <Icon
+          type={active ? 'check' : 'close'}
+          style={{ color: active ? 'green' : 'red' }}
+        />
+      )
+    },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      render: (_, user: User) => [
+        <Icon
+          key={1}
+          type='edit'
+          theme='twoTone'
+          style={{ marginLeft: 10 }}
+          onClick={() => {
+            this.setState({ modalVisible: true, user });
+          }}
+        />,
+        <Icon
+          key={2}
+          type='delete'
+          theme='twoTone'
+          style={{ marginLeft: 10 }}
+          onClick={async () => {
+            this.props.deleteUser(user).then(async () => {
+              const users = await this.getDatas();
+              this.setState({
+                user: undefined,
+                initialUsers: users,
+                currentUsers: users.slice()
+              });
+            });
+          }}
+        />
+      ]
     }
   ];
 
@@ -170,10 +216,32 @@ class Users extends Component<Props, State> {
     });
   }
 
+  public handleCancel = () => {
+    this.closeModal();
+  }
+
+  public handleOk = async () => {
+    this.closeModal();
+    const users = await this.getDatas();
+    this.setState({
+      user: undefined,
+      initialUsers: users,
+      currentUsers: users.slice()
+    });
+  }
+
+  public closeModal() {
+    this.setState({
+      user: undefined,
+      modalVisible: false
+    });
+  }
+
   public render() {
-    const { currentUsers } = this.state;
-    return (
+    const { currentUsers, user, modalVisible } = this.state;
+    return [
       <Table<User>
+        key={1}
         rowKey='id'
         columns={this.columns}
         dataSource={currentUsers}
@@ -184,11 +252,23 @@ class Users extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
-        // onRow={a => ({
-        //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
-        // })}
-      />
-    );
+        onRow={a => ({
+          //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        })}
+      />,
+      user && (
+        <EditUserForm
+          key={2}
+          getOrganizations={this.props.getOrganizations}
+          getRoles={this.props.getRoles}
+          modifyUser={this.props.modifyUser}
+          handleCancel={this.handleCancel}
+          handleOk={this.handleOk}
+          user={user}
+          modalVisible={modalVisible}
+        />
+      )
+    ];
   }
 }
 

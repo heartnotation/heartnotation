@@ -76,7 +76,7 @@ jobs:
       before_script:
         - export APP=$REPO/web-app
       script:
-        - docker build --build-arg api=$SERVER_URL -t $APP:$TAG ./front
+        - docker build --build-arg api=$SERVER_URL client_id=$CLIENT_ID -t $APP:$TAG ./front
       deploy:
         provider: script
         script: bash .travis/deploy.sh
