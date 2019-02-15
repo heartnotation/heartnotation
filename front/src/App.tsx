@@ -30,22 +30,6 @@ const r = {
         />
       ),
       title: 'Signal annotation'
-    }
-  ],
-  routes: [
-    {
-      path: '/new/annotations',
-      component: () => (
-        <AnnotationForm
-          getTags={api.getTags}
-          getOrganizations={api.getOrganizations}
-          getAnnotations={api.getAnnotations}
-          checkSignal={api.checkSignal}
-          sendAnnotation={api.sendAnnotation}
-        />
-      ),
-      title: 'Create annotation',
-      iconName: 'plus'
     },
     {
       path: '/new/users',
@@ -60,10 +44,33 @@ const r = {
       iconName: 'user-add'
     },
     {
-      path: '/about',
-      component: () => <h2>About</h2>,
-      title: 'About',
-      iconName: 'question'
+      path: '/new/tags',
+      component: TagCreation,
+      title: 'Create Tags',
+      iconName: 'tag'
+    },
+    {
+      path: '/new/annotations',
+      component: () => (
+        <AnnotationForm
+          getTags={api.getTags}
+          getOrganizations={api.getOrganizations}
+          getAnnotations={api.getAnnotations}
+          checkSignal={api.checkSignal}
+          sendAnnotation={api.sendAnnotation}
+        />
+      ),
+      title: 'Create annotation',
+      iconName: 'plus'
+    }
+  ],
+  routes: [
+    {
+      path: '/',
+      exact: true,
+      component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+      title: 'Dashboard',
+      iconName: 'Dashboard'
     },
     {
       path: '/users',
@@ -80,17 +87,17 @@ const r = {
       iconName: 'user'
     },
     {
-      path: '/new/tags',
-      component: TagCreation,
-      title: 'Create Tags',
-      iconName: 'tag'
-    },
-    {
       path: '/tags',
       exact: true,
       component: Tags,
       title: 'Tags',
       iconName: 'tags'
+    },
+    {
+      path: '/about',
+      component: () => <h2>About</h2>,
+      title: 'About',
+      iconName: 'question'
     }
   ]
 };
