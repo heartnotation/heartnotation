@@ -12,19 +12,17 @@ import {
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
-import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
 import { Tag, api, Annotation } from '../../utils';
 import { Interval } from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
-import { cpus } from 'os';
 
 interface Props extends FormComponentProps, RouteComponentProps {
   start: number;
   end: number;
   annotation: Annotation;
+  selectors: string[];
   confirmCreate: () => void;
-  confirmDelete: () => void;
-  confirmReturn: () => void;
+  confirmDelete: (selectors: string[]) => void;
 }
 
 interface DataComment {
@@ -106,12 +104,8 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
     });
   }
 
-  public handleReturn = () => {
-    this.props.confirmReturn();
-  }
-
   public handleDelete = () => {
-    this.props.confirmDelete();
+    this.props.confirmDelete(this.props.selectors);
   }
 
   public handleChangeSelectTags = (values: number[]) => {
@@ -138,7 +132,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
           visible={true}
           onOk={this.handleSubmit}
           confirmLoading={this.state.confirmLoading}
-          onCancel={this.props.confirmDelete}
+          onCancel={this.handleDelete}
           footer={null}
         >
           <Form>
@@ -200,9 +194,6 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
             <div className='modal-signal-footer'>
               <Button key='delete' type='danger' onClick={this.handleDelete}>
                 Delete
-              </Button>
-              <Button key='back' onClick={this.handleReturn}>
-                Return
               </Button>
               <Button
                 key='submit'
