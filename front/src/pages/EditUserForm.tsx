@@ -12,10 +12,6 @@ const formItemLayout = {
   wrapperCol: { span: 14 }
 };
 
-const formTailLayout = {
-  wrapperCol: { span: 14, offset: 10 }
-};
-
 interface States {
   organizations: Organization[];
   organizationsSearch: string[];

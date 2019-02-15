@@ -68,7 +68,13 @@ const r = {
     {
       path: '/users',
       component: () => (
-        <Users getAllUsers={api.getAllUsers} deleteUser={api.deleteUser} />
+        <Users
+          getOrganizations={api.getOrganizations}
+          getRoles={api.getRoles}
+          modifyUser={api.modifyUser}
+          getAllUsers={api.getAllUsers}
+          deleteUser={api.deleteUser}
+        />
       ),
       title: 'Users',
       iconName: 'user'
