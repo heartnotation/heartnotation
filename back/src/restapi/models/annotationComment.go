@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-// CommentAnnotation database representation
-type CommentAnnotation struct {
+// AnnotationComment database representation
+type AnnotationComment struct {
 	ID           uint       `json:"id"`
 	Comment      string     `json:"comment"`
 	Date         time.Time  `json:"date"`
@@ -16,6 +16,6 @@ type CommentAnnotation struct {
 }
 
 // TableName sets table name of the struct
-func (CommentAnnotation) TableName() string {
+func (AnnotationComment) TableName() string {
 	return "commentannotation"
 }

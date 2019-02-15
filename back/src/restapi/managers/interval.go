@@ -1,16 +1,24 @@
 package managers
 
 import (
-	"encoding/json"
-	"log"
 	"net/http"
-	t "restapi/tag"
+	m "restapi/models"
 	u "restapi/utils"
-	"time"
-
-	"github.com/gorilla/mux"
 )
 
+// GetAll list all intervals
+func GetAll(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
+		return
+	}
+	intervals := []m.Interval
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&intervals).Error, w) {
+		return
+	}
+	u.Respond(w, intervals)
+}
+
+/*
 // GetInterval get an interval
 func GetInterval(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
@@ -110,3 +118,4 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+*/

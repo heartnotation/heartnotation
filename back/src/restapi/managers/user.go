@@ -1,15 +1,24 @@
 package managers
 
 import (
-	"encoding/json"
 	"net/http"
-
-	o "restapi/organization"
+	m "restapi/models"
 	u "restapi/utils"
-
-	"github.com/gorilla/mux"
 )
 
+// GetAll users
+func GetAll(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
+		return
+	}
+	users := []m.User
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&users).Error, w) {
+		return
+	}
+	u.Respond(w, users)
+}
+
+/*
 // CreateUser function which receive a POST request and return a fresh-new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["users"], w, r) {
@@ -140,3 +149,4 @@ func GetAllRoles(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, roles)
 }
+*/

@@ -2,8 +2,8 @@ package models
 
 import "time"
 
-// CommentInterval database representation
-type CommentInterval struct {
+// IntervalComment database representation
+type IntervalComment struct {
 	ID         uint      `json:"id"`
 	Comment    string    `json:"comment"`
 	Date       time.Time `json:"date"`
@@ -14,6 +14,6 @@ type CommentInterval struct {
 }
 
 // TableName sets table name of the struct
-func (CommentInterval) TableName() string {
+func (IntervalComment) TableName() string {
 	return "commentinterval"
 }

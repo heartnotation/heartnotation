@@ -1,21 +1,17 @@
 package managers
 
 import (
-	"log"
 	"net/http"
 	"os"
-
 	d "restapi/dtos"
+	m "restapi/models"
 	u "restapi/utils"
-
-	"github.com/gorilla/mux"
 )
 
 var templateURLAPI string
 
 func init() {
 	a := d.AnnotationDTO{}
-
 	url := os.Getenv("API_URL")
 	if url == "" {
 		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
@@ -23,6 +19,19 @@ func init() {
 	templateURLAPI = url
 }
 
+// GetAll list all annotations
+func GetAll(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
+	annotations := []m.Annotation{}
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error, w) {
+		return
+	}
+	u.Respond(w, annotations)
+}
+
+/*
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("DELETE", u.CheckRoutes["annotations"], w, r) {
@@ -46,7 +55,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-/*
+
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
