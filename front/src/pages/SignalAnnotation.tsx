@@ -1,32 +1,50 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Tag, Alert } from 'antd';
+import { Tag, Alert, Switch, message, Card, Button } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
+import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
+import { color } from 'd3';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
   changeAnnotation: (datas: Annotation) => Promise<Annotation>;
 }
 
-interface MyData {
-  yData: number;
-  xData: number;
-}
 interface State {
   annotation?: Annotation;
   loading: boolean;
+  moving: boolean;
   error?: string;
+  popperVisible: boolean;
+  cursorPosition: Point;
+}
+
+interface GraphElement {
+  selector: string;
+  data: Point[];
+  object: d3.Line<Point> | d3.Area<Point>;
 }
 
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
     this.state = {
-      loading: true
+      loading: true,
+      moving: true,
+      popperVisible: false,
+      cursorPosition: { x: 0, y: 0 }
     };
+  }
+
+  public onChange = (checked: boolean) => {
+    if (checked === true) {
+      d3.select('.zoom').style('display', 'none');
+    } else {
+      d3.select('.zoom').style('display', 'block');
+    }
   }
 
   public componentDidMount = async () => {
@@ -37,18 +55,21 @@ class SignalAnnotation extends Component<RouteProps, State> {
       getAnnotation
     } = this.props;
 
+    const colors = ['blue', 'green', 'red'];
     const annotation = await getAnnotation(parseInt(id, 10));
-    const l = annotation.signal;
     let leads: Point[][];
-    if (!l) {
-      this.setState({ error: 'No signal found' });
+    const graphElements: GraphElement[] = [];
+    let idGraphElement: number = 0;
+
+    if (!annotation.signal) {
+      this.setState({ error: 'No signal found', loading: false });
       return;
     } else {
-      leads = l;
+      leads = annotation.signal;
       this.setState({ loading: false, annotation });
     }
 
-    const svgWidth = window.innerWidth;
+    const svgWidth = window.innerWidth - 20;
     const svgHeight = 600;
     const margin = { top: 20, right: 50, bottom: 100, left: 50 };
     const margin2 = { top: svgHeight - 70, right: 50, bottom: 30, left: 50 };
@@ -65,18 +86,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const focus = svg
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      
     const context = svg
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
 
-    const dataset2: Point[] = leads[1];
+    const yMa = d3.max(leads, lead => d3.max(lead, data => data.y));
+    const yMi = d3.min(leads, lead => d3.min(lead, data => data.y));
 
-    const yMa = d3.max(dataset2, d => d.y);
-    const yMi = d3.min(dataset2, d => d.y);
-
-    const xMax = d3.max(dataset2, d => d.x);
+    const xMax = d3.max(leads, lead => d3.max(lead, data => data.x));
     const yMax = (yMa ? yMa : 0) + 100;
-    const xMin = d3.min(dataset2, d => d.x);
+    const xMin = d3.min(leads, lead => d3.min(lead, data => data.x));
     const yMin = (yMi ? yMi : 0) - 100;
 
     const xScale = d3
@@ -92,40 +112,65 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const xScale2 = d3
       .scaleLinear()
       .range([0, width])
-      .domain([0, xMax ? xMax : 0]);
+      .domain(xScale.domain());
 
     const yScale2 = d3
       .scaleLinear()
       .range([0, height2])
-      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
-
-    dataset2.sort((a, b) => {
-      return a.x - b.x;
-    });
-
-    const lineMain1 = d3
-      .line<Point>()
-      .x(d => xScale(d.x))
-      .y(d => yScale(d.y))
-      .curve(d3.curveBasis);
+      .domain(yScale.domain());
 
     focus
-      .datum<Point[]>(dataset2)
-      .append('path')
-      .attr('class', 'line')
-      .attr('d', lineMain1);
-
-    const linePreview1 = d3
-      .line<Point>()
-      .x(d => xScale2(d.x))
-      .y(d => yScale2(d.y))
-      .curve(d3.curveBasis);
+      .append('g')
+      .attr('id', 'mainGraph');
 
     context
-      .datum<Point[]>(dataset2)
-      .append('path')
-      .attr('class', 'line')
-      .attr('d', linePreview1);
+      .append('g')
+      .attr('id', 'previewGraph');
+
+    let i = 0;
+    for(const lead of leads) {
+      lead.sort((a, b) => {
+        return a.x - b.x;
+      });
+
+      const lineMain = d3
+        .line<Point>()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.y))
+        .curve(d3.curveBasis);
+      
+      focus
+        .datum<Point[]>(lead)
+        .select('#mainGraph')
+        .append('path')
+        .attr('class', 'line')
+        .attr('id', 'line' + i)
+        .attr('d', lineMain)
+        .attr('stroke', _ => colors[i % colors.length])
+        .attr('clip-path', 'url(#clip)');
+      
+      const linePreview = d3
+        .line<Point>()
+        .x(d => xScale2(d.x))
+        .y(d => yScale2(d.y))
+        .curve(d3.curveBasis);
+
+      graphElements.push({
+        selector: '#line' + i,
+        data: lead,
+        object: lineMain
+      });
+
+      context
+        .datum<Point[]>(lead)
+        .select('#previewGraph')
+        .append('path')
+        .attr('class', 'line')
+        .attr('d', linePreview)
+        .attr('stroke', _ => colors[i % colors.length]);
+
+      i++;
+    }    
 
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
@@ -133,35 +178,96 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const xAxis = d3.axisBottom(xScale).tickSize(-height);
     const xAxisGroup = focus
       .append('g')
-      .call(xAxis)
-      .attr('transform', 'translate(0,' + height + ')');
+      .attr('transform', 'translate(0,' + height + ')')
+      .call(xAxis);
 
     const xAxis2 = d3.axisBottom(xScale2);
     const xAxisGroup2 = context
       .append('g')
-      .call(xAxis2)
-      .attr('transform', 'translate(0,' + height2 + ')');
+      .attr('transform', 'translate(0,' + height2 + ')')
+      .call(xAxis2);
 
-    // add zoom
     const zoom: any = d3
       .zoom()
-      .scaleExtent([1, Infinity])
+      .scaleExtent([1, 50]) // Zoom x1 to x50
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
-      .on('zoom', zoomed);
-
-    svg
-      .append('rect')
-      .attr('class', 'zoom')
-      .attr('width', width)
-      .attr('height', height)
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      .call(zoom);
+      .on('zoom', zoomed)
+      .filter(() => this.state.moving);
 
     const brush: any = d3
       .brushX()
       .extent([[0, 0], [width, height2]])
       .on('brush end', brushed);
+
+    const brushAnnotation: any = d3
+      .brushX()
+      .extent([[0, 0], [width, height]])
+      .on('end', () => {
+        const domain = d3.event.selection.map(xScale.invert, xScale);
+        const xStart = domain[0];
+        const xEnd = domain[1];
+        const areaData = [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }];
+
+        const areaMainGraph = d3
+          .area<Point>()
+          .x(d => xScale(d.x))
+          .y0(yScale(yMin))
+          .y1(d => yScale(d.y));
+
+        const areaPreviewGraph = d3
+          .area<Point>()
+          .x(d => xScale2(d.x))
+          .y0(yScale2(yMin))
+          .y1(d => yScale2(d.y));
+
+        focus
+          .select('#mainGraph')
+          .append('path')
+          .datum<Point[]>(areaData)
+          .attr('class', 'interval-area')
+          .attr('id', 'interval-area-' + idGraphElement)
+          .attr('d', areaMainGraph)
+          .attr('clip-path', 'url(#clip)');
+
+        context
+          .select('#previewGraph')
+          .append('path')
+          .datum<Point[]>(areaData)
+          .attr('class', 'interval-area-preview')
+          .attr('id', 'interval-area-preview-' + idGraphElement)
+          .attr('d', areaPreviewGraph);
+
+        graphElements.push({
+          selector: '#interval-area-' + idGraphElement,
+          data: areaData,
+          object: areaMainGraph
+        });
+        idGraphElement++;
+
+        console.log(d3.event);
+        this.setState({
+          popperVisible: true,
+          cursorPosition: {
+            x: d3.event.sourceEvent.clientX,
+            y: d3.event.sourceEvent.clientY
+          }
+        });
+
+        console.log(xStart + '     ' + xEnd);
+      });
+
+    focus
+      .append('g')
+      .attr('class', 'brush')
+      .call(brushAnnotation);
+
+    focus
+      .append('rect')
+      .attr('class', 'zoom')
+      .attr('width', width)
+      .attr('height', height)
+      .call(zoom);
 
     context
       .append('g')
@@ -172,10 +278,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
     function zoomed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
       xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
-      focus
-        .datum<Point[]>(dataset2)
-        .select('.line')
-        .attr('d', lineMain1);
+
+      for (const g of graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+
       xAxisGroup.call(xAxis);
 
       context
@@ -188,17 +298,25 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     function brushed() {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+
       if (d3.event.selection) {
         xScale.domain([
           xScale2.invert(d3.event.selection[0]),
           xScale2.invert(d3.event.selection[1])
         ]);
+        // Change graph zone when brush moved
+        focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
+          .scale(width / (d3.event.selection[1] - d3.event.selection[0]))
+          .translate(-d3.event.selection[0], 0));
       }
 
-      focus
-        .datum<Point[]>(dataset2)
-        .select('.line')
-        .attr('d', lineMain1);
+      for (const g of graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+
       xAxisGroup.call(xAxis);
     }
 
@@ -209,6 +327,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .append('rect')
       .attr('width', width)
       .attr('height', height);
+
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
@@ -228,6 +347,19 @@ class SignalAnnotation extends Component<RouteProps, State> {
         console.error(e);
       }
     }
+  }
+
+  public confirmDelete = () => {
+    this.setState({ popperVisible: false });
+    message.error('Interval has been deleted.', 10);
+  }
+
+  public confirmCreate = () => {
+    this.setState({ popperVisible: false });
+    message.success(
+      'Interval has been created with the information entered.',
+      10
+    );
   }
 
   public render = () => {
@@ -264,8 +396,20 @@ class SignalAnnotation extends Component<RouteProps, State> {
               <Tag color='geekblue'>geekblue</Tag>
               <Tag color='purple'>purple</Tag>
             </div>
+            <div className='signal-toolbox-container'>
+              Navigation Mode <Switch onChange={this.onChange} /> Annotation
+              Mode
+            </div>
             <div className='signal-graph-container' id='signal' />
           </div>
+          {this.state.popperVisible && (
+            <Popper
+              top={450}
+              left={this.state.cursorPosition.x + 50}
+              confirmCreate={this.confirmCreate}
+              confirmDelete={this.confirmDelete}
+            />
+          )}
         </div>
       )
     );
@@ -273,3 +417,21 @@ class SignalAnnotation extends Component<RouteProps, State> {
 }
 
 export default withRouter(SignalAnnotation);
+
+const Popper = (props: any) => {
+  return (
+    <div className='full-screen-popper'>
+      <Card
+        style={{ position: 'absolute', top: props.top - 400, left: props.left }}
+      >
+        <FormIntervalSignalAnnotation />
+        <Button type='danger' onClick={props.confirmDelete}>
+          Delete
+        </Button>
+        <Button type='primary' onClick={props.confirmCreate}>
+          Create
+        </Button>
+      </Card>
+    </div>
+  );
+};

@@ -19,7 +19,7 @@ class ChatDrawerAnnotation extends Component {
 
   public render() {
     return (
-      <div>
+      <div className='chat-drawer-container'>
         <Button
           type='primary'
           icon='message'
