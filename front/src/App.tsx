@@ -67,8 +67,9 @@ const r = {
     },
     {
       path: '/users',
-      component: Users,
-      exact: true,
+      component: () => (
+        <Users getAllUsers={api.getAllUsers} deleteUser={api.deleteUser} />
+      ),
       title: 'Users',
       iconName: 'user'
     },
