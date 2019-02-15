@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	u "restapi/utils"
+
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +23,9 @@ func init() {
 
 // CheckSignal send HEAD request to check if signal exists or not
 func CheckSignal(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["signal"], w, r) {
+		return
+	}
 	id := mux.Vars(r)["id"]
 	err := SendCheckSignal(id)
 	if err != nil {

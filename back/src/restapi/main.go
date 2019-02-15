@@ -4,6 +4,7 @@ import (
 	"net/http"
 	a "restapi/annotation"
 	auth "restapi/auth"
+	i "restapi/interval"
 	o "restapi/organization"
 	s "restapi/signal"
 	t "restapi/tag"
@@ -40,9 +41,17 @@ func main() {
 	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.FindUserByID)).Methods("GET")
 	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.DeleteUser)).Methods("DELETE")
 	router.HandleFunc("/users", auth.ValidateMiddleware(u.ModifyUser)).Methods("PUT")
-	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")
-
-	// Auth
+	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")  
+  
+	// Interval
+  router.HandleFunc("/intervals/tag", auth.ValidateMiddleware(i.GetIntervalTag)).Methods("GET")
+  router.HandleFunc("/intervals/tags", auth.ValidateMiddleware(i.CreateIntervalTag)).Methods("POST")
+  router.HandleFunc("/intervals/comment", auth.ValidateMiddleware(i.GetIntervalComment)).Methods("GET")
+  router.HandleFunc("/intervals/comment", auth.ValidateMiddleware(i.CreateIntervalComment)).Methods("POST")
+  router.HandleFunc("/intervals", auth.ValidateMiddleware(i.CreateInterval)).Methods("POST")
+  router.HandleFunc("/intervals", auth.ValidateMiddleware(i.GetInterval)).Methods("GET")
+  
+  // Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"Authorization"})
