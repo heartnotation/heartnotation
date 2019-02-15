@@ -11,25 +11,27 @@ branches:
 
 jobs:
   include:
-    # Testing the API 
-    - stage: test 
-      name: Backend Tests 
-      language: go 
-      go: 
-        - "1.11.4" 
-      before_install: 
-        - export GOPATH="${TRAVIS_BUILD_DIR}/back" 
-        - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin 
-        - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH" 
-        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh 
-        - cd back/src/restapi 
-      install: 
-        - dep ensure -vendor-only 
-      before_script: 
+    # Testing the API
+    - stage: test
+      name: Backend Tests
+      language: go
+      go:
+        - "1.11.4"
+      before_install:
+        - export GOPATH="${TRAVIS_BUILD_DIR}/back"
+        - mkdir -p ${TRAVIS_BUILD_DIR}/back/bin
+        - export PATH="${TRAVIS_BUILD_DIR}/back/bin:$PATH"
+        - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        - cd back/src/restapi
+      install:
+        - dep ensure -vendor-only
+      before_script:
         - sudo /etc/init.d/postgresql stop
         - docker-compose up -d database
-      script: 
-        - go test -v -cover ./... 
+        - go run main.go &
+        - sleep 5
+      script:
+        - go test -v -cover ./...
       after_script:
         - docker-compose down
 
@@ -74,7 +76,7 @@ jobs:
       before_script:
         - export APP=$REPO/web-app
       script:
-        - docker build --build-arg api=$SERVER_URL -t $APP:$TAG ./front
+        - docker build --build-arg api=$SERVER_URL client_id=$CLIENT_ID -t $APP:$TAG ./front
       deploy:
         provider: script
         script: bash .travis/deploy.sh

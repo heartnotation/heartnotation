@@ -2,20 +2,17 @@ package organization
 
 import (
 	"restapi/utils"
+	u "restapi/utils"
 	"strings"
 	"testing"
 )
 
-func TestGetSignalByIdMethod(t *testing.T) {
-	utils.CheckMethod("GET", "/signal/", GetOrganizations, t)
+func TestGetOrganizationsMethod(t *testing.T) {
+	utils.CheckMethod("GET", u.CheckRoutes["organizations"], GetOrganizations, t)
 }
 
-func TestGetSignalByIdPath(t *testing.T) {
-	utils.CheckPath("GET", "/signal/", GetOrganizations, t)
-}
-
-func TestGetSignalByIdPayload(t *testing.T) {
-	utils.CheckPayload("GET", "/signal/", GetOrganizations, "id", utils.CheckPayloadInt, t)
+func TestGetOrganizationsPath(t *testing.T) {
+	utils.CheckPath("GET", u.CheckRoutes["organizations"], GetOrganizations, t)
 }
 
 func TestReadOrganizations(t *testing.T) {

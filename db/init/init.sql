@@ -100,8 +100,8 @@ CREATE TABLE ANNOTATION_TAG (
 DROP TABLE IF EXISTS INTERVAL_TAG CASCADE;
 CREATE TABLE INTERVAL_TAG (
 	id SERIAL PRIMARY KEY,
-	interval_id bigint,
-	tag_id bigint NOT NULL
+	interval_id bigint REFERENCES INTERVAL(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+	tag_id bigint REFERENCES TAG(id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL
 );
 
 DROP TABLE IF EXISTS OPERATOR_OF CASCADE;
@@ -110,7 +110,7 @@ CREATE TABLE OPERATOR_OF (
 	user_id bigint REFERENCES USERPROFILE(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	status_id bigint REFERENCES STATUS(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	annotation_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	operation_time date
+	operation_time timestamp
 );
 
 DROP TABLE IF EXISTS ANNOTATION_USER;
@@ -154,7 +154,7 @@ INSERT INTO ORGANIZATION (name, is_active)
 	VALUES ('Heartnotalogs', TRUE);
 
 INSERT INTO ORGANIZATION (name, is_active) 
-	VALUES ('heartnotalogs', TRUE);
+	VALUES ('Gynecologs', TRUE);
 
 -- USERROLE
 
@@ -168,15 +168,26 @@ INSERT INTO USERROLE (name, is_active)
 	VALUES ('Admin', TRUE);
 
 --  USERPROFILE
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (3, 'holandertheo@gmail.com', TRUE);
 
 INSERT INTO USERPROFILE (role_id, mail, is_active) 
-	VALUES (3, 'rolex@gmail.com', TRUE);
+	VALUES (3, 'rolex.taing@gmail.com', TRUE);
 
 INSERT INTO USERPROFILE (role_id, mail, is_active) 
-	VALUES (1, 'marvin@gmail.com', TRUE);
+	VALUES (2, 'marvin.leclerc31@gmail.com', TRUE);
 
 INSERT INTO USERPROFILE (role_id, mail, is_active)  
-	VALUES (2, 'sophie@gmail.com', TRUE);
+	VALUES (1, 'socarboni@gmail.com', TRUE);
+
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (1, 'romain.phet@gmail.com', TRUE);
+
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (2, 'alex.pliez@gmail.com', TRUE);
+
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (1, 'Saidkhalid@gmail.com', TRUE);
 
 -- STATUS
 
@@ -199,16 +210,33 @@ INSERT INTO STATUS (name, is_active)
 	VALUES ('CANCELED', TRUE);
 
 -- ORGANIZATION USER
-
+-- Marvin
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
 	VALUES (1, 3);
-
+-- Marvin
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
-	VALUES (2, 1);
-
+	VALUES (2, 3);
+-- Marvin
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
-	VALUES (3, 2);
-
+	VALUES (3, 3);
+-- Théo
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (3, 1);
+-- Rolex
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (2, 2);
+-- Sophie	
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (2, 4);
+-- Romain
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (4, 5);
+-- Alex
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (4, 6);
+-- Said
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (4, 7);
 -- ANNOTATION
 
 INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 

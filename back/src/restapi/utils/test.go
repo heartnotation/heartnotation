@@ -2,8 +2,10 @@ package utils
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
@@ -13,7 +15,7 @@ import (
 var checkMethods = [4]string{"GET", "POST", "PUT", "DELETE"}
 
 // CheckRoutes const to test all route
-var CheckRoutes = map[string]string{"annotations": "/annotations/", "signal": "/signal/", "organizations": "/organizations/", "tags": "/tags/", "users": "/users/", "roles": "/roles/"}
+var CheckRoutes = map[string]string{"annotations": "/annotations", "intervals": "/intervals", "intervalscomment": "/intervals/comment", "intervalstag": "/intervals/tag", "signal": "/signal", "organizations": "/organizations", "tags": "/tags", "users": "/users", "roles": "/roles"}
 
 // CheckPayloadInt payload to test int path url
 var CheckPayloadInt = []string{"aa", "", "a3B", "'3afea'"}
@@ -44,13 +46,28 @@ func CheckMethod(m string, r string, fp func(http.ResponseWriter, *http.Request)
 func CheckPath(m string, r string, fp func(http.ResponseWriter, *http.Request), t *testing.T) {
 	routesValues := MapValues(CheckRoutes)
 	for i := 0; i < len(routesValues); i++ {
-		if routesValues[i] != r {
+		if !strings.HasPrefix(routesValues[i], r) {
 			resp := BodyHTTPRequestURL(fp, m, routesValues[i], nil)
 			if resp.StatusCode != 400 {
+				log.Println(r)
+				log.Println(routesValues[i])
 				t.Error("Bad route : expected error code", "400")
 			}
 		}
 	}
+}
+
+// CheckMethodPath check the method and the route
+func CheckMethodPath(m string, p string, w http.ResponseWriter, r *http.Request) bool {
+	if r.Method != m {
+		http.Error(w, "Bad request", 400)
+		return true
+	}
+	if !strings.HasPrefix(r.URL.String(), p) {
+		http.Error(w, "Bad request", 400)
+		return true
+	}
+	return false
 }
 
 // CheckPayload check the payload of a route
