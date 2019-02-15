@@ -12,7 +12,7 @@ CREATE DATABASE heartnotation OWNER heart;
 DROP TABLE IF EXISTS ORGANIZATION CASCADE;
 CREATE TABLE ORGANIZATION (
 	id SERIAL PRIMARY KEY,
-	name varchar(30),
+	name varchar(30) UNIQUE,
 	is_active boolean NOT NULL
 );
 

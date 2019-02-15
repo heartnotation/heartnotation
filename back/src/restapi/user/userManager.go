@@ -113,10 +113,53 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := u.GetConnection()
-	user := User{}
-	json.NewDecoder(r.Body).Decode(&user)
+	var a dto
+	user := &User{}
+	organizations := []o.Organization{}
+	role := &Role{}
+	organizationuser := OrganizationUser{}
+	json.NewDecoder(r.Body).Decode(&a)
 
-	err := db.Save(&user).Error
+	err := db.Preload("Role").Preload("Organizations").First(&user).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
+		return
+	}
+
+	err = db.Where(a.OrganizationsID).Find(&organizations).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+
+	err = db.Where(a.RoleID).Find(&role).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+
+	if len(organizations) != len(a.OrganizationsID) {
+		http.Error(w, "Organization not found", 204)
+		return
+	}
+
+	if role == nil {
+		role = &user.Role
+	}
+
+	if organizations == nil {
+		organizations = user.Organizations
+	}
+
+	err = db.Where("user_id = ?", a.ID).Delete(&organizationuser).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+
+	user = &User{ID: a.ID, Mail: a.Mail, Role: *role, Organizations: organizations, IsActive: true}
+
+	err = db.Preload("Role").Preload("Organizations").Save(user).Error
 	if err != nil {
 		http.Error(w, err.Error(), 400)
 		return

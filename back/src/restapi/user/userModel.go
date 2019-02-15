@@ -15,6 +15,7 @@ type User struct {
 }
 
 type dto struct {
+	ID              uint   `json:"id"`
 	Mail            string `json:"mail"`
 	RoleID          int    `json:"role_id"`
 	OrganizationsID []int  `json:"organizations"`
@@ -35,4 +36,13 @@ type Role struct {
 // TableName sets table name of the struct
 func (Role) TableName() string {
 	return "userrole"
+}
+
+type OrganizationUser struct {
+	IDOrganization uint `json:"organization_id`
+	IDUser         uint `json:"user_id`
+}
+
+func (OrganizationUser) TableName() string {
+	return "organization_user"
 }

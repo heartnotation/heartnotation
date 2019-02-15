@@ -19,8 +19,22 @@ const post = <T>(url: string, values: any): Promise<T> => {
     .then(res => res.data);
 };
 
-export const put = <T>(url: string, values: any): Promise<T> => {
-  return axios.put<T>(`${API_URL}/${url}`, values).then(res => res.data);
+const del = <T>(url: string): Promise<T> => {
+  const jwt = localStorage.getItem('auth_token');
+  return axios
+    .delete(`${API_URL}/${url}`, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    })
+    .then(res => res.data);
+};
+
+const put = <T>(url: string, values: any): Promise<T> => {
+  const jwt = localStorage.getItem('auth_token');
+  return axios
+    .put(`${API_URL}/${url}`, values, {
+      headers: { Authorization: `Bearer ${jwt}` }
+    })
+    .then(res => res.data);
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
@@ -78,6 +92,14 @@ export const getRoles = (): Promise<Role[]> => {
 
 export const getAllUsers = (): Promise<User[]> => {
   return get<User[]>(urls.users);
+};
+
+export const modifyUser = (datas: User): Promise<User> => {
+  return put<User>(`${urls.users}`, datas);
+};
+
+export const deleteUser = (datas: User): Promise<User> => {
+  return del(`${urls.users}/${datas.id}`);
 };
 
 const urls = {
