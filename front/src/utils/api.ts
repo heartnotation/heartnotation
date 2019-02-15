@@ -19,7 +19,7 @@ const post = <T>(url: string, values: any): Promise<T> => {
     .then(res => res.data);
 };
 
-const del = <T>(url: string, values: any): Promise<T> => {
+const del = <T>(url: string): Promise<T> => {
   const jwt = localStorage.getItem('auth_token');
   return axios
     .delete(`${API_URL}/${url}`, {
@@ -99,7 +99,7 @@ export const modifyUser = (datas: User): Promise<User> => {
 };
 
 export const deleteUser = (datas: User): Promise<User> => {
-  return del(`${urls.users}/${datas.id}`, datas);
+  return del(`${urls.users}/${datas.id}`);
 };
 
 const urls = {
