@@ -61,22 +61,6 @@ class EditUserForm extends Component<Props, States> {
     });
   }
 
-  public handleSubmit = (e: React.FormEvent<any>) => {
-    e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        values.id = this.props.user.id;
-        values.mail = this.props.user.mail;
-        values.role_id = this.props.user.role.id;
-        values.organizations = this.props.user.organizations.map(o => o.name);
-        this.setState({ loading: true, error: '' });
-        this.props.modifyUser(values).then(() => {
-          this.props.handleOk();
-        });
-      }
-    });
-  }
-
   private filterNoCaseSensitive = (value: string, items: string[]) => {
     const v = value.toLowerCase();
     return items.filter(i => i.toLowerCase().startsWith(v));
@@ -151,15 +135,13 @@ class EditUserForm extends Component<Props, States> {
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         values.id = this.props.user.id;
-        values.mail = this.props.user.mail;
-        values.role_id = this.props.user.role.id;
-        values.organizations = this.props.user.organizations.map(o => o.name);
         this.setState({ loading: true, error: '' });
         this.props.modifyUser(values).then(() => {
           this.props.handleOk();
         });
       }
     });
+    this.setState({ loading: false });
   }
 
   public render() {
@@ -186,7 +168,6 @@ class EditUserForm extends Component<Props, States> {
           .includes(o.id)
     );
 
-    // this.setState({ organizationsSelected: this.props.user.organizations });
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
@@ -209,7 +190,7 @@ class EditUserForm extends Component<Props, States> {
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={8}>
-            <Form layout='horizontal' onSubmit={this.handleSubmit}>
+            <Form layout='horizontal'>
               <Form.Item {...formItemLayout} label='Email Address'>
                 {getFieldDecorator('mail', {
                   initialValue: this.props.user.mail,
@@ -223,11 +204,11 @@ class EditUserForm extends Component<Props, States> {
                       message: msgRequired
                     }
                   ]
-                })(<Input />)}
+                })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Role'>
                 {getFieldDecorator('role_id', {
-                  initialValue: this.props.user.role.name,
+                  initialValue: this.props.user.role.id,
                   rules: [
                     {
                       required: true,
@@ -252,7 +233,7 @@ class EditUserForm extends Component<Props, States> {
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organizations', {
                   initialValue: this.props.user.organizations
-                    ? this.props.user.organizations.map(o => o.name)
+                    ? this.props.user.organizations.map(o => o.id)
                     : [],
                   rules: [
                     {
