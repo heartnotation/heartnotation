@@ -27,8 +27,7 @@ jobs:
         - dep ensure -vendor-only
       before_script:
         - sudo /etc/init.d/postgresql stop
-        - docker-compose up -d database &
-        - sleep 5
+        - docker-compose up -d database
         - go run main.go &
         - sleep 5
       script:
