@@ -15,6 +15,7 @@ export interface State {
 
 interface Props extends RouteComponentProps {
   getAllUsers: () => Promise<User[]>;
+  deleteUser: (datas: User) => Promise<User>;
 }
 
 class Users extends Component<Props, State> {
@@ -116,17 +117,43 @@ class Users extends Component<Props, State> {
       ]
     },
     {
-      title: 'Edit',
-      dataIndex: 'edit',
-      render: (_, user: User) => (
+        title: 'Active',
+        dataIndex: 'is_active',
+        render: (active: boolean) => (
+          <Icon
+            type={active ? 'check' : 'close'}
+            style={{ color: active ? 'green' : 'red' }}
+          />
+        )
+    },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      render: (_, user: User) => [
         <Icon
+          key={1}
           type='edit'
           theme='twoTone'
           onClick={() => {
             this.setState({ modalVisible: true, user });
           }}
+        />,
+        <Icon
+          key={2}
+          type='delete'
+          theme='twoTone'
+          onClick={async () => {
+            this.props.deleteUser(user).then(async () => {
+              const users = await this.getDatas();
+              this.setState({
+                user: undefined,
+                initialUsers: users,
+                currentUsers: users.slice()
+              });
+            });
+          }}
         />
-      )
+      ]
     }
   ];
 
@@ -188,7 +215,7 @@ class Users extends Component<Props, State> {
     this.closeModal();
   }
 
-  public handleOk =async  () => {
+  public handleOk = async () => {
     this.closeModal();
     const users = await this.getDatas();
     this.setState({
