@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { User, Organization, api } from '../utils';
+import { User, Organization, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import EditUserForm from './EditUserForm';
 export interface State {
@@ -14,6 +14,9 @@ export interface State {
 }
 
 interface Props extends RouteComponentProps {
+  getOrganizations: () => Promise<Organization[]>;
+  getRoles: () => Promise<Role[]>;
+  modifyUser: (datas: User) => Promise<User>;
   getAllUsers: () => Promise<User[]>;
   deleteUser: (datas: User) => Promise<User>;
 }
@@ -256,9 +259,9 @@ class Users extends Component<Props, State> {
       user && (
         <EditUserForm
           key={2}
-          getOrganizations={api.getOrganizations}
-          getRoles={api.getRoles}
-          modifyUser={api.modifyUser}
+          getOrganizations={this.props.getOrganizations}
+          getRoles={this.props.getRoles}
+          modifyUser={this.props.modifyUser}
           handleCancel={this.handleCancel}
           handleOk={this.handleOk}
           user={user}
