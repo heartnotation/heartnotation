@@ -172,7 +172,7 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 
 // GetAllRoles return users from database
 func GetAllRoles(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["roles"], w, r) {
 		return
 	}
 	roles := &[]Role{}
