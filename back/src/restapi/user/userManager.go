@@ -103,10 +103,9 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	organizations := []o.Organization{}
 	role := &Role{}
 	organizationuser := OrganizationUser{}
-	vars := mux.Vars(r)
 	json.NewDecoder(r.Body).Decode(&a)
 
-	err := db.Preload("Role").Preload("Organizations").First(&user, vars["id"]).Error
+	err := db.Preload("Role").Preload("Organizations").First(&user).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -137,13 +136,13 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 		organizations = user.Organizations
 	}
 
-	err = db.Where("user_id = ?", user.ID).Delete(&organizationuser).Error
+	err = db.Where("user_id = ?", a.ID).Delete(&organizationuser).Error
 	if err != nil {
 		u.CheckErrorCode(err, w)
 		return
 	}
 
-	user = &User{ID: user.ID, Mail: a.Mail, Role: *role, Organizations: organizations, IsActive: true}
+	user = &User{ID: a.ID, Mail: a.Mail, Role: *role, Organizations: organizations, IsActive: true}
 
 	err = db.Preload("Role").Preload("Organizations").Save(user).Error
 	if err != nil {
