@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Input, Icon, Tag } from 'antd';
+import { Table, Input, Icon, Tag, Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
@@ -126,40 +126,46 @@ class Users extends Component<Props, State> {
       render: (active: boolean) => (
         <Icon
           type={active ? 'check' : 'close'}
-          style={{ color: active ? 'green' : 'red' }}
+          style={{ color: active ? 'green' : 'red', fontSize: '1.2em' }}
         />
       )
     },
     {
       title: 'Actions',
       dataIndex: 'actions',
-      render: (_, user: User) => [
-        <Icon
-          key={1}
-          type='edit'
-          theme='twoTone'
-          style={{ marginLeft: 10 }}
-          onClick={() => {
-            this.setState({ modalVisible: true, user });
-          }}
-        />,
-        <Icon
-          key={2}
-          type='delete'
-          theme='twoTone'
-          style={{ marginLeft: 10 }}
-          onClick={async () => {
-            this.props.deleteUser(user).then(async () => {
-              const users = await this.getDatas();
-              this.setState({
-                user: undefined,
-                initialUsers: users,
-                currentUsers: users.slice()
-              });
-            });
-          }}
-        />
-      ]
+      render: (_, user: User) => (
+        <Row>
+          <Col sm={24} md={12}>
+            <Icon
+              key={1}
+              type='edit'
+              theme='twoTone'
+              style={{ fontSize: '1.3em' }}
+              onClick={() => {
+                this.setState({ modalVisible: true, user });
+              }}
+            />
+          </Col>
+          <Col sm={24} md={12}>
+            <Icon
+              key={2}
+              type='delete'
+              theme='twoTone'
+              style={{ fontSize: '1.3em' }}
+              onClick={async () => {
+                this.props.deleteUser(user).then(async () => {
+                  const users = await this.getDatas();
+                  this.setState({
+                    user: undefined,
+                    initialUsers: users,
+                    currentUsers: users.slice()
+                  });
+                });
+              }}
+            />
+          </Col>
+        </Row>
+      )
     }
   ];
 
@@ -240,25 +246,21 @@ class Users extends Component<Props, State> {
 
   public render() {
     const { currentUsers, user, modalVisible } = this.state;
-    return (
-      <div>
-        <Table<User>
-          key={1}
-          rowKey='id'
-          columns={this.columns}
-          dataSource={currentUsers}
-          pagination={{
-            position: 'bottom',
-            pageSizeOptions: ['10', '20', '30', '40'],
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`
-          }}
-          onRow={a => ({
-            //   onClick: () => this.props.history.push(`/annotations/${a.id}`)
-          })}
-        />
-        , user && (
+    return [
+      <Table<User>
+        key={1}
+        rowKey='id'
+        columns={this.columns}
+        dataSource={currentUsers}
+        pagination={{
+          position: 'bottom',
+          pageSizeOptions: ['10', '20', '30', '40'],
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+        }}
+      />,
+      user && (
         <EditUserForm
           key={2}
           getOrganizations={this.props.getOrganizations}
@@ -269,10 +271,9 @@ class Users extends Component<Props, State> {
           user={user}
           modalVisible={modalVisible}
         />
-        )
-        <AddButton url='/new/users' />
-      </div>
-    );
+      ),
+      <AddButton key={3} url='/new/users' />
+    ];
   }
 }
 
