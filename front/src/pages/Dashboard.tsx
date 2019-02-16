@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
+import AddButton from '../fragments/fixedButton/AddButton';
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
@@ -131,7 +132,9 @@ class Dashboard extends Component<Props, State> {
     {
       title: 'Edit',
       dataIndex: 'edit',
-      render: _ => <Icon className='anticon-edit-dashboard' type='edit' theme='twoTone' />
+      render: _ => (
+        <Icon className='anticon-edit-dashboard' type='edit' theme='twoTone' />
+      )
     }
   ];
 
@@ -220,21 +223,24 @@ class Dashboard extends Component<Props, State> {
   public render() {
     const { currentAnnotations } = this.state;
     return (
-      <Table<Annotation>
-        rowKey='id'
-        columns={this.columns}
-        dataSource={currentAnnotations}
-        pagination={{
-          position: 'bottom',
-          pageSizeOptions: ['10', '20', '30', '40'],
-          showSizeChanger: true,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`
-        }}
-        onRow={a => ({
-          onClick: () => this.props.history.push(`/annotations/${a.id}`)
-        })}
-      />
+      <div>
+        <Table<Annotation>
+          rowKey='id'
+          columns={this.columns}
+          dataSource={currentAnnotations}
+          pagination={{
+            position: 'bottom',
+            pageSizeOptions: ['10', '20', '30', '40'],
+            showSizeChanger: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+          }}
+          onRow={a => ({
+            onClick: () => this.props.history.push(`/annotations/${a.id}`)
+          })}
+        />
+        <AddButton url='/new/annotations' />
+      </div>
     );
   }
 }

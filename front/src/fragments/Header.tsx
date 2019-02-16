@@ -69,12 +69,12 @@ class Header extends Component<Props, State> {
 
     return (
       <div className='navbar-container'>
-        <Link to='/' onClick={this.handleClickHome}>
-          <img src={logo} className='logo' alt='logo' />
-        </Link>
         <div className='menu-container'>
           <Row>
             <Col span={8}>
+              <Link to='/' onClick={this.handleClickHome}>
+                <img src={logo} className='logo' alt='logo' />
+              </Link>
               <h1 className='page-title'>{current.title}</h1>
             </Col>
             <Col span={16}>

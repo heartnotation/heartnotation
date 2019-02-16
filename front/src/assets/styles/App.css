@@ -1,17 +1,22 @@
+.menu-container {
+  padding: 7px;
+}
+
 .navbar-container {
-  background-color: #282828;
+  background-color: #2f3542;
   text-align: left !important;
 }
 
 .logo {
-  margin-left: 30px;
-  width: 300px;
+  margin: 5px 10px 0px 30px;
+  width: 70px;
+  float: left;
 }
 
 .main-menu {
-  background: #282828 !important;
+  background: rgba(0, 0, 255, 0) !important;
   text-align: right !important;
-  margin-right: 30px !important;
+  margin: 10px 30px 0 0 !important;
 }
 
 .ant-menu-horizontal {
@@ -35,7 +40,7 @@
 .page-title {
   color: #dddddd !important;
   float: left;
-  margin-left: 30px;
+  margin: 10px 30px 0 0 !important;
 }
 
 .ant-table-pagination.ant-pagination {
@@ -193,4 +198,23 @@
 .modal-signal-footer {
   text-align: right;
   margin-top: 15px;
+}
+div > .fixed-bottom-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+}
+
+.fixed-bottom-button {
+  font-size: 24px !important;
+  background-color: #6669c9 !important;
+  border-color: #6669c9 !important;
+  color: #f9fbf2 !important;
+  border-radius: 35px !important;
+  height: 55px !important;
+  width: 55px !important;
+}
+
+.fixed-bottom-button:hover {
+  opacity: 0.85;
 }
