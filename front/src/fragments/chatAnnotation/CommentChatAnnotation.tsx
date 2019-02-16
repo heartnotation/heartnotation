@@ -63,16 +63,14 @@ const { Header, Footer, Content } = Layout;
 const TextArea = Input.TextArea;
 
 const CommentList = (props: { comments: DataComment[] }) => (
-  <div>
-    <List
-      dataSource={props.comments}
-      header={`${props.comments.length} ${
-        props.comments.length > 1 ? 'replies' : 'reply'
-      }`}
-      itemLayout='horizontal'
-      renderItem={(p: any) => <Comment {...p} />}
-    />
-  </div>
+  <List
+    dataSource={props.comments}
+    header={`${props.comments.length} ${
+      props.comments.length > 1 ? 'replies' : 'reply'
+    }`}
+    itemLayout='horizontal'
+    renderItem={(p: any) => <Comment {...p} />}
+  />
 );
 /*
 const Editor = (
@@ -84,21 +82,19 @@ const Editor = (
 
 const Editor = (props: {
   onChange: (e: any) => void;
-  onSubmit: () => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   value: string;
 }) => (
-  <div>
-    <Form>
-      <Form.Item>
-        <TextArea rows={4} onChange={props.onChange} value={props.value} />
-      </Form.Item>
-      <Form.Item>
-        <Button htmlType='submit' onClick={props.onSubmit} type='primary'>
-          Add Comment
-        </Button>
-      </Form.Item>
-    </Form>
-  </div>
+  <Form onSubmit={props.onSubmit}>
+    <Form.Item>
+      <TextArea rows={4} onChange={props.onChange} value={props.value} />
+    </Form.Item>
+    <Form.Item>
+      <Button htmlType='submit' type='primary'>
+        Add Comment
+      </Button>
+    </Form.Item>
+  </Form>
 );
 
 interface DataComment {
@@ -120,7 +116,8 @@ class CommentChatAnnotation extends Component<any, State> {
     };
   }
 
-  public handleSubmit = () => {
+  public handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!this.state.payload.content) {
       return;
     }

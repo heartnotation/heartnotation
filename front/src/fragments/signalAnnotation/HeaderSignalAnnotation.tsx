@@ -6,6 +6,7 @@ import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
   stepProcess: number;
+  mode: 'Navigation' | 'Annotation';
   error?: string;
 }
 
@@ -17,6 +18,7 @@ interface Status {
 
 interface Props extends RouteComponentProps {
   annotation: Annotation;
+  onToggle: (state: boolean) => void;
 }
 
 interface PropsButton {
@@ -32,7 +34,7 @@ function ValidateButton(props: PropsButton) {
       type='primary'
       icon='check-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
+      className='btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -52,7 +54,7 @@ function InvalidateButton(props: PropsButton) {
       type='primary'
       icon='close-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
+      className='btn-heartnotation-secondary'
       onClick={() => {
         props.handleSubmit({
           ...annotation,
@@ -72,7 +74,7 @@ function CompleteButton(props: PropsButton) {
       type='primary'
       icon='check-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
+      className='btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -120,7 +122,8 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         break;
     }
     this.state = {
-      stepProcess: step
+      stepProcess: step,
+      mode: 'Navigation'
     };
   }
 
@@ -135,63 +138,53 @@ class HeaderSignalAnnotation extends Component<Props, State> {
       });
   }
 
+  private handleToggle = (toggle: boolean) => {
+    this.setState({ mode: toggle ? 'Annotation' : 'Navigation' }, () =>
+      this.props.onToggle(toggle)
+    );
+  }
+
   public render() {
     const { Step } = Steps;
     const { annotation } = this.props;
-    const { stepProcess, error } = this.state;
+    const { stepProcess, error, mode } = this.state;
     return (
-      <div className='signal-header'>
-        <Row>
-          <Col span={4} className='text-left center-vertical-switch'>
-            <Switch
-              checkedChildren={<Icon type='check' />}
-              unCheckedChildren={<Icon type='close' />}
-              defaultChecked={true}
-            />{' '}
-            Display Leads
-          </Col>
-          <Col span={2} className='text-center'>
-            <ChatDrawerAnnotation />
-          </Col>
-          <Col span={6} className='text-center'>
-            <Button
-              type='primary'
-              icon='box-plot'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            >
-              Intervals
-            </Button>
-            <Button
-              type='primary'
-              icon='undo'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            />
-            <Button
-              type='primary'
-              icon='redo'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            />
-          </Col>
-          <Col span={8} className='text-centered'>
-            <Steps progressDot={true} current={stepProcess}>
-              <Step title='In Progress' />
-              <Step title='Completed' />
-              <Step title='Validated' />
-            </Steps>
-          </Col>
-          <Col span={4} className='text-right'>
-            <ConditionalButton
-              conditionnal_id={stepProcess}
-              annotation={annotation}
-              handleSubmit={this.handleSubmit}
-            />
-            {error && <Alert message={error} type='error' />}
-          </Col>
-        </Row>
-      </div>
+      <Row
+        type='flex'
+        className='signal-header'
+        align='middle'
+        justify='space-between'
+      >
+        <Col span={4}>
+          <Switch
+            checkedChildren={<Icon type='check' />}
+            unCheckedChildren={<Icon type='close' />}
+            defaultChecked={true}
+          />{' '}
+          Display Leads
+        </Col>
+        <Col span={4}>
+          {mode} Mode <Switch onChange={this.handleToggle} />
+        </Col>
+        <Col span={8}>
+          <Steps progressDot={true} current={stepProcess}>
+            <Step title='In Progress' />
+            <Step title='Completed' />
+            <Step title='Validated' />
+          </Steps>
+        </Col>
+        <Col offset={1} span={3}>
+          <ChatDrawerAnnotation />
+        </Col>
+        <Col span={4}>
+          <ConditionalButton
+            conditionnal_id={stepProcess}
+            annotation={annotation}
+            handleSubmit={this.handleSubmit}
+          />
+          {error && <Alert message={error} type='error' />}
+        </Col>
+      </Row>
     );
   }
 }
