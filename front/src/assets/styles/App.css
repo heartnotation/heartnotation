@@ -1,3 +1,5 @@
+@import "~antd/dist/antd.css";
+
 .menu-container {
   padding: 7px;
 }
@@ -208,8 +210,6 @@ div > .fixed-bottom-button {
 
 .fixed-bottom-button {
   font-size: 24px !important;
-  background-color: #6669c9 !important;
-  border-color: #6669c9 !important;
   color: #f9fbf2 !important;
   border-radius: 35px !important;
   height: 55px !important;

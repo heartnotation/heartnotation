@@ -10,12 +10,6 @@ interface State {
   error?: string;
 }
 
-interface Status {
-  status: {
-    name: string;
-  };
-}
-
 interface Props extends RouteComponentProps {
   annotation: Annotation;
   onToggle: (state: boolean) => void;
@@ -27,14 +21,13 @@ interface PropsButton {
   handleSubmit: (a: Annotation) => void;
 }
 
-function ValidateButton(props: PropsButton) {
+const ValidateButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
   return (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
-      className='btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -45,16 +38,15 @@ function ValidateButton(props: PropsButton) {
       Validate
     </Button>
   );
-}
+};
 
-function InvalidateButton(props: PropsButton) {
+const InvalidateButton = (props: PropsButton) => {
   const { annotation } = props;
   return (
     <Button
-      type='primary'
+      type='danger'
       icon='close-circle'
       size='large'
-      className='btn-heartnotation-secondary'
       onClick={() => {
         props.handleSubmit({
           ...annotation,
@@ -65,16 +57,15 @@ function InvalidateButton(props: PropsButton) {
       Invalidate
     </Button>
   );
-}
+};
 
-function CompleteButton(props: PropsButton) {
+const CompleteButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
   return (
     <Button
-      type='primary'
+      type='default'
       icon='check-circle'
       size='large'
-      className='btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -85,30 +76,37 @@ function CompleteButton(props: PropsButton) {
       Complete
     </Button>
   );
-}
+};
 
-function ConditionalButton(props: PropsButton) {
+const ConditionalButton = (props: PropsButton) => {
   const { conditionnal_id } = props;
+  console.log(conditionnal_id);
   if (conditionnal_id === 0) {
     return <CompleteButton {...props} />;
   } else if (conditionnal_id === 1) {
     return (
       <>
-        <ValidateButton {...props} />
-        <InvalidateButton {...props} />
+        <Col span={12}>
+          <InvalidateButton key={1} {...props} />
+        </Col>
+        <Col span={12}>
+          <ValidateButton key={2} {...props} />
+        </Col>
       </>
     );
   } else if (conditionnal_id === 2) {
     return null;
   }
   return null;
-}
+};
 
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     let step = -1;
+    console.log(props.annotation);
     switch (props.annotation.status.name) {
+      case 'ASSIGNED':
       case 'IN_PROCESS':
         step = 0;
         break;
@@ -167,7 +165,12 @@ class HeaderSignalAnnotation extends Component<Props, State> {
           {mode} Mode <Switch onChange={this.handleToggle} />
         </Col>
         <Col span={8}>
-          <Steps progressDot={true} current={stepProcess}>
+          <Steps
+            style={{ paddingTop: 30 }}
+            progressDot={true}
+            current={stepProcess}
+            size='default'
+          >
             <Step title='In Progress' />
             <Step title='Completed' />
             <Step title='Validated' />
@@ -177,12 +180,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
           <ChatDrawerAnnotation />
         </Col>
         <Col span={4}>
-          <ConditionalButton
-            conditionnal_id={stepProcess}
-            annotation={annotation}
-            handleSubmit={this.handleSubmit}
-          />
-          {error && <Alert message={error} type='error' />}
+          <Row type='flex' align='middle' justify='end'>
+            <ConditionalButton
+              conditionnal_id={stepProcess}
+              annotation={annotation}
+              handleSubmit={this.handleSubmit}
+            />
+            {error && <Alert message={error} type='error' />}
+          </Row>
         </Col>
       </Row>
     );
