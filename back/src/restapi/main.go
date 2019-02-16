@@ -44,10 +44,7 @@ func main() {
 	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")
 
 	// Interval
-	router.HandleFunc("/intervals/tag", auth.ValidateMiddleware(i.GetIntervalTag)).Methods("GET")
 	router.HandleFunc("/intervals/tags", auth.ValidateMiddleware(i.CreateIntervalTag)).Methods("POST")
-	router.HandleFunc("/intervals/comment", auth.ValidateMiddleware(i.GetIntervalComment)).Methods("GET")
-	router.HandleFunc("/intervals/comment", auth.ValidateMiddleware(i.CreateIntervalComment)).Methods("POST")
 	router.HandleFunc("/intervals", auth.ValidateMiddleware(i.CreateInterval)).Methods("POST")
 	router.HandleFunc("/intervals", auth.ValidateMiddleware(i.GetInterval)).Methods("GET")
 
