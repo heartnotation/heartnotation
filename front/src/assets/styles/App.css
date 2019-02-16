@@ -43,6 +43,10 @@
   margin: 10px 30px 0 0 !important;
 }
 
+.ant-table-row:hover {
+  cursor: pointer;
+}
+
 .ant-table-pagination.ant-pagination {
   float: none !important;
   text-align: center !important;
