@@ -67,8 +67,7 @@ DROP TABLE IF EXISTS INTERVAL CASCADE;
 CREATE TABLE INTERVAL (
 	id SERIAL PRIMARY KEY,
 	timestamp_start int NOT NULL,
-	timestamp_end bigint NOT NULL,
-	is_active boolean NOT NULL
+	timestamp_end bigint NOT NULL
 );
 
 DROP TABLE IF EXISTS ANNOTATION_INTERVAL_USER CASCADE;
@@ -250,14 +249,14 @@ INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, 
 
 -- INTERVAL
 
-INSERT INTO INTERVAL (timestamp_start, timestamp_end, is_active) 
-	VALUES (3, 4, TRUE);
+INSERT INTO INTERVAL (timestamp_start, timestamp_end) 
+	VALUES (3, 4);
 
-INSERT INTO INTERVAL (timestamp_start, timestamp_end, is_active)
-	VALUES (7, 9, TRUE);
+INSERT INTO INTERVAL (timestamp_start, timestamp_end)
+	VALUES (7, 9);
 
-INSERT INTO INTERVAL (timestamp_start, timestamp_end, is_active) 
-	VALUES (11, 29, TRUE);
+INSERT INTO INTERVAL (timestamp_start, timestamp_end) 
+	VALUES (11, 29);
 
 -- ANNOTATION_INTERVAL_USER
 

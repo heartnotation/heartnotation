@@ -176,7 +176,7 @@
   margin: 8px;
 }
 
-.comments-container {
+.ant-drawer-body > div > .comments-container {
   padding: 24px;
   background-color: #f9fbf2;
   height: 65vh;
@@ -187,11 +187,24 @@
   width: 400px;
 }
 
+.modal-comments-container {
+  margin-bottom: 25px;
+  padding: 25px;
+  background-color: #f9fbf2;
+  height: 250px;
+  overflow-y: scroll;
+}
+
+.modal-signal-footer {
+  text-align: right;
+  margin-top: 15px;
+}
 div > .fixed-bottom-button {
   position: fixed;
   bottom: 30px;
   right: 30px;
 }
+
 .fixed-bottom-button {
   font-size: 24px !important;
   background-color: #6669c9 !important;

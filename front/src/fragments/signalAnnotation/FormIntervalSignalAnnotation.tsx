@@ -1,39 +1,118 @@
 import React, { Component } from 'react';
-import { Form, Icon, Tabs, Select } from 'antd';
+import {
+  Form,
+  Icon,
+  Tabs,
+  Select,
+  Modal,
+  Button,
+  List,
+  Comment,
+  Avatar
+} from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
-import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
-import { Tag, api } from '../../utils';
+import { Tag, api, Annotation } from '../../utils';
+import { Interval } from '../../utils/objects';
+import TextArea from 'antd/lib/input/TextArea';
 
-interface Props extends FormComponentProps, RouteComponentProps {}
+interface Props extends FormComponentProps, RouteComponentProps {
+  start: number;
+  end: number;
+  annotation: Annotation;
+  selectors: string[];
+  confirmCreate: () => void;
+  confirmDelete: (selectors: string[]) => void;
+}
+
+interface DataComment {
+  author: string;
+  content: any;
+  avatar: any;
+}
 
 interface States {
   tags: Tag[];
+  confirmLoading: boolean;
+  comments: DataComment[];
+  textAreaContent: string;
+  selectedTags: number[];
+  error: string;
 }
+
+const CommentList = (props: { comments: DataComment[] }) => (
+  <div>
+    <List
+      dataSource={props.comments}
+      header={`${props.comments.length} ${
+        props.comments.length > 1 ? 'replies' : 'reply'
+      }`}
+      itemLayout='horizontal'
+      renderItem={(p: any) => <Comment {...p} />}
+    />
+  </div>
+);
 
 class FormIntervalSignalAnnotation extends Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      tags: []
+      tags: [],
+      confirmLoading: false,
+      comments: [],
+      textAreaContent: '',
+      selectedTags: [],
+      error: ''
     };
   }
 
-  public handleSubmit = (e: any) => {
-    e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-      }
+  public handleCommentSubmit = () => {
+    this.setState({
+      comments: [
+        {
+          author: 'Yann Yolo',
+          avatar: (
+            <Avatar src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1' />
+          ),
+          content: <p>{this.state.textAreaContent}</p>
+        },
+        ...this.state.comments
+      ],
+      textAreaContent: ''
     });
   }
 
-  public handleChange(value: any) {
-    console.log(`selected ${value}`);
+  public handleChangeWriteComment = (e: any) => {
+    this.setState({
+      textAreaContent: e.target.value
+    });
+  }
+
+  public handleSubmit = (e: any) => {
+    const interval: Interval = {
+      annotation_id: this.props.annotation.id,
+      start: Math.round(this.props.start),
+      end: Math.round(this.props.end)
+    };
+    this.setState({ confirmLoading: true });
+    api.sendInterval(interval).then(response => {
+      interval.id = response.id;
+      interval.tags = this.state.selectedTags;
+      api.sendIntervalTags(interval);
+      this.setState({ confirmLoading: false });
+      this.props.confirmCreate();
+    });
+  }
+
+  public handleDelete = () => {
+    this.props.confirmDelete(this.props.selectors);
+  }
+
+  public handleChangeSelectTags = (values: number[]) => {
+    this.setState({ selectedTags: values });
   }
 
   public componentDidMount = () => {
-    console.log('yoooo');
     api.getTags().then(res => this.setState({ tags: res }));
   }
 
@@ -46,51 +125,89 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
         {val.name}
       </Option>
     ));
-    /*for (let i = 10; i < 36; i++) {
-      children.push(
-        <Option key={i.toString(36) + i}>{i.toString(36) + i}</Option>
-      );
-    }*/
 
     return (
       <div className='popup-comment-tag-container'>
-        {' '}
-        <Tabs defaultActiveKey='2'>
-          <TabPane
-            tab={
-              <span>
-                <Icon type='tags' />
-                Tags
-              </span>
-            }
-            key='1'
-          >
-            <Select
-              mode='multiple'
-              style={{ width: '100%' }}
-              placeholder='Please select'
-              onChange={this.handleChange}
-            >
-              {tagValues}
-            </Select>
-          </TabPane>
-          <TabPane
-            tab={
-              <span>
-                <Icon type='form' />
-                Comments
-              </span>
-            }
-            key='2'
-          >
-            <div className='popup-comment'>
-              <CommentChatAnnotation />
+        <Modal
+          visible={true}
+          onOk={this.handleSubmit}
+          confirmLoading={this.state.confirmLoading}
+          onCancel={this.handleDelete}
+          footer={null}
+        >
+          <Form>
+            <Tabs defaultActiveKey='1'>
+              <TabPane
+                tab={
+                  <span>
+                    <Icon type='tags' />
+                    Tags
+                  </span>
+                }
+                key='1'
+              >
+                <p className='text-center'>
+                  Tags to assignate to annotation task{' '}
+                  {this.props.annotation.id} in interval between{' '}
+                  {Math.round(this.props.start)} and{' '}
+                  {Math.round(this.props.end)} :
+                </p>
+                <Select
+                  mode='multiple'
+                  style={{ width: '100%' }}
+                  placeholder='Please select'
+                  onChange={this.handleChangeSelectTags}
+                >
+                  {tagValues}
+                </Select>
+              </TabPane>
+              <TabPane
+                tab={
+                  <span>
+                    <Icon type='form' />
+                    Comments
+                  </span>
+                }
+                key='2'
+              >
+                <div className='modal-comments-container'>
+                  {this.state.comments.length > 0 && (
+                    <CommentList comments={this.state.comments} />
+                  )}
+                </div>
+                <div className='annotation-popup-comment'>
+                  <Form.Item>
+                    <TextArea
+                      rows={4}
+                      onChange={this.handleChangeWriteComment}
+                      value={this.state.textAreaContent}
+                    />
+                  </Form.Item>
+                  <Form.Item>
+                    <Button onClick={this.handleCommentSubmit} type='primary'>
+                      Add Comment
+                    </Button>
+                  </Form.Item>
+                </div>
+              </TabPane>
+            </Tabs>
+            <div className='modal-signal-footer'>
+              <Button key='delete' type='danger' onClick={this.handleDelete}>
+                Delete
+              </Button>
+              <Button
+                key='submit'
+                type='primary'
+                loading={this.state.confirmLoading}
+                onClick={this.handleSubmit}
+              >
+                Assign informations
+              </Button>
             </div>
-          </TabPane>
-        </Tabs>
+          </Form>
+        </Modal>
       </div>
     );
-    return <Form onSubmit={this.handleSubmit} />;
   }
 }
 

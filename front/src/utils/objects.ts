@@ -52,3 +52,13 @@ export interface User {
 export interface AnnotationCommentPayload {
   content: string;
 }
+
+export interface Interval {
+  id?: number;
+  annotation_id: number;
+  user_id?: number;
+  comment?: string;
+  start: number;
+  end: number;
+  tags?: number[];
+}

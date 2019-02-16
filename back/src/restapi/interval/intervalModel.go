@@ -9,21 +9,11 @@ import (
 
 // Interval ORM interval
 type Interval struct {
-	ID             uint    `gorm:"AUTO_INCREMENT" json:"id"`
-	TimestampStart int64   `json:"start"`
-	TimestampEnd   int64   `json:"end"`
-	IsActive       bool    `json:"is_active"`
-	Tags           []t.Tag `json:"tags,omitempty" gorm:"many2many:interval_tag;"`
-	Comment        Comment `json:"comments,omitempty"`
-}
-
-// Tag ORM interval_tag
-type Tag struct {
-	ID             uint    `gorm:"AUTO_INCREMENT" json:"id"`
-	TimestampStart int64   `json:"start"`
-	TimestampEnd   int64   `json:"end"`
-	IsActive       bool    `json:"is_active"`
-	Tags           []t.Tag `json:"tags,omitempty" gorm:"many2many:interval_tag;"`
+	ID             uint     `gorm:"AUTO_INCREMENT" json:"id"`
+	TimestampStart int64    `json:"start"`
+	TimestampEnd   int64    `json:"end"`
+	Tags           []t.Tag  `json:"tags,omitempty" gorm:"many2many:interval_tag;"`
+	Comment        *Comment `json:"comments,omitempty" gorm:"many2many:annotation_interval_user;"`
 }
 
 // Comment ORM interval_comment
@@ -32,7 +22,7 @@ type Comment struct {
 	AnnotationID uint         `json:"annotation_id"`
 	Annotation   a.Annotation `json:"annotation" gorm:"foreignkey:AnnotationID"`
 	IntervalID   uint         `json:"interval_id"`
-	Interval     Tag          `json:"interval" gorm:"foreignkey:IntervalID"`
+	Interval     Interval     `json:"interval" gorm:"foreignkey:IntervalID;PRELOAD:false;"`
 	UserID       uint         `json:"user_id"`
 	User         u.User       `json:"user" gorm:"foreignkey:UserID"`
 	Comment      string       `json:"comment,omitempty"`
@@ -41,23 +31,18 @@ type Comment struct {
 
 // Payload interval payload
 type Payload struct {
-	AnnotationID uint   `json:"annotation_id"`
-	ID           uint   `json:"id"`
-	UserID       uint   `json:"user_id"`
-	Comment      string `json:"comment"`
-	Start        int64  `json:"start"`
-	End          int64  `json:"end"`
-	TagsID       []uint `json:"tags"`
+	AnnotationID *uint   `json:"annotation_id"`
+	ID           *uint   `json:"id"`
+	UserID       *uint   `json:"user_id"`
+	Comment      *string `json:"comment"`
+	Start        *int64  `json:"start"`
+	End          *int64  `json:"end"`
+	TagsID       []uint  `json:"tags"`
 }
 
 // TableName sets table name of the struct
 func (Comment) TableName() string {
 	return "annotation_interval_user"
-}
-
-// TableName sets table name of the struct
-func (Tag) TableName() string {
-	return "interval"
 }
 
 // TableName sets table name of the struct
