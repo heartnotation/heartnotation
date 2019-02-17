@@ -14,6 +14,8 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Tag, Annotation, api } from '../utils';
+import { isNull } from 'util';
+import { getTags } from '../utils/api';
 
 const { Option } = Select;
 
@@ -67,11 +69,12 @@ class EditAnnotationForm extends Component<Props, States> {
   }
 
   public componentDidMount = () => {
+    // console.log('bite', this.props.annotation);
     const { getTags, getOrganizations, getAnnotations } = this.props;
     Promise.all([getTags(), getOrganizations(), getAnnotations()]).then(
       responses => {
         this.setState({
-          tags: responses[0],
+          tags: responses[0].filter((t: Tag) => t.is_active),
           organizations: responses[1],
           annotationsParents: responses[2]
         });
@@ -121,7 +124,7 @@ class EditAnnotationForm extends Component<Props, States> {
     const { tags } = this.state;
     const tagsSearch = this.filterNoCaseSensitive(
       value,
-      tags.map((t: Tag) => t.name)
+      tags.filter((t: Tag) => t.is_active).map((t: Tag) => t.name)
     );
     this.setState({
       tagsSearch: tagsSearch.length !== tags.length ? tagsSearch : []
@@ -196,66 +199,23 @@ class EditAnnotationForm extends Component<Props, States> {
     this.setState({ tagsSelected: tag });
   }
 
-  public handleSubmit = (e: React.FormEvent<any>) => {
-    e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      const { organizations } = this.state;
-      if (!err) {
-        values.signal_id = parseInt(values.signal_id, 10);
-        values.parent_id = values.parent_id
-          ? parseInt(values.parent_id, 10)
-          : null;
-        if (values.organization_id) {
-          const findOrgaId = organizations.find(
-            (o: Organization) => o.name === values.organization_id
-          );
-          values.organization_id =
-            findOrgaId === undefined ? null : findOrgaId.id;
-        } else {
-          values.organization_id = null;
-        }
-        values.id = this.props.location.state.id;
-        values.creation_date = this.props.location.state.creation_date;
-        values.status = this.props.location.state.status;
-        this.setState({ loading: true, error: '' });
-        // this.props.
-        console.log(values);
-        this.props.changeAnnotation(values);
-        // api.changeAnnotation(values);
-        // .then(() => this.props.history.push('/'));
-      }
-    });
-  }
-
   public handleOk = (e: React.FormEvent<any>) => {
-    console.log('ok clicked...');
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        values.signal_id = parseInt(values.signal_id, 10);
-        values.parent_id = this.props.annotation.parent
-          ? this.props.annotation.parent.id
-          : null;
-        // this.props.annotation.parent ? parseInt(values.parent_id, 10) : null;
-        // values.organization_id =
-        // if (values.organization_id) {
-        //   const findOrgaId = organizations.find(
-        //     (o: Organization) => o.name === values.organization_id
-        //   );
-        //   values.organization_id =
-        //     findOrgaId === undefined ? null : findOrgaId.id;
-        // } else {
-        //   values.organization_id = null;
-        // }
-        values.organization = values.organization_id;
-        values.id = this.props.annotation.id;
-        values.creation_date = this.props.annotation.creation_date;
-        values.status = this.props.annotation.status;
-        this.setState({ loading: true, error: '' });
-        this.props.changeAnnotation(values).then(() => {
-          this.props.handleOk();
-        });
-      }
+    this.props.form.validateFieldsAndScroll((_, values) => {
+      const a = { ...this.props.annotation };
+      console.log(values);
+      const o = this.state.organizations.find(
+        orga => orga.name === values.organization
+      );
+      a.organization = o ? o : this.props.annotation.organization;
+      a.name = values.name;
+      a.tags = this.state.tags
+        .filter(t => values.tags.includes(t.id))
+       ;
+      console.log('annotation', a);
+      this.props.changeAnnotation(a).then(() => {
+        this.props.handleOk();
+      });
     });
   }
 
@@ -276,6 +236,7 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
+    // console.log(this.state.tags);
     return (
       <Modal
         key={2}
@@ -285,7 +246,17 @@ class EditAnnotationForm extends Component<Props, States> {
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
-            <Form layout='horizontal' onSubmit={this.handleSubmit}>
+            <Form layout='horizontal'>
+              <Form.Item
+                {...formItemLayout}
+                label='Annotation ID'
+                hasFeedback={true}
+                validateStatus={annotationValidateStatus}
+              >
+                {getFieldDecorator('id', {
+                  initialValue: this.props.annotation.id
+                })(<Input disabled={true} />)}
+              </Form.Item>
               <Form.Item {...formItemLayout} label='Annotation title'>
                 {getFieldDecorator('name', {
                   initialValue: this.props.annotation.name,
@@ -303,22 +274,11 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>
                 {getFieldDecorator('signal_id', {
-                  initialValue: this.props.annotation.signal_id,
-                  rules: [
-                    {
-                      whitespace: true,
-                      message: msgEmpty
-                    },
-                    {
-                      required: true,
-                      message: msgRequired
-                    }
-                    // { validator: this.validateId }
-                  ]
-                })(<Input />)}
+                  initialValue: this.props.annotation.signal_id
+                })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
-                {getFieldDecorator('organization_id', {
+                {getFieldDecorator('organization', {
                   initialValue: this.props.annotation.organization
                     ? this.props.annotation.organization.name
                     : '',
@@ -345,18 +305,12 @@ class EditAnnotationForm extends Component<Props, States> {
                 {getFieldDecorator('parent_id', {
                   initialValue: this.props.annotation.parent
                     ? this.props.annotation.parent.id
-                    : '',
-                  rules: [
-                    {
-                      whitespace: true,
-                      message: msgEmpty
-                    },
-                    { validator: this.validateAnnotation }
-                  ]
-                })(<Input onChange={this.handleChangeAnnotation} />)}
+                    : ''
+                })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tags autorisés'>
                 {getFieldDecorator('tags', {
+                  initialValue: this.props.annotation.tags.map(t => t.id),
                   rules: [
                     {
                       required: false,

@@ -230,13 +230,17 @@ class Dashboard extends Component<Props, State> {
   }
 
   public handleCancel = () => {
-    console.log('Cancel clicked...');
     this.closeModal();
   }
 
-  public handleOk = () => {
-    console.log('Ok clicked...');
+  public handleOk = async () => {
     this.closeModal();
+    const data = await this.getDatas();
+    this.setState({
+      annotation: undefined,
+      initialAnnotations: data,
+      currentAnnotations: data.slice()
+    });
   }
 
   public closeModal() {
@@ -264,7 +268,7 @@ class Dashboard extends Component<Props, State> {
           // onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
-      annotation && (
+      annotation  && (
         <EditAnnotationForm
           key={2}
           getAnnotations={api.getAnnotations}
@@ -278,17 +282,6 @@ class Dashboard extends Component<Props, State> {
           modalVisibility={modalVisibility}
         />
       )
-
-      // {annotation && (
-      //   <EditAnnotationForm
-      //     getAnnotations={api.getAnnotations}
-      //     getOrganizations={api.getOrganizations}
-      //     changeAnnotation={api.changeAnnotation}
-      //     getTags={api.getTags}
-      //     annotation={annotation}
-
-      //   />
-      // )}
     ];
   }
 }

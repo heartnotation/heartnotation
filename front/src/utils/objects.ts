@@ -10,6 +10,7 @@ export interface Annotation {
   edit_date?: Date;
   is_active: boolean;
   is_editable: boolean;
+  tags: Tag[];
 }
 
 export interface Point {

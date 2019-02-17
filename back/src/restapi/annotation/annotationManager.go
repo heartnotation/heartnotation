@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -136,7 +137,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
+	err := u.GetConnection().Preload("Parent").Preload("Status").Preload("Organization").Preload("Tags").Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -146,6 +147,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		arr := *annotations
 		arr[i].OrganizationID = nil
 		arr[i].StatusID = nil
+		arr[i].ParentID = nil
 	}
 
 	u.Respond(w, annotations)
@@ -174,19 +176,24 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	db := u.GetConnection()
-	var annotation Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
-	annotation.EditDate = time.Now()
+	var a dto
+	json.NewDecoder(r.Body).Decode(&a)
 
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+	tags := []t.Tag{}
+	db := u.GetConnection()
+	if checkErrorCode(db.Where(a.TagsID).Find(&tags).Error, w) {
+		log.Println("erreur tags")
 		return
 	}
-	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
-		checkErrorCode(err, w)
+	log.Println(tags)
+	//log.Println(dto.TagsID)
+	ann := Annotation{ID: a.ID, SignalID: a.SignalID, ParentID: &a.ParentID, StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
+	//log.Println(ann)
+	if checkErrorCode(db.Save(&ann).Error, w) {
+		log.Println("erreur save")
 		return
 	}
-	u.Respond(w, annotation)
+	u.Respond(w, ann)
 }
 
 func formatToJSONFromAPI(api string) ([][]*s.Point, error) {

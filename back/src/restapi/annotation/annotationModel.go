@@ -28,11 +28,13 @@ type Annotation struct {
 }
 
 type dto struct {
+	ID             int    `json:"id"`
 	Name           string `json:"name"`
-	OrganizationID int    `json:"organization_id"`
-	SignalID       int    `json:"signal_id"`
-	ParentID       int    `json:"parent_id"`
-	TagsID         []int  `json:"tags"`
+	OrganizationID int    `json:"organization_id,omitempty"`
+	SignalID       int    `json:"signal_id,omitempty"`
+	ParentID       int    `json:"parent_id,omitempty"`
+	TagsID         []int  `json:"tags_id,omitempty"`
+	StatusID       int    `json:"status_id"`
 }
 
 // TableName sets table name of the struct
