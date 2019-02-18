@@ -19,7 +19,7 @@ func main() {
 	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
 
 	// Annotations
-	router.HandleFunc("/annotations/{id}", a.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}*/
+	router.HandleFunc("/annotations/{id}", m.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}*/
 	router.HandleFunc("/annotations", m.GetAllAnnotations).Methods("GET")
 	//router.HandleFunc("/annotations", a.ModifyAnnotation).Methods("PUT")
 	router.HandleFunc("/annotations", m.CreateAnnotation).Methods("POST")
