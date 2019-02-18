@@ -7,6 +7,7 @@ type EnumStatus struct {
 	IsActive bool   `json:"is_active"`
 }
 
+// TableName table name enumstatus
 func (EnumStatus) TableName() string {
 	return "enumstatus"
 }
