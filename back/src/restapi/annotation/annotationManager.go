@@ -12,11 +12,9 @@ import (
 
 	s "restapi/signal"
 	t "restapi/tag"
-	"restapi/utils"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 )
 
 var templateURLAPI string
@@ -29,32 +27,9 @@ func init() {
 	templateURLAPI = url
 }
 
-func checkErrorCode(err error, w http.ResponseWriter) bool {
-	if err != nil {
-		switch err {
-		case gorm.ErrRecordNotFound:
-			http.Error(w, err.Error(), 204)
-		case gorm.ErrInvalidSQL:
-			http.Error(w, err.Error(), 400)
-		case gorm.ErrInvalidTransaction:
-		case gorm.ErrCantStartTransaction:
-		case gorm.ErrUnaddressable:
-		default:
-			http.Error(w, err.Error(), 500)
-			return true
-		}
-	}
-	return false
-}
-
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		http.Error(w, "Bad request", 400)
-		return
-	}
-	if len(r.URL.String()) < len(utils.CheckRoutes["annotations"]) || r.URL.String()[0:len(utils.CheckRoutes["annotations"])] != "/annotations/" {
-		http.Error(w, "Bad request", 400)
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
 	v := mux.Vars(r)
@@ -64,17 +39,20 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var annotation Annotation
 	db := u.GetConnection()
-	if checkErrorCode(db.First(&annotation, v["id"]).Error, w) {
+	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {
 		return
 	}
 	annotation.IsActive = false
-	if checkErrorCode(db.Save(&annotation).Error, w) {
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
 	}
 }
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	db := u.GetConnection()
 	var a dto
 	json.NewDecoder(r.Body).Decode(&a)
@@ -83,7 +61,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 
@@ -99,7 +77,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		parent := &Annotation{ID: a.ParentID}
 		err = db.Find(&parent).Error
 		if err != nil {
-			checkErrorCode(err, w)
+			u.CheckErrorCode(err, w)
 			return
 		}
 	}
@@ -119,12 +97,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	err = db.Create(&annotation).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
 	if err != nil {
-		checkErrorCode(err, w)
+		u.CheckErrorCode(err, w)
 		return
 	}
 	annotation.ParentID = nil
@@ -136,6 +114,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	annotations := &[]Annotation{}
 	err := u.GetConnection().Preload("Parent").Preload("Status").Preload("Organization").Preload("Tags").Find(&annotations).Error
 	if err != nil {
@@ -155,6 +136,9 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 
 // FindAnnotationByID Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
 	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error

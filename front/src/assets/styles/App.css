@@ -1,16 +1,24 @@
+@import "~antd/dist/antd.css";
+
+.menu-container {
+  padding: 7px;
+}
+
 .navbar-container {
-  background-color: #282828;
+  background-color: #2f3542;
   text-align: left !important;
 }
 
 .logo {
-  margin-left: 30px;
+  margin: 5px 10px 0px 30px;
+  width: 70px;
+  float: left;
 }
 
 .main-menu {
-  background: #282828 !important;
+  background: rgba(0, 0, 255, 0) !important;
   text-align: right !important;
-  margin-right: 30px !important;
+  margin: 10px 30px 0 0 !important;
 }
 
 .ant-menu-horizontal {
@@ -26,10 +34,19 @@
   font-size: 20px !important;
 }
 
+.anticon-edit-dashboard {
+  font-size: 20px !important;
+  cursor: pointer;
+}
+
 .page-title {
   color: #dddddd !important;
   float: left;
-  margin-left: 30px;
+  margin: 10px 30px 0 0 !important;
+}
+
+.ant-table-row:hover {
+  cursor: pointer;
 }
 
 .ant-table-pagination.ant-pagination {
@@ -47,10 +64,7 @@
 
 .signal-header {
   background: #dddddd;
-  padding: 30px;
-}
-
-.signal-main-container {
+  padding: 1em;
 }
 
 .text-left {
@@ -126,7 +140,6 @@
 
 .line {
   fill: none;
-  stroke: steelblue;
   stroke-width: 2px;
 }
 .tick line {
@@ -136,4 +149,73 @@
   cursor: move;
   fill: none;
   pointer-events: all;
+}
+
+.signal-toolbox-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.interval-area {
+  fill: rgba(255, 165, 0, 0.5);
+  stroke: rgba(255, 165, 0, 1);
+  stroke-width: -2px;
+}
+
+.interval-area-preview {
+  fill: rgba(255, 165, 0, 0.5);
+}
+
+.full-screen-popper {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(75, 75, 75, 0.5);
+}
+
+.ant-btn {
+  margin: 8px;
+}
+
+.ant-drawer-body > div > .comments-container {
+  padding: 24px;
+  background-color: #f9fbf2;
+  height: 65vh;
+  overflow-y: scroll;
+}
+
+.popup-comment-tag-container {
+  width: 400px;
+}
+
+.modal-comments-container {
+  margin-bottom: 25px;
+  padding: 25px;
+  background-color: #f9fbf2;
+  height: 250px;
+  overflow-y: scroll;
+}
+
+.modal-signal-footer {
+  text-align: right;
+  margin-top: 15px;
+}
+div > .fixed-bottom-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+}
+
+.fixed-bottom-button {
+  font-size: 24px !important;
+  color: #f9fbf2 !important;
+  border-radius: 35px !important;
+  height: 55px !important;
+  width: 55px !important;
+}
+
+.fixed-bottom-button:hover {
+  opacity: 0.85;
 }

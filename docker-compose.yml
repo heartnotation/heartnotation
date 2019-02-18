@@ -12,6 +12,7 @@ services:
       context: ./front/
       args:
         api: "${URL}"
+        client_id: "${REACT_APP_CLIENT_ID}"
     env_file: ./.env
     ports:
       - 80:80

@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
+import AddButton from '../fragments/fixedButton/AddButton';
 import EditAnnotationForm from './EditAnnotationForm';
 export interface State {
   searches: Map<string, string>;
@@ -137,13 +138,14 @@ class Dashboard extends Component<Props, State> {
       dataIndex: 'edit',
       render: (_, annotation: Annotation) => (
         <Icon
+          className='anticon-edit-dashboard'
           type='edit'
           theme='twoTone'
+          twoToneColor='#6669c9'
           onClick={() => {
             this.setState({ modalVisibility: true, annotation });
           }}
         />
-      )
     }
   ];
 
@@ -267,7 +269,6 @@ class Dashboard extends Component<Props, State> {
         onRow={a => ({
           // onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
-      />,
       annotation  && (
         <EditAnnotationForm
           key={2}
@@ -280,8 +281,8 @@ class Dashboard extends Component<Props, State> {
           handleOk={this.handleOk}
           handleCancel={this.handleCancel}
           modalVisibility={modalVisibility}
-        />
-      )
+      />,
+      <AddButton key={2} url='/new/annotations' />
     ];
   }
 }

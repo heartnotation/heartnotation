@@ -35,3 +35,31 @@ export interface Tag {
   name: string;
   is_active: boolean;
 }
+
+export interface Role {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
+
+export interface User {
+  id: number;
+  mail: string;
+  role: Role;
+  organizations: Organization[];
+  is_active: boolean;
+}
+
+export interface AnnotationCommentPayload {
+  content: string;
+}
+
+export interface Interval {
+  id?: number;
+  annotation_id: number;
+  user_id?: number;
+  comment?: string;
+  start: number;
+  end: number;
+  tags?: number[];
+}

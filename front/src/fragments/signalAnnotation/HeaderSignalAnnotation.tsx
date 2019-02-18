@@ -2,20 +2,17 @@ import React, { Component } from 'react';
 import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
 import { Annotation, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
+import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
   stepProcess: number;
+  mode: 'Navigation' | 'Annotation';
   error?: string;
-}
-
-interface Status {
-  status: {
-    name: string;
-  };
 }
 
 interface Props extends RouteComponentProps {
   annotation: Annotation;
+  onToggle: (state: boolean) => void;
 }
 
 interface PropsButton {
@@ -24,14 +21,13 @@ interface PropsButton {
   handleSubmit: (a: Annotation) => void;
 }
 
-function ValidateButton(props: PropsButton) {
+const ValidateButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
   return (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -42,16 +38,15 @@ function ValidateButton(props: PropsButton) {
       Validate
     </Button>
   );
-}
+};
 
-function InvalidateButton(props: PropsButton) {
+const InvalidateButton = (props: PropsButton) => {
   const { annotation } = props;
   return (
     <Button
-      type='primary'
+      type='danger'
       icon='close-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
       onClick={() => {
         props.handleSubmit({
           ...annotation,
@@ -62,16 +57,15 @@ function InvalidateButton(props: PropsButton) {
       Invalidate
     </Button>
   );
-}
+};
 
-function CompleteButton(props: PropsButton) {
+const CompleteButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
   return (
     <Button
-      type='primary'
+      type='default'
       icon='check-circle'
       size='large'
-      className='btn-space btn-heartnotation-secondary'
       onClick={() => {
         handleSubmit({
           ...annotation,
@@ -82,30 +76,37 @@ function CompleteButton(props: PropsButton) {
       Complete
     </Button>
   );
-}
+};
 
-function ConditionalButton(props: PropsButton) {
+const ConditionalButton = (props: PropsButton) => {
   const { conditionnal_id } = props;
+  console.log(conditionnal_id);
   if (conditionnal_id === 0) {
     return <CompleteButton {...props} />;
   } else if (conditionnal_id === 1) {
     return (
       <>
-        <ValidateButton {...props} />
-        <InvalidateButton {...props} />
+        <Col span={12}>
+          <InvalidateButton key={1} {...props} />
+        </Col>
+        <Col span={12}>
+          <ValidateButton key={2} {...props} />
+        </Col>
       </>
     );
   } else if (conditionnal_id === 2) {
     return null;
   }
   return null;
-}
+};
 
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     let step = -1;
+    console.log(props.annotation);
     switch (props.annotation.status.name) {
+      case 'ASSIGNED':
       case 'IN_PROCESS':
         step = 0;
         break;
@@ -119,7 +120,8 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         break;
     }
     this.state = {
-      stepProcess: step
+      stepProcess: step,
+      mode: 'Navigation'
     };
   }
 
@@ -134,60 +136,60 @@ class HeaderSignalAnnotation extends Component<Props, State> {
       });
   }
 
+  private handleToggle = (toggle: boolean) => {
+    this.setState({ mode: toggle ? 'Annotation' : 'Navigation' }, () =>
+      this.props.onToggle(toggle)
+    );
+  }
+
   public render() {
     const { Step } = Steps;
     const { annotation } = this.props;
-    const { stepProcess, error } = this.state;
+    const { stepProcess, error, mode } = this.state;
     return (
-      <div className='signal-header'>
-        <Row>
-          <Col span={4} className='text-left center-vertical-switch'>
-            <Switch
-              checkedChildren={<Icon type='check' />}
-              unCheckedChildren={<Icon type='close' />}
-              defaultChecked={true}
-            />{' '}
-            Display Leads
-          </Col>
-          <Col span={4} className='text-center'>
-            <Button
-              type='primary'
-              icon='box-plot'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            >
-              Intervals
-            </Button>
-            <Button
-              type='primary'
-              icon='undo'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            />
-            <Button
-              type='primary'
-              icon='redo'
-              size='large'
-              className='btn-space btn-heartnotation-primary'
-            />
-          </Col>
-          <Col span={12} className='text-centered'>
-            <Steps progressDot={true} current={stepProcess}>
-              <Step title='In Progress' />
-              <Step title='Completed' />
-              <Step title='Validated' />
-            </Steps>
-          </Col>
-          <Col span={4} className='text-right'>
+      <Row
+        type='flex'
+        className='signal-header'
+        align='middle'
+        justify='space-between'
+      >
+        <Col span={4}>
+          <Switch
+            checkedChildren={<Icon type='check' />}
+            unCheckedChildren={<Icon type='close' />}
+            defaultChecked={true}
+          />{' '}
+          Display Leads
+        </Col>
+        <Col span={4}>
+          {mode} Mode <Switch onChange={this.handleToggle} />
+        </Col>
+        <Col span={8}>
+          <Steps
+            style={{ paddingTop: 30 }}
+            progressDot={true}
+            current={stepProcess}
+            size='default'
+          >
+            <Step title='In Progress' />
+            <Step title='Completed' />
+            <Step title='Validated' />
+          </Steps>
+        </Col>
+        <Col offset={1} span={3}>
+          <ChatDrawerAnnotation />
+        </Col>
+        <Col span={4}>
+          <Row type='flex' align='middle' justify='end'>
             <ConditionalButton
               conditionnal_id={stepProcess}
               annotation={annotation}
               handleSubmit={this.handleSubmit}
             />
             {error && <Alert message={error} type='error' />}
-          </Col>
-        </Row>
-      </div>
+          </Row>
+        </Col>
+      </Row>
     );
   }
 }

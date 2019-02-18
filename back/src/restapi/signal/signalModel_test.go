@@ -2,10 +2,20 @@ package signal
 
 import (
 	"encoding/json"
+	"restapi/utils"
+	u "restapi/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGetSignalByIdMethod(t *testing.T) {
+	utils.CheckMethod("GET", u.CheckRoutes["signal"], CheckSignal, t)
+}
+
+func TestGetSignalByIdPath(t *testing.T) {
+	utils.CheckPath("GET", u.CheckRoutes["signal"], CheckSignal, t)
+}
 
 func TestFormatData(t *testing.T) {
 
