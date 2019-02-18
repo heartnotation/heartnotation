@@ -177,7 +177,12 @@ class EditAnnotationForm extends Component<Props, States> {
   }
 
   public render() {
-    const { getFieldDecorator } = this.props.form;
+    const {
+      form: { getFieldDecorator },
+      annotation,
+      modalVisibility,
+      handleCancel
+    } = this.props;
     const { tags, organizationsSearch, tagsSelected, error } = this.state;
 
     const filteredTags = tags.filter(
@@ -190,21 +195,21 @@ class EditAnnotationForm extends Component<Props, States> {
     return (
       <Modal
         key={2}
-        visible={this.props.modalVisibility}
+        visible={modalVisibility}
         onOk={this.handleOk}
-        onCancel={this.props.handleCancel}
+        onCancel={handleCancel}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
             <Form layout='horizontal'>
               <Form.Item {...formItemLayout} label='Annotation ID'>
                 {getFieldDecorator('id', {
-                  initialValue: this.props.annotation.id
+                  initialValue: annotation.id
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Annotation title'>
                 {getFieldDecorator('name', {
-                  initialValue: this.props.annotation.name,
+                  initialValue: annotation.name,
                   rules: [
                     {
                       whitespace: true,
@@ -219,13 +224,13 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>
                 {getFieldDecorator('signal_id', {
-                  initialValue: this.props.annotation.signal_id
+                  initialValue: annotation.signal_id
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organization', {
-                  initialValue: this.props.annotation.organization
-                    ? this.props.annotation.organization.name
+                  initialValue: annotation.organization
+                    ? annotation.organization.name
                     : '',
                   rules: [
                     {
@@ -243,14 +248,14 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Original annotation'>
                 {getFieldDecorator('parent_id', {
-                  initialValue: this.props.annotation.parent
-                    ? this.props.annotation.parent.id
-                    : ''
+                  initialValue: annotation.parent ? annotation.parent.id : ''
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tags autorisés'>
                 {getFieldDecorator('tags', {
-                  initialValue: this.props.annotation.tags.map(t => t.id),
+                  initialValue: annotation.tags
+                    ? annotation.tags.map(t => t.id)
+                    : [],
                   rules: [
                     {
                       required: false,
