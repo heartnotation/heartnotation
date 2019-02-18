@@ -186,7 +186,7 @@ INSERT INTO USERPROFILE (role_id, mail, is_active)
 	VALUES (2, 'alex.pliez@gmail.com', TRUE);
 
 INSERT INTO USERPROFILE (role_id, mail, is_active)  
-	VALUES (1, 'Saidkhalid@gmail.com', TRUE);
+	VALUES (1, 'saidkhalid1996@gmail.com', TRUE);
 
 -- STATUS
 

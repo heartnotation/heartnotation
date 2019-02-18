@@ -13,6 +13,7 @@ import { api, User } from './utils';
 import GoogleLogin from 'react-google-login';
 import { Authenticated, authenticate } from './utils/auth';
 import loadingGif from './assets/images/loading.gif';
+import Login from './pages/Login';
 
 const r = {
   defaultRoute: {
@@ -31,18 +32,6 @@ const r = {
         />
       ),
       title: 'Signal annotation'
-    },
-    {
-      path: '/new/users',
-      component: () => (
-        <UserCreation
-          getOrganizations={api.getOrganizations}
-          getRoles={api.getRoles}
-          sendUser={api.sendUser}
-        />
-      ),
-      title: 'Create User',
-      iconName: 'user-add'
     },
     {
       path: '/new/tags',
@@ -80,6 +69,7 @@ const r = {
           getOrganizations={api.getOrganizations}
           getRoles={api.getRoles}
           modifyUser={api.modifyUser}
+          sendUser={api.sendUser}
           getAllUsers={api.getAllUsers}
           deleteUser={api.deleteUser}
         />
@@ -128,14 +118,8 @@ class App extends Component<
     }
   }
 
-  private handleSuccess = (response: any) => {
-    authenticate(response.getAuthResponse().access_token)
-      .then(user => {
-        this.setState({ user, logged: true });
-      })
-      .catch(() => {
-        alert('Unrecognized token');
-      });
+  private handleSuccess = (user: User) => {
+    this.setState({ user, logged: true });
   }
   public render = () => {
     const { logged, token, user } = this.state;
@@ -153,9 +137,8 @@ class App extends Component<
 
     if (!logged) {
       return (
-        <GoogleLogin
+        <Login
           clientId={clientId}
-          buttonText='Log in'
           onSuccess={this.handleSuccess}
           onFailure={err => console.log(err.details)}
         />

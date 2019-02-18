@@ -51,9 +51,9 @@ func main() {
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
 
-	headersOk := handlers.AllowedHeaders([]string{"Authorization"})
+	headersOk := handlers.AllowedHeaders([]string{"Authorization", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
 
 	http.ListenAndServe("0.0.0.0:8000", handlers.CORS(originsOk, headersOk, methodsOk)(router))
 }

@@ -6,7 +6,11 @@ class Tags extends Component {
   public render() {
     return (
       <div>
-        <AddButton url='/new/tags' />
+        <AddButton
+          onClick={() => {
+            return;
+          }}
+        />
       </div>
     );
   }

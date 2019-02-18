@@ -283,7 +283,12 @@ class Dashboard extends Component<Props, State> {
           modalVisibility={modalVisibility}
         />
       ),
-      <AddButton key={2} url='/new/annotations' />
+      <AddButton
+        key={2}
+        onClick={() => {
+          this.props.history.push('/new/annotations');
+        }}
+      />
     ];
   }
 }
