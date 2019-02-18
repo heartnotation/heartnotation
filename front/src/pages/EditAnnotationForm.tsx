@@ -195,7 +195,15 @@ class EditAnnotationForm extends Component<Props, States> {
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((_, values) => {
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (err) {
+        this.setState({
+          error:
+            'Some fields seems to be invalid, please fix them before trying to click'
+        });
+        return;
+      }
+
       const a = { ...this.props.annotation };
 
       const o = this.state.organizations.find(
@@ -210,8 +218,8 @@ class EditAnnotationForm extends Component<Props, States> {
         .then(() => {
           this.props.handleOk();
         })
-        .catch(err => {
-          this.setState({ error: err });
+        .catch(error => {
+          this.setState({ error });
         });
     });
   }
