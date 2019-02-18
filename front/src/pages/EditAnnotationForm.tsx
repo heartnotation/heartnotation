@@ -81,25 +81,6 @@ class EditAnnotationForm extends Component<Props, States> {
     return items.filter(i => i.toLowerCase().startsWith(v.toLowerCase()));
   }
 
-  private isStringNumber = (s: string) => {
-    return !isNaN(Number(s));
-  }
-
-  public validateId = (_: any, value: any, callback: any) => {
-    if (!isNaN(parseInt(value, 10))) {
-      this.props
-        .checkSignal(value)
-        .then(() => {
-          callback();
-        })
-        .catch(() => {
-          callback(`Signal n°${value} not found`);
-        });
-    } else {
-      callback('You should write numbers');
-    }
-  }
-
   public handleSearchOrganization = (value: string) => {
     const { organizations } = this.state;
     const organizationsSearch = this.filterNoCaseSensitive(
@@ -145,35 +126,6 @@ class EditAnnotationForm extends Component<Props, States> {
       values.filter(v => ids.includes(v)).length !== values.length
     ) {
       callback('This tag doesn\'t exist');
-    }
-    callback();
-  }
-
-  public handleChangeAnnotation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { annotationsParents } = this.state;
-    if (e.target.value === '') {
-      this.setState({ annotationValidateStatus: '' });
-    } else if (
-      this.isStringNumber(e.target.value) &&
-      annotationsParents.map(a => a.id).includes(parseInt(e.target.value, 10))
-    ) {
-      // this.props.annotation.parent.id = parseInt(e.target.value, 10);
-      this.setState({ annotationValidateStatus: 'success' });
-    } else {
-      this.setState({ annotationValidateStatus: 'error' });
-    }
-  }
-
-  public validateAnnotation = (_: any, value: any, callback: any) => {
-    if (value && !this.isStringNumber(value)) {
-      callback('You should write a number');
-    }
-    const { annotationsParents } = this.state;
-    if (
-      value &&
-      !annotationsParents.map(a => a.id).includes(parseInt(value, 10))
-    ) {
-      callback('This annotations doesn\'t exist');
     }
     callback();
   }
@@ -226,14 +178,7 @@ class EditAnnotationForm extends Component<Props, States> {
 
   public render() {
     const { getFieldDecorator } = this.props.form;
-    const {
-      tags,
-      organizationsSearch,
-      annotationValidateStatus,
-      tagsSelected,
-      error,
-      loading
-    } = this.state;
+    const { tags, organizationsSearch, tagsSelected, error } = this.state;
 
     const filteredTags = tags.filter(
       t => !tagsSelected.map(tag => tag.id).includes(t.id)
@@ -241,7 +186,7 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
-    // console.log(this.state.tags);
+
     return (
       <Modal
         key={2}
@@ -252,12 +197,7 @@ class EditAnnotationForm extends Component<Props, States> {
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
             <Form layout='horizontal'>
-              <Form.Item
-                {...formItemLayout}
-                label='Annotation ID'
-                hasFeedback={true}
-                validateStatus={annotationValidateStatus}
-              >
+              <Form.Item {...formItemLayout} label='Annotation ID'>
                 {getFieldDecorator('id', {
                   initialValue: this.props.annotation.id
                 })(<Input disabled={true} />)}
@@ -301,12 +241,7 @@ class EditAnnotationForm extends Component<Props, States> {
                   />
                 )}
               </Form.Item>
-              <Form.Item
-                {...formItemLayout}
-                label='Original annotation'
-                hasFeedback={true}
-                validateStatus={annotationValidateStatus}
-              >
+              <Form.Item {...formItemLayout} label='Original annotation'>
                 {getFieldDecorator('parent_id', {
                   initialValue: this.props.annotation.parent
                     ? this.props.annotation.parent.id
@@ -337,11 +272,6 @@ class EditAnnotationForm extends Component<Props, States> {
                   </Select>
                 )}
               </Form.Item>
-              {/* <Form.Item {...formTailLayout}>
-                <Button type='primary' htmlType='submit' disabled={loading}>
-                  Edit
-                </Button>
-              </Form.Item> */}
               {error && <Alert message={error} type='error' showIcon={true} />}
             </Form>
           </Col>
