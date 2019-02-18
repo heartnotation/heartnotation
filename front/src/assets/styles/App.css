@@ -30,6 +30,10 @@
   font-size: 1.3em !important;
 }
 
+#root {
+  margin-bottom: 30px;
+}
+
 .anticon-title {
   font-size: 20px !important;
 }
