@@ -173,12 +173,17 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ann := Annotation{StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
-
-	if u.CheckErrorCode(db.Model(&annotation).Update(&ann).Error, w) {
+	ann := Annotation{StatusID: &a.StatusID, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
+	transaction := db.Begin()
+	if u.CheckErrorCode(transaction.Model(&annotation).Update(&ann).Error, w) {
+		transaction.Rollback()
 		return
 	}
-
+	if u.CheckErrorCode(transaction.Model(&annotation).Association("Tags").Replace(&tags).Error, w) {
+		transaction.Rollback()
+		return
+	}
+	transaction.Commit()
 	u.Respond(w, ann)
 }
 
