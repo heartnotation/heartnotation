@@ -11,8 +11,10 @@ import (
 
 	s "restapi/signal"
 	t "restapi/tag"
+	user "restapi/user"
 	u "restapi/utils"
 
+	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
@@ -116,8 +118,29 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
+	var err error
+	var currentUserOganizations []uint
+	contextUser := c.Get(r, "user")
+	currentUser := contextUser.(*user.User)
+	for i := range currentUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, currentUser.Organizations[i].ID)
+	}
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
+
+	fmt.Printf("%v\n", currentUserOganizations)
+
+	switch currentUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		err = u.GetConnection().Preload("Status").Preload("Organization").Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).Find(&annotations).Error
+		break
+	// Role Gestionnaire & Admin
+	default:
+		err = u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
+		break
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -139,7 +162,27 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+
+	var err error
+	var currentUserOganizations []uint
+	contextUser := c.Get(r, "user")
+	currentUser := contextUser.(*user.User)
+	for i := range currentUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, currentUser.Organizations[i].ID)
+	}
+
+	switch currentUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		err = u.GetConnection().Preload("Status").Preload("Organization").Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).First(&annotation, vars["id"]).Error
+		break
+	// Role Gestionnaire & Admin
+	default:
+		err = u.GetConnection().Preload("Status").Preload("Organization").First(&annotation, vars["id"]).Error
+		break
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
