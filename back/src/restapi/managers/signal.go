@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var templateURLAPI string
+//var templateURLAPI string
 
 func init() {
 	url := os.Getenv("API_URL")

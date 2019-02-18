@@ -3,7 +3,6 @@ package managers
 import (
 	"net/http"
 	"os"
-	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
 )
@@ -11,7 +10,7 @@ import (
 var templateURLAPI string
 
 func init() {
-	a := d.AnnotationDTO{}
+	//a := d.Annotation{}
 	url := os.Getenv("API_URL")
 	if url == "" {
 		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
@@ -19,8 +18,8 @@ func init() {
 	templateURLAPI = url
 }
 
-// GetAll list all annotations
-func GetAll(w http.ResponseWriter, r *http.Request) {
+// GetAllAnnotations list all annotations
+func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}

@@ -11,5 +11,5 @@ type User struct {
 
 // TableName sets table name of the struct
 func (User) TableName() string {
-	return "user"
+	return "User"
 }

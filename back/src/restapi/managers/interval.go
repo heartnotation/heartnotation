@@ -6,12 +6,12 @@ import (
 	u "restapi/utils"
 )
 
-// GetAll list all intervals
-func GetAll(w http.ResponseWriter, r *http.Request) {
+// GetAllIntervals list all intervals
+func GetAllIntervals(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
 		return
 	}
-	intervals := []m.Interval
+	intervals := []m.Interval{}
 	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&intervals).Error, w) {
 		return
 	}
