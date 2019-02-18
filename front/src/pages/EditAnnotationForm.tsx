@@ -13,19 +13,13 @@ import {
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Organization, Tag, Annotation, api } from '../utils';
-import { isNull } from 'util';
-import { getTags } from '../utils/api';
+import { Organization, Tag, Annotation } from '../utils';
 
 const { Option } = Select;
 
 const formItemLayout = {
   labelCol: { span: 10 },
   wrapperCol: { span: 14 }
-};
-
-const formTailLayout = {
-  wrapperCol: { span: 14, offset: 10 }
 };
 
 interface States {
@@ -63,23 +57,23 @@ class EditAnnotationForm extends Component<Props, States> {
       tagsSelected: [],
       annotationsParents: [],
       annotationValidateStatus: '',
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
-    // console.log('bite', this.props.annotation);
     const { getTags, getOrganizations, getAnnotations } = this.props;
-    Promise.all([getTags(), getOrganizations(), getAnnotations()]).then(
-      responses => {
+    Promise.all([getTags(), getOrganizations(), getAnnotations()])
+      .then(responses => {
         this.setState({
           tags: responses[0].filter((t: Tag) => t.is_active),
           organizations: responses[1],
-          annotationsParents: responses[2]
+          annotationsParents: responses[2],
+          loading: false
         });
-      }
-    );
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -203,19 +197,22 @@ class EditAnnotationForm extends Component<Props, States> {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((_, values) => {
       const a = { ...this.props.annotation };
-      console.log(values);
+
       const o = this.state.organizations.find(
         orga => orga.name === values.organization
       );
       a.organization = o ? o : this.props.annotation.organization;
       a.name = values.name;
-      a.tags = this.state.tags
-        .filter(t => values.tags.includes(t.id))
-       ;
-      console.log('annotation', a);
-      this.props.changeAnnotation(a).then(() => {
-        this.props.handleOk();
-      });
+      a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
+
+      this.props
+        .changeAnnotation(a)
+        .then(() => {
+          this.props.handleOk();
+        })
+        .catch(err => {
+          this.setState({ error: err });
+        });
     });
   }
 

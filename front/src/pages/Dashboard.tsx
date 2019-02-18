@@ -267,7 +267,9 @@ class Dashboard extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
-        onRow={a => this.props.history.push(`/annotations/${a.id}`)}
+        onRow={a => ({
+          // onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        })}
       />,
       annotation && (
         <EditAnnotationForm
@@ -284,7 +286,7 @@ class Dashboard extends Component<Props, State> {
         />
       ),
       <AddButton
-        key={2}
+        key={3}
         onClick={() => {
           this.props.history.push('/new/annotations');
         }}

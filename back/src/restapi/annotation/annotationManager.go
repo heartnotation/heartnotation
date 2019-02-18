@@ -123,7 +123,6 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 404)
 		return
 	}
-
 	for i := range *annotations {
 		arr := *annotations
 		arr[i].OrganizationID = nil
@@ -169,14 +168,17 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		log.Println("erreur tags")
 		return
 	}
-	log.Println(tags)
+	annotation := Annotation{}
+	if u.CheckErrorCode(db.Find(&annotation, a.ID).Error, w) {
+		return
+	}
 
 	ann := Annotation{ID: a.ID, SignalID: a.SignalID, ParentID: &a.ParentID, StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
 
-	if u.CheckErrorCode(db.Save(&ann).Error, w) {
-		log.Println("erreur save")
+	if u.CheckErrorCode(db.Model(&annotation).Update(&ann).Error, w) {
 		return
 	}
+
 	u.Respond(w, ann)
 }
 
