@@ -1,0 +1,26 @@
+.login-container {
+  background-color: #404040;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  text-align: center;
+  justify-content: space-around;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login-logo {
+  text-align: center;
+  width: 30em;
+}
+
+.login-text {
+  color: aliceblue;
+  padding: 1em;
+}
+
+@media only screen and (max-width: 600px) {
+  .login-logo {
+    width: 20em;
+  }
+}
