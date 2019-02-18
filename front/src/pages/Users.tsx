@@ -5,19 +5,22 @@ import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import EditUserForm from './EditUserForm';
+import UserCreation from './UserCreation';
 import AddButton from '../fragments/fixedButton/AddButton';
 export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
   currentUsers: User[];
   user?: User;
-  modalVisible: boolean;
+  modifyVisible: boolean;
+  creationVisible: boolean;
 }
 
 interface Props extends RouteComponentProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
+  sendUser: (datas: User) => Promise<User>;
   getAllUsers: () => Promise<User[]>;
   deleteUser: (datas: User) => Promise<User>;
 }
@@ -27,7 +30,8 @@ class Users extends Component<Props, State> {
     searches: new Map<string, string>(),
     initialUsers: [],
     currentUsers: [],
-    modalVisible: false
+    modifyVisible: false,
+    creationVisible: false
   };
 
   public async componentDidMount() {
@@ -143,7 +147,7 @@ class Users extends Component<Props, State> {
               twoToneColor='#6669c9'
               style={{ fontSize: '1.3em' }}
               onClick={() => {
-                this.setState({ modalVisible: true, user });
+                this.setState({ modifyVisible: true, user });
               }}
             />
           </Col>
@@ -225,12 +229,16 @@ class Users extends Component<Props, State> {
     });
   }
 
-  public handleCancel = () => {
-    this.closeModal();
+  public handleCancelModification = () => {
+    this.closeModalModification();
   }
 
-  public handleOk = async () => {
-    this.closeModal();
+  public handleCancelCreation = () => {
+    this.closeModalCreation();
+  }
+
+  public handleOkCreation = async () => {
+    this.closeModalCreation();
     const users = await this.getDatas();
     this.setState({
       user: undefined,
@@ -239,15 +247,31 @@ class Users extends Component<Props, State> {
     });
   }
 
-  public closeModal() {
+  public handleOkModification = async () => {
+    this.closeModalModification();
+    const users = await this.getDatas();
     this.setState({
       user: undefined,
-      modalVisible: false
+      initialUsers: users,
+      currentUsers: users.slice()
+    });
+  }
+
+  public closeModalModification() {
+    this.setState({
+      user: undefined,
+      modifyVisible: false
+    });
+  }
+
+  public closeModalCreation() {
+    this.setState({
+      creationVisible: false
     });
   }
 
   public render() {
-    const { currentUsers, user, modalVisible } = this.state;
+    const { currentUsers, user, modifyVisible, creationVisible } = this.state;
     return [
       <Table<User>
         key={1}
@@ -268,13 +292,27 @@ class Users extends Component<Props, State> {
           getOrganizations={this.props.getOrganizations}
           getRoles={this.props.getRoles}
           modifyUser={this.props.modifyUser}
-          handleCancel={this.handleCancel}
-          handleOk={this.handleOk}
+          handleCancel={this.handleCancelModification}
+          handleOk={this.handleOkModification}
           user={user}
-          modalVisible={modalVisible}
+          modalVisible={modifyVisible}
         />
       ),
-      <AddButton key={3} url='/new/users' />
+      <AddButton
+        key={3}
+        onClick={() => {
+          this.setState({ creationVisible: true });
+        }}
+      />,
+      <UserCreation
+        key={4}
+        getOrganizations={this.props.getOrganizations}
+        getRoles={this.props.getRoles}
+        sendUser={this.props.sendUser}
+        handleCancel={this.handleCancelCreation}
+        handleOk={this.handleOkCreation}
+        modalVisible={creationVisible}
+      />
     ];
   }
 }
