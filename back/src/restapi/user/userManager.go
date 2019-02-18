@@ -7,6 +7,7 @@ import (
 	o "restapi/organization"
 	u "restapi/utils"
 
+	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
@@ -21,6 +22,19 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	organizations := []o.Organization{}
 	role := Role{}
+
+	contextUser := c.Get(r, "user").(*User)
+
+	switch contextUser.Role.ID {
+	// Role Admin
+	case 3:
+		break
+	// Role Gestionnaire & Admin
+	default:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
 
 	err := db.Where(a.OrganizationsID).Find(&organizations).Error
 	if err != nil {
@@ -57,6 +71,19 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	users := &[]User{}
+	contextUser := c.Get(r, "user").(*User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
+
 	err := u.GetConnection().Preload("Role").Preload("Organizations").Find(&users).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
@@ -71,13 +98,27 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, users)
 }
 
-// Find user by ID using GET Request
+// FindUserByID using GET Request
 func FindUserByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
 		return
 	}
 	user := User{}
 	vars := mux.Vars(r)
+
+	contextUser := c.Get(r, "user").(*User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
+
 	err := u.GetConnection().Preload("Role").Where("is_active = ?", true).First(&user, vars["id"]).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
@@ -97,6 +138,18 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 	user := User{}
 	vars := mux.Vars(r)
+
+	contextUser := c.Get(r, "user").(*User)
+
+	switch contextUser.Role.ID {
+	// Role Admin
+	case 3:
+		break
+	// Role Gestionnaire & Annotateur
+	default:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
 
 	err := db.First(&user, vars["id"]).Error
 	if err != nil {
@@ -118,6 +171,18 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	organizations := []o.Organization{}
 	role := &Role{}
 	organizationuser := OrganizationUser{}
+	contextUser := c.Get(r, "user").(*User)
+
+	switch contextUser.Role.ID {
+	// Role Admin
+	case 3:
+		break
+	// Role Gestionnaire & Annotateur
+	default:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
+
 	json.NewDecoder(r.Body).Decode(&a)
 
 	err := db.Preload("Role").Preload("Organizations").First(&user).Error
