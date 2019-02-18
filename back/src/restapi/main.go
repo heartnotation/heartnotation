@@ -35,7 +35,7 @@ func main() {
 	router.HandleFunc("/users", m.GetAllUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", m.FindUserByID).Methods("GET")
 	router.HandleFunc("/users/{id}", m.DeleteUser).Methods("DELETE")
-	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
+	router.HandleFunc("/users", m.UpdateUser).Methods("PUT")
 	router.HandleFunc("/roles", m.GetAllRoles).Methods("GET")
 
 	// Interval

@@ -46,7 +46,8 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad args", 204)
 		return
 	}
-	if u.CheckErrorCode(u.GetConnection().Create(&m.Interval{TimestampStart: *i.TimeStart, TimestampEnd: *i.TimeEnd}).Error, w) {
+	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd}
+	if u.CheckErrorCode(u.GetConnection().Create(&c).Error, w) {
 		return
 	}
 	u.Respond(w, c)
@@ -69,7 +70,7 @@ func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.Find(&tags, i.Tags).Error, w) {
 		return
 	}
-	if len(tags) != len(i.TagsID) {
+	if len(tags) != len(i.Tags) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
