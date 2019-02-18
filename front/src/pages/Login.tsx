@@ -1,7 +1,7 @@
 import React from 'react';
 import GoogleLogin from 'react-google-login';
 import { auth, User } from '../utils';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo-name.png';
 import '../assets/styles/Login.css';
 
 interface Props {
