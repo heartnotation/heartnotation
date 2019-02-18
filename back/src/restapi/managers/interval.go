@@ -52,8 +52,8 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, c)
 }
 
-// AddTagsOnIntervalById create a tag on an interval
-func AddTagsOnIntervalById(w http.ResponseWriter, r *http.Request) {
+// AddTagsOnIntervalByID create a tag on an interval
+func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["intervaltags"], w, r) {
 		return
 	}

@@ -16,8 +16,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
-
 	// Annotations
 	router.HandleFunc("/annotations/{id}", m.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}*/
 	router.HandleFunc("/annotations", m.GetAllAnnotations).Methods("GET")
@@ -42,7 +40,9 @@ func main() {
 
 	// Interval
 	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
-	router.HandleFunc("/interval/tags/{id}", m.AddTagsOnIntervalById).Methods("POST")
+	router.HandleFunc("/interval/tags/{id}", m.AddTagsOnIntervalByID).Methods("POST")
+	router.HandleFunc("/interval/comments/{id}", m.GetCommentOnIntervalByID).Methods("GET")
+
 	/*
 		router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
 		router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")

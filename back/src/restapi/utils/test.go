@@ -22,7 +22,7 @@ var CheckRoutes = map[string]string{
 	"intervaltags":        "/interval/tags",
 	"intervals":           "/intervals",
 	"intervalscomment":    "/intervals/comment",
-	"intervalscomments":   "/intervals/comments",
+	"intervalcomments":    "/interval/comments",
 	"intervalstag":        "/intervals/tag",
 	"intervalstagcomment": "/intervals/tag/comment",
 	"organizations":       "/organizations",
