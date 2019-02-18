@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, Row, Col, Alert } from 'antd';
+import { Form, Input, Button, Select, Row, Col, Alert, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -31,6 +31,9 @@ interface Props extends FormComponentProps, RouteComponentProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   sendUser: (datas: User) => Promise<User>;
+  handleCancel: () => void;
+  handleOk: () => void;
+  modalVisible: boolean;
 }
 
 class UserCreation extends Component<Props, States> {
@@ -57,24 +60,17 @@ class UserCreation extends Component<Props, States> {
     });
   }
 
-  public handleSubmit = (e: React.FormEvent<any>) => {
+  public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         this.setState({ loading: true, error: '' });
-        this.props
-          .sendUser(values)
-          .then(() => {
-            this.props.history.push('/users');
-          })
-          .catch(() =>
-            this.setState({
-              error: 'Problem while sending datas, please retry later...',
-              loading: false
-            })
-          );
+        this.props.sendUser(values).then(() => {
+          this.props.handleOk();
+        });
       }
     });
+    this.setState({ loading: false });
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -110,10 +106,7 @@ class UserCreation extends Component<Props, States> {
     const { roles } = this.state;
     const ids = roles.map(o => o.id);
 
-    if (
-      value &&
-      !ids.includes(value)
-    ) {
+    if (value && !ids.includes(value)) {
       callback('This role doesn\'t exist');
     }
     callback();
@@ -176,78 +169,91 @@ class UserCreation extends Component<Props, States> {
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
-      <Row type='flex' justify='center' align='top'>
-        <Col span={8}>
-          <Form layout='horizontal' onSubmit={this.handleSubmit}>
-            <Form.Item {...formItemLayout} label='Email Address'>
-              {getFieldDecorator('mail', {
-                rules: [
-                  {
-                    type: 'email',
-                    message: 'The input is not a valid e-mail.'
-                  },
-                  {
-                    required: true,
-                    message: msgRequired
-                  }
-                ]
-              })(<Input />)}
-            </Form.Item>
-            <Form.Item {...formItemLayout} label='Role'>
-              {getFieldDecorator('role_id', {
-                rules: [
-                  {
-                    required: true,
-                    message: msgRequired
-                  },
-                  { validator: this.validateRole }
-                ]
-              })(
-                <Select<Role>
-                  mode='simple'
-                  onChange={this.handleChangeRole}
-                  filterOption={this.filterSearchRole}
-                >
-                  {filteredRoles.map((role: Role) => (
-                    <Option key='key' value={role.id}>
-                      {role.name}
-                    </Option>
-                  ))}
-                </Select>
-              )}
-            </Form.Item>
-            <Form.Item {...formItemLayout} label='Organization'>
-              {getFieldDecorator('organizations', {
-                rules: [
-                  {
-                    required: false,
-                    message: msgEmpty
-                  },
-                  { validator: this.validateOrganization }
-                ]
-              })(
-                <Select<Organization[]>
-                  mode='multiple'
-                  onChange={this.handleChangeOrganization}
-                  filterOption={this.filterSearchOrganization}
-                >
-                  {filteredOrganizations.map((organization: Organization) => (
-                    <Option key='key' value={organization.id}>
-                    {organization.name}
-                  </Option>
-                  ))}
-                </Select>
-              )}
-            </Form.Item>
-            <Form.Item {...formTailLayout}>
-              <Button type='primary' htmlType='submit' disabled={loading}>
-                Create
-              </Button>
-            </Form.Item>
-            {error && <Alert message={error} type='error' showIcon={true} />}
-          </Form>
-        </Col>
-      </Row>
+      <Modal
+        key={2}
+        visible={this.props.modalVisible}
+        footer={[
+          <Button key='back' onClick={this.props.handleCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key='submit'
+            type='primary'
+            loading={loading}
+            onClick={this.handleOk}
+          >
+            Create
+          </Button>
+        ]}
+      >
+        <Row type='flex' justify='center' align='top'>
+          <Col span={8}>
+            <Form layout='horizontal'>
+              <Form.Item {...formItemLayout} label='Email Address'>
+                {getFieldDecorator('mail', {
+                  rules: [
+                    {
+                      type: 'email',
+                      message: 'The input is not a valid e-mail.'
+                    },
+                    {
+                      required: true,
+                      message: msgRequired
+                    }
+                  ]
+                })(<Input />)}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Role'>
+                {getFieldDecorator('role_id', {
+                  rules: [
+                    {
+                      required: true,
+                      message: msgRequired
+                    },
+                    { validator: this.validateRole }
+                  ]
+                })(
+                  <Select<Role>
+                    mode='simple'
+                    onChange={this.handleChangeRole}
+                    filterOption={this.filterSearchRole}
+                  >
+                    {filteredRoles.map((role: Role) => (
+                      <Option key='key' value={role.id}>
+                        {role.name}
+                      </Option>
+                    ))}
+                  </Select>
+                )}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Organization'>
+                {getFieldDecorator('organizations', {
+                  rules: [
+                    {
+                      required: false,
+                      message: msgEmpty
+                    },
+                    { validator: this.validateOrganization }
+                  ]
+                })(
+                  <Select<Organization[]>
+                    mode='multiple'
+                    onChange={this.handleChangeOrganization}
+                    filterOption={this.filterSearchOrganization}
+                  >
+                    {filteredOrganizations.map((organization: Organization) => (
+                      <Option key='key' value={organization.id}>
+                        {organization.name}
+                      </Option>
+                    ))}
+                  </Select>
+                )}
+              </Form.Item>
+              {error && <Alert message={error} type='error' showIcon={true} />}
+            </Form>
+          </Col>
+        </Row>
+      </Modal>
     );
   }
 }
