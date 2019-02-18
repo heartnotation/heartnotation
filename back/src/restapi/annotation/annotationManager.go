@@ -173,7 +173,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ann := Annotation{ID: a.ID, SignalID: a.SignalID, ParentID: &a.ParentID, StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
+	ann := Annotation{StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
 
 	if u.CheckErrorCode(db.Model(&annotation).Update(&ann).Error, w) {
 		return
