@@ -6,26 +6,7 @@ import { RouteComponentProps } from 'react-router';
 interface Props extends RouteComponentProps {
   onClick: () => void;
 }
-/*
-class AddButton extends Component<Props> {
-  public handleClick = () => {
-    const { history, url } = this.props;
-    history.push(url);
-  }
 
-  public render() {
-    return (
-      <Button
-        type='primary'
-        icon='plus'
-        size='large'
-        className='fixed-bottom-button'
-        onClick={this.handleClick}
-      />
-    );
-  }
-}
-*/
 const AddButton = (props: Props) => (
   <Button
     type='primary'

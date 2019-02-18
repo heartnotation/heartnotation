@@ -6,7 +6,11 @@ class Tags extends Component {
   public render() {
     return (
       <div>
-        <AddButton onClick={this.onClick} />
+        <AddButton
+          onClick={() => {
+            return;
+          }}
+        />
       </div>
     );
   }

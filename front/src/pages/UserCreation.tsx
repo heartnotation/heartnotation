@@ -187,7 +187,7 @@ class UserCreation extends Component<Props, States> {
         ]}
       >
         <Row type='flex' justify='center' align='top'>
-          <Col span={8}>
+          <Col span={15}>
             <Form layout='horizontal'>
               <Form.Item {...formItemLayout} label='Email Address'>
                 {getFieldDecorator('mail', {
