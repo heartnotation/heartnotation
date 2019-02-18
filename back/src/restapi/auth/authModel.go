@@ -1,7 +1,7 @@
 package auth
 
 import (
-	u "restapi/user"
+	u "restapi/managers"
 )
 
 // GoogleUser is the representation of the datas Google return about a user

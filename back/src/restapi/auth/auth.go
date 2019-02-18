@@ -16,7 +16,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	u "restapi/user"
+	u "restapi/managers"
 	"restapi/utils"
 )
 

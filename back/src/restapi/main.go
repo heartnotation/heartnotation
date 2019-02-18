@@ -2,13 +2,8 @@ package main
 
 import (
 	"net/http"
-	a "restapi/annotation"
 	auth "restapi/auth"
-	i "restapi/interval"
-	o "restapi/organization"
-	s "restapi/signal"
-	t "restapi/tag"
-	u "restapi/user"
+	m "restapi/managers"
 	utils "restapi/utils"
 
 	"github.com/gorilla/handlers"
@@ -22,33 +17,33 @@ func main() {
 	router := mux.NewRouter()
 
 	// Annotations
-	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(a.FindAnnotationByID)).Methods("GET") //Revoir le format de l'URL /annotations/{id}
-	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.FindAnnotations)).Methods("GET")
-	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.ModifyAnnotation)).Methods("PUT")
-	router.HandleFunc("/annotations", auth.ValidateMiddleware(a.CreateAnnotation)).Methods("POST")
-	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(a.DeleteAnnotation)).Methods("DELETE")
-	router.HandleFunc("/signal/{id}", auth.ValidateMiddleware(s.CheckSignal)).Methods("GET")
+	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(m.FindAnnotationByID)).Methods("GET") //Revoir le format de l'URL /annotations/{id}
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.FindAnnotations)).Methods("GET")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.ModifyAnnotation)).Methods("PUT")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.CreateAnnotation)).Methods("POST")
+	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(m.DeleteAnnotation)).Methods("DELETE")
+	router.HandleFunc("/signal/{id}", auth.ValidateMiddleware(m.CheckSignal)).Methods("GET")
 
 	// Organizations
-	router.HandleFunc("/organizations", auth.ValidateMiddleware(o.GetOrganizations)).Methods("GET")
+	router.HandleFunc("/organizations", auth.ValidateMiddleware(m.GetOrganizations)).Methods("GET")
 
 	// Tags
-	router.HandleFunc("/tags", auth.ValidateMiddleware(t.GetTags)).Methods("GET")
+	router.HandleFunc("/tags", auth.ValidateMiddleware(m.GetTags)).Methods("GET")
 
 	// Users
-	router.HandleFunc("/users", auth.ValidateMiddleware(u.CreateUser)).Methods("POST")
-	router.HandleFunc("/users", auth.ValidateMiddleware(u.GetAllUsers)).Methods("GET")
-	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.FindUserByID)).Methods("GET")
-	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(u.DeleteUser)).Methods("DELETE")
-	router.HandleFunc("/users", auth.ValidateMiddleware(u.ModifyUser)).Methods("PUT")
-	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")
+	router.HandleFunc("/users", auth.ValidateMiddleware(m.CreateUser)).Methods("POST")
+	router.HandleFunc("/users", auth.ValidateMiddleware(m.GetAllUsers)).Methods("GET")
+	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(m.FindUserByID)).Methods("GET")
+	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(m.DeleteUser)).Methods("DELETE")
+	router.HandleFunc("/users", auth.ValidateMiddleware(m.ModifyUser)).Methods("PUT")
+	router.HandleFunc("/roles", auth.ValidateMiddleware(m.GetAllRoles)).Methods("GET")
 
 	// Interval
-	router.HandleFunc("/intervals", i.GetInterval).Methods("GET")
-	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
-	router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
-	router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
-	router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
+	router.HandleFunc("/intervals", m.GetInterval).Methods("GET")
+	router.HandleFunc("/intervals", m.CreateInterval).Methods("POST")
+	router.HandleFunc("/intervals/tags", m.CreateIntervalTag).Methods("POST")
+	router.HandleFunc("/intervals/comment/{id}", m.GetIntervalComment).Methods("GET")
+	router.HandleFunc("/intervals/comment", m.CreateComment).Methods("POST")
 
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
