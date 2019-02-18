@@ -241,7 +241,6 @@ class Dashboard extends Component<Props, State> {
     this.closeModal();
     const data = await this.getDatas();
     this.setState({
-      annotation: undefined,
       initialAnnotations: data,
       currentAnnotations: data.slice()
     });
@@ -249,7 +248,8 @@ class Dashboard extends Component<Props, State> {
 
   public closeModal() {
     this.setState({
-      modalVisibility: false
+      modalVisibility: false,
+      annotation: undefined
     });
   }
 
