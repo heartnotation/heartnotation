@@ -1,10 +1,18 @@
 package managers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 var templateURLAPI string
@@ -30,20 +38,17 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-/*
 // DeleteAnnotation remove an annotation
 func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("DELETE", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
 	v := mux.Vars(r)
-	log.Println(u.IsStringInt(v["id"]))
 	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
-	log.Println("youpih")
-	var annotation Annotation
+	var annotation m.Annotation
 	db := u.GetConnection()
 	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {
 		return
@@ -54,34 +59,33 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	db := u.GetConnection()
-	var a dto
+
+	if !a.SignalID || !a.Name || !a.OrganizationID || !a.TagsID {
+		http.Error(w, "invalid args", 204)
+		return
+	}
+
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+	var a d.Annotation
 	json.NewDecoder(r.Body).Decode(&a)
 
-	tags := []t.Tag{}
+	tags := []m.Tag{}
 
-	err := db.Where(a.TagsID).Find(&tags).Error
-	if err != nil {
-		u.CheckErrorCode(err, w)
+	if u.CheckErrorCode(db.Find(&tags, a.TagsID).Error, w) {
 		return
 	}
 
-	if len(tags) != len(a.TagsID) {
-		http.Error(w, "Tag not found", 204)
-		return
-	}
-	if a.SignalID == 0 || a.Name == "" {
-		http.Error(w, "Missing field", 424)
+	if len(tags) != len(a.TagsID) || a.SignalID == nil || a.Name == "" {
+		http.Error(w, "invalid args", 204)
 		return
 	}
 	if a.ParentID != 0 {
-		parent := &Annotation{ID: a.ParentID}
+		parent := &m.Annotation{ID: a.ParentID}
 		err = db.Find(&parent).Error
 		if err != nil {
 			u.CheckErrorCode(err, w)
@@ -208,4 +212,3 @@ func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
 
 	return signalFormated, nil
 }
-*/
