@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { Table, Input, Icon, Modal, Button } from 'antd';
+import React, { Component, MouseEvent } from 'react';
+import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation, api } from '../utils';
@@ -142,7 +142,8 @@ class Dashboard extends Component<Props, State> {
           type='edit'
           theme='twoTone'
           twoToneColor='#6669c9'
-          onClick={() => {
+          onClick={(e: MouseEvent) => {
+            e.stopPropagation();
             this.setState({ modalVisibility: true, annotation });
           }}
         />
@@ -267,8 +268,8 @@ class Dashboard extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
-        onRow={a => ({
-          // onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        onRow={(a: Annotation) => ({
+          onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
       annotation && (
