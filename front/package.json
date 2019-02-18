@@ -1,5 +1,6 @@
 {
   "name": "front",
+  "proxy": "http://localhost:8000",
   "jest": {
     "collectCoverageFrom": [
       "src/**/*.{js,jsx,ts,tsx}",
