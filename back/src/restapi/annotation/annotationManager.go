@@ -34,6 +34,19 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v := mux.Vars(r)
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
+
 	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
@@ -57,6 +70,18 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 	var a dto
 	json.NewDecoder(r.Body).Decode(&a)
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
 
 	tags := []t.Tag{}
 
@@ -120,16 +145,15 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	var err error
 	var currentUserOganizations []uint
-	contextUser := c.Get(r, "user")
-	currentUser := contextUser.(*user.User)
-	for i := range currentUser.Organizations {
-		currentUserOganizations = append(currentUserOganizations, currentUser.Organizations[i].ID)
+	contextUser := c.Get(r, "user").(*user.User)
+	for i := range contextUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, contextUser.Organizations[i].ID)
 	}
 	annotations := &[]Annotation{}
 
 	fmt.Printf("%v\n", currentUserOganizations)
 
-	switch currentUser.Role.ID {
+	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
@@ -165,13 +189,12 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 	var currentUserOganizations []uint
-	contextUser := c.Get(r, "user")
-	currentUser := contextUser.(*user.User)
-	for i := range currentUser.Organizations {
-		currentUserOganizations = append(currentUserOganizations, currentUser.Organizations[i].ID)
+	contextUser := c.Get(r, "user").(*user.User)
+	for i := range contextUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, contextUser.Organizations[i].ID)
 	}
 
-	switch currentUser.Role.ID {
+	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
@@ -208,6 +231,19 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		break
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
 
 	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
