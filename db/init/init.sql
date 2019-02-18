@@ -51,8 +51,8 @@ name VARCHAR(50),
 is_active BOOL,
 PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS User ;
-CREATE TABLE User (id SERIAL NOT NULL,
+DROP TABLE IF EXISTS "User" ;
+CREATE TABLE "User" (id SERIAL NOT NULL,
 mail VARCHAR(50),
 is_active BOOL,
 PRIMARY KEY (id));
@@ -121,18 +121,18 @@ ALTER TABLE Interval ADD CONSTRAINT FK_Interval_id_Annotation FOREIGN KEY (annot
 
 ALTER TABLE Annotation ADD CONSTRAINT FK_Annotation_id_Organization FOREIGN KEY (organization_id) REFERENCES Organization (id);
 ALTER TABLE CommentInterval ADD CONSTRAINT FK_CommentInterval_id_Interval FOREIGN KEY (interval_id) REFERENCES Interval (id);
-ALTER TABLE CommentInterval ADD CONSTRAINT FK_CommentInterval_id_User FOREIGN KEY (user_id) REFERENCES User (id);
+ALTER TABLE CommentInterval ADD CONSTRAINT FK_CommentInterval_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
 ALTER TABLE Status ADD CONSTRAINT FK_Status_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
 ALTER TABLE Status ADD CONSTRAINT FK_Status_id_EnumStatus FOREIGN KEY (enumstatus_id) REFERENCES EnumStatus (id);
-ALTER TABLE Status ADD CONSTRAINT FK_Status_id_User FOREIGN KEY (user_id) REFERENCES User (id);
+ALTER TABLE Status ADD CONSTRAINT FK_Status_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
 ALTER TABLE CommentAnnotation ADD CONSTRAINT FK_CommentAnnotation_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
-ALTER TABLE CommentAnnotation ADD CONSTRAINT FK_CommentAnnotation_id_User FOREIGN KEY (user_id) REFERENCES User (id);
-ALTER TABLE Notification ADD CONSTRAINT FK_Notification_id_User FOREIGN KEY (user_id) REFERENCES User (id);
+ALTER TABLE CommentAnnotation ADD CONSTRAINT FK_CommentAnnotation_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
+ALTER TABLE Notification ADD CONSTRAINT FK_Notification_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
 ALTER TABLE Annotation_Tag ADD CONSTRAINT FK_Annotation_Tag_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
 ALTER TABLE Annotation_Tag ADD CONSTRAINT FK_Annotation_Tag_id_Tag FOREIGN KEY (tag_id) REFERENCES Tag (id);
 ALTER TABLE User_Role ADD CONSTRAINT FK_User_Role_id_Role FOREIGN KEY (role_id) REFERENCES Role (id);
-ALTER TABLE User_Role ADD CONSTRAINT FK_User_Role_id_User FOREIGN KEY (user_id) REFERENCES User (id);
-ALTER TABLE User_Organization ADD CONSTRAINT FK_User_Organization_id_User FOREIGN KEY (user_id) REFERENCES User (id);
+ALTER TABLE User_Role ADD CONSTRAINT FK_User_Role_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
+ALTER TABLE User_Organization ADD CONSTRAINT FK_User_Organization_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
 ALTER TABLE User_Organization ADD CONSTRAINT FK_User_Organization_id_Organization FOREIGN KEY (organization_id) REFERENCES Organization (id);
 ALTER TABLE Interval_Tag ADD CONSTRAINT FK_Interval_Tag_id_Tag FOREIGN KEY (tag_id) REFERENCES Tag (id);
 ALTER TABLE Interval_Tag ADD CONSTRAINT FK_Interval_Tag_id_Interval FOREIGN KEY (interval_id) REFERENCES Interval (id);
@@ -144,7 +144,7 @@ ALTER TABLE Interval OWNER TO heart;
 ALTER TABLE Annotation OWNER TO heart;
 ALTER TABLE CommentInterval OWNER TO heart;
 ALTER TABLE Role OWNER TO heart;
-ALTER TABLE User OWNER TO heart;
+ALTER TABLE "User" OWNER TO heart;
 ALTER TABLE Organization OWNER TO heart;
 ALTER TABLE Status OWNER TO heart;
 ALTER TABLE EnumStatus OWNER TO heart;
@@ -186,25 +186,25 @@ INSERT INTO Role (name, is_active)
 	VALUES ('Admin', TRUE);
 
 --  User
-INSERT INTO User (mail, is_active)  
+INSERT INTO "User" (mail, is_active)  
 	VALUES ('holandertheo@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active) 
+INSERT INTO "User" (mail, is_active) 
 	VALUES ('rolex.taing@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active) 
+INSERT INTO "User" (mail, is_active) 
 	VALUES ('marvin.leclerc31@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active)  
+INSERT INTO "User" (mail, is_active)  
 	VALUES ('socarboni@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active)  
+INSERT INTO "User" (mail, is_active)  
 	VALUES ('romain.phet@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active)  
+INSERT INTO "User" (mail, is_active)  
 	VALUES ('alex.pliez@gmail.com', TRUE);
 
-INSERT INTO User (mail, is_active)  
+INSERT INTO "User" (mail, is_active)  
 	VALUES ('saidkhalid1996@gmail.com', TRUE);
 
 
