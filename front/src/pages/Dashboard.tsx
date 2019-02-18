@@ -146,6 +146,7 @@ class Dashboard extends Component<Props, State> {
             this.setState({ modalVisibility: true, annotation });
           }}
         />
+      )
     }
   ];
 
@@ -266,10 +267,9 @@ class Dashboard extends Component<Props, State> {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
         }}
-        onRow={a => ({
-          // onClick: () => this.props.history.push(`/annotations/${a.id}`)
-        })}
-      annotation  && (
+        onRow={a => this.props.history.push(`/annotations/${a.id}`)}
+      />,
+      annotation && (
         <EditAnnotationForm
           key={2}
           getAnnotations={api.getAnnotations}
@@ -281,7 +281,8 @@ class Dashboard extends Component<Props, State> {
           handleOk={this.handleOk}
           handleCancel={this.handleCancel}
           modalVisibility={modalVisibility}
-      />,
+        />
+      ),
       <AddButton key={2} url='/new/annotations' />
     ];
   }

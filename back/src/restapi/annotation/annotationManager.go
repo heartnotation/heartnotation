@@ -165,15 +165,15 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	tags := []t.Tag{}
 	db := u.GetConnection()
-	if checkErrorCode(db.Where(a.TagsID).Find(&tags).Error, w) {
+	if u.CheckErrorCode(db.Where(a.TagsID).Find(&tags).Error, w) {
 		log.Println("erreur tags")
 		return
 	}
 	log.Println(tags)
-	//log.Println(dto.TagsID)
+
 	ann := Annotation{ID: a.ID, SignalID: a.SignalID, ParentID: &a.ParentID, StatusID: &a.StatusID, Tags: tags, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
-	//log.Println(ann)
-	if checkErrorCode(db.Save(&ann).Error, w) {
+
+	if u.CheckErrorCode(db.Save(&ann).Error, w) {
 		log.Println("erreur save")
 		return
 	}
