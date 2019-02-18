@@ -172,6 +172,7 @@ class UserCreation extends Component<Props, States> {
       <Modal
         key={2}
         visible={this.props.modalVisible}
+        onCancel={this.props.handleCancel}
         footer={[
           <Button key='back' onClick={this.props.handleCancel}>
             Cancel
