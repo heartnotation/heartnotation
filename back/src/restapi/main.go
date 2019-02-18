@@ -2,11 +2,11 @@ package main
 
 import (
 	"net/http"
-	"restapi/auth"
+	//"restapi/auth"
 	m "restapi/managers"
 	utils "restapi/utils"
 
-	"github.com/gorilla/handlers"
+	//"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -49,11 +49,11 @@ func main() {
 		router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
 	*/
 	// Auth
-	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
+	/*router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
 
 	headersOk := handlers.AllowedHeaders([]string{"Authorization", "Content-Type"})
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-
-	http.ListenAndServe("0.0.0.0:8000", handlers.CORS(originsOk, headersOk, methodsOk)(router))
+	http.ListenAndServe("0.0.0.0:8000", handlers.CORS(originsOk, headersOk, methodsOk)(router))*/
+	http.ListenAndServe("0.0.0.0:8000", router)
 }
