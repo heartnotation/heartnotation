@@ -1,5 +1,6 @@
 package interval
 
+/*
 import (
 	"restapi/utils"
 	u "restapi/utils"
@@ -20,3 +21,4 @@ func TestReadGetIntervals(t *testing.T) {
 		t.Error("Expected content", `[{"id":1,"start":3,"end":4,"is_active":true},{"id":2,"start":7,"end":9,"is_active":true},{"id":3,"start":11,"end":29,"is_active":true}]`)
 	}
 }
+*/
