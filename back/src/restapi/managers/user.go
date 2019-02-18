@@ -2,7 +2,6 @@ package managers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	d "restapi/dtos"
 	m "restapi/models"
@@ -25,7 +24,6 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // CreateUser function which receive a POST request and return a fresh-new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("b")
 	if u.CheckMethodPath("POST", u.CheckRoutes["users"], w, r) {
 		return
 	}
@@ -55,7 +53,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, user)
 }
 
-// Find user by ID using GET Request
+// FindUserByID user by ID using GET Request
 func FindUserByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
 		return
@@ -83,53 +81,52 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.First(&user, v["id"]).Error, w) {
 		return
 	}
-	user.IsActive = false
-	db.Save(&user)
+	db.Model(&user).Update("is_active", false)
 }
 
-/*
-// ModifyUser modifies an annotation
-func ModifyUser(w http.ResponseWriter, r *http.Request) {
+// UpdateUser modifies an annotation
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["users"], w, r) {
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
 	var a d.User
-	user := &m.User{}
+	user := m.User{}
 	organizations := []m.Organization{}
 	roles := []m.Role{}
-
 	json.NewDecoder(r.Body).Decode(&a)
-
-	if u.CheckErrorCode(db.First(&user).Error, w) {
+	if a.ID == nil {
+		http.Error(w, "bad argues", 204)
 		return
 	}
-
-	if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
-		return
-	}
-
-	if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
-		return
-	}
-
-	if len(organizations) != len(a.OrganizationsID) || len(roles) != len(a.RolesID) {
-		http.Error(w, "Organization or role not found", 204)
-		return
-	}
-	/*
-		err = db.Where("user_id = ?", a.ID).Delete(&organizations).Error
-		if err != nil {
-			u.CheckErrorCode(err, w)
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+	if a.RolesID != nil {
+		if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
 			return
 		}
-
-	user = &m.User{ID: *a.ID, Mail: *a.Mail, Roles: roles, Organizations: organizations, IsActive: true}
-
+		if len(roles) != len(a.RolesID) {
+			http.Error(w, "bad argues", 204)
+			return
+		}
+		db.Model(&user).Association("Roles").Replace(roles)
+	}
+	if a.OrganizationsID != nil {
+		if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
+			return
+		}
+		if len(organizations) != len(a.OrganizationsID) {
+			http.Error(w, "bad argues", 204)
+			return
+		}
+		db.Model(&user).Association("Organizations").Replace(organizations)
+	}
+	if u.CheckErrorCode(db.First(&user, *a.ID).Error, w) {
+		return
+	}
+	if a.Mail != nil {
+		user.Mail = *a.Mail
+	}
 	if u.CheckErrorCode(db.Save(user).Error, w) {
 		return
 	}
-
 	u.Respond(w, user)
 }
-*/

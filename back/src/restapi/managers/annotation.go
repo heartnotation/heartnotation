@@ -116,9 +116,8 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 
-/*
-// ModifyAnnotation modifies an annotation
-func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+// UpdateAnnotation modifies an annotation
+func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
@@ -126,6 +125,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation d.Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
+	//db.Model(&annotation).Association("OK").Replace()
 
 	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return
@@ -136,7 +136,6 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, annotation)
 }
-*/
 
 func formatToJSONFromAPI(api string) ([][]*m.Point, error) {
 	httpResponse, err := http.Get(api)

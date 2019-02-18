@@ -21,7 +21,7 @@ func main() {
 	// Annotations
 	router.HandleFunc("/annotations/{id}", m.FindAnnotationByID).Methods("GET") //Revoir le format de l'URL /annotations/{id}*/
 	router.HandleFunc("/annotations", m.GetAllAnnotations).Methods("GET")
-	//router.HandleFunc("/annotations", a.ModifyAnnotation).Methods("PUT")
+	router.HandleFunc("/annotations", a.UpdateAnnotation).Methods("PUT")
 	router.HandleFunc("/annotations", m.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/annotations/{id}", m.DeleteAnnotation).Methods("DELETE")
 	router.HandleFunc("/signal/{id}", m.CheckSignal).Methods("GET")
@@ -37,7 +37,7 @@ func main() {
 	router.HandleFunc("/users", m.GetAllUsers).Methods("GET")
 	router.HandleFunc("/users/{id}", m.FindUserByID).Methods("GET")
 	router.HandleFunc("/users/{id}", m.DeleteUser).Methods("DELETE")
-	//router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
+	router.HandleFunc("/users", u.ModifyUser).Methods("PUT")
 	router.HandleFunc("/roles", m.GetAllRoles).Methods("GET")
 
 	// Interval
