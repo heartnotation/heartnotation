@@ -1,13 +1,21 @@
 import React from 'react';
-import Header from './Header';
+import Header from '../fragments/Header';
 import Router, { AppRoute } from '../Routes';
-import Enzyme, { mount, shallow } from 'enzyme';
+import Enzyme, { mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { Menu } from 'antd';
 
 Enzyme.configure({ adapter: new Adapter() });
 
 const voidFunction = () => <div />;
+
+const defaultRoute: AppRoute = {
+  path: '/',
+  exact: true,
+  component: voidFunction,
+  title: 'Dashboard',
+  iconName: 'plus'
+};
 
 const routes: AppRoute[] = [
   {
@@ -39,7 +47,9 @@ describe('Header', () => {
 
   const router = () => {
     if (!mountedRouter) {
-      mountedRouter = mount(<Router routes={routes} />);
+      mountedRouter = mount(
+        <Router defaultRoute={defaultRoute} routes={routes} />
+      );
     }
     return mountedRouter;
   };
@@ -55,11 +65,11 @@ describe('Header', () => {
   });
 
   it('focus the right tab', () => {
-    const routeIndex = 2;
+    const routeIndex = 'About';
     window.history.pushState(
       {},
       'Header component test',
-      routes[routeIndex].path
+      routes[2].path
     );
     expect(
       router()

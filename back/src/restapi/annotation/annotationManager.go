@@ -5,69 +5,121 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	s "restapi/signal"
-
-	// import pq driver
-	_ "github.com/lib/pq"
-
+	t "restapi/tag"
 	u "restapi/utils"
+
+	"github.com/gorilla/mux"
 )
+
+var templateURLAPI string
+
+func init() {
+	url := os.Getenv("API_URL")
+	if url == "" {
+		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
+	}
+	templateURLAPI = url
+}
+
+// DeleteAnnotation remove an annotation
+func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
+	v := mux.Vars(r)
+	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	var annotation Annotation
+	db := u.GetConnection()
+	if u.CheckErrorCode(db.First(&annotation, v["id"]).Error, w) {
+		return
+	}
+	annotation.IsActive = false
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
+}
 
 // CreateAnnotation function which receive a POST request and return a fresh-new annotation
 func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, http.StatusText(405), 405)
+	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-
 	db := u.GetConnection()
+	var a dto
+	json.NewDecoder(r.Body).Decode(&a)
 
-	var annotation Annotation
+	tags := []t.Tag{}
 
-	json.NewDecoder(r.Body).Decode(&annotation)
-
-	date := time.Now()
-	annotation.CreationDate = date
-	annotation.EditDate = date
-	annotation.IsActive = true
-
-	if *(annotation.OrganizationID) != 0 {
-		*annotation.StatusID = 2
-	} else {
-		*annotation.StatusID = 1
-	}
-	err := db.Preload("Organization").Create(&annotation).Error
+	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
-		http.Error(w, err.Error(), 400)
+		u.CheckErrorCode(err, w)
 		return
 	}
 
-	a := &Annotation{}
-	e := db.Preload("Organization").Preload("Parent").Find(&a).Error
-	if e != nil {
-		http.Error(w, e.Error(), 503)
+	if len(tags) != len(a.TagsID) {
+		http.Error(w, "Tag not found", 204)
 		return
 	}
-	a.OrganizationID = nil
-	if a.Parent != nil {
-		a.Parent.OrganizationID = nil
-		a.ParentID = nil
+	if a.SignalID == 0 || a.Name == "" {
+		http.Error(w, "Missing field", 424)
+		return
 	}
-	u.Respond(w, a)
+	if a.ParentID != 0 {
+		parent := &Annotation{ID: a.ParentID}
+		err = db.Find(&parent).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+	}
+	var status int
+	if a.OrganizationID != 0 {
+		status = 2
+	} else {
+		status = 1
+	}
+	date := time.Now()
+	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	if a.OrganizationID == 0 {
+		annotation.OrganizationID = nil
+	}
+	if a.ParentID == 0 {
+		annotation.ParentID = nil
+	}
+	err = db.Create(&annotation).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
+	if err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+	annotation.ParentID = nil
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
 
+	u.RespondCreate(w, annotation)
 }
 
 // FindAnnotations receive request to get all annotations in database
 func FindAnnotations(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
 	annotations := &[]Annotation{}
 	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 
@@ -80,43 +132,52 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotations)
 }
 
-/*
-// Get annotation by ID using GET Request
-func getAnnotation(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, http.StatusText(405), 405)
+// FindAnnotationByID Find annotation by ID using GET Request
+func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	annID := r.FormValue("id")
-	if annID == "" {
-		http.Error(w, http.StatusText(400), 400)
-		return
-	}
-	db := verifyDBConnection()
-	row := db.QueryRow("SELECT * FROM annotation where annotation_id = $1", annID)
 	annotation := Annotation{}
-	err := row.Scan(&annotation.ID, &annotation.Parent,
-		&annotation.Organization, &annotation.ProcessID, &annotation.SignalID,
-		&annotation.Comment, &annotation.CreatedAt, &annotation.UpdatedAt,
-		&annotation.is_active)
-	if err == sql.ErrNoRows {
-		http.NotFound(w, r)
-		return
-	} else if err != nil {
-		http.Error(w, http.StatusText(500), 500)
+	vars := mux.Vars(r)
+	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	if err != nil {
+		http.Error(w, err.Error(), 404)
 		return
 	}
 
-	// annot, err := json.Marshal(annotation)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))
+	if e != nil {
+		http.Error(w, e.Error(), 500)
+	}
+	annotation.Signal = signal
+	annotation.OrganizationID = nil
+	annotation.StatusID = nil
 
-	// fmt.Fprintf(w, "%s\n", string(annot))
+	u.Respond(w, annotation)
 }
-*/
-func formatToJSONFromAPI(api string) ([]byte, error) {
-	httpResponse, err := http.Get(api) //A parametrer
+
+// ModifyAnnotation modifies an annotation
+func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
+	db := u.GetConnection()
+	var annotation Annotation
+	json.NewDecoder(r.Body).Decode(&annotation)
+	annotation.EditDate = time.Now()
+
+	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
+		return
+	}
+	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
+		u.CheckErrorCode(err, w)
+		return
+	}
+	u.Respond(w, annotation)
+}
+
+func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
+	httpResponse, err := http.Get(api)
 	if err != nil {
 		return nil, err
 	}
@@ -125,28 +186,17 @@ func formatToJSONFromAPI(api string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	signalFormated, err := s.FormatData(dataBrut, 3)
+	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
+	var leads int64
+	if leadNumber == "" {
+		leads = 3
+	} else {
+		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
+	}
+	signalFormated, err := s.FormatData(dataBrut, int(leads))
 	if err != nil {
 		return nil, err
 	}
 
-	var gui Gui
-	gui.Signal = signalFormated
-
-	jsonDatas, err := json.Marshal(gui)
-	if err != nil {
-		return nil, err
-	}
-	return jsonDatas, nil
-}
-
-//En attente de brancher avec le web (route de recuperation d'une annotation)
-func incompleteTestForSignal() {
-	response, err := formatToJSONFromAPI("https://cardiologsdb.blob.core.windows.net/cardiologs-public/ai/1.bin") //A parametrer
-	if err != nil {
-		fmt.Println(" FAIL with \n", err)
-	}
-
-	fmt.Println(string(response))
+	return signalFormated, nil
 }

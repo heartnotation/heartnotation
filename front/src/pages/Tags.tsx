@@ -1,4 +1,18 @@
-import React from 'react';
-
+import React, { Component } from 'react';
+import AddButton from '../fragments/fixedButton/AddButton';
 // TODO
-export default () => <h2>Tags list</h2>;
+
+class Tags extends Component {
+  public render() {
+    return (
+      <div>
+        <AddButton
+          onClick={() => {
+            return;
+          }}
+        />
+      </div>
+    );
+  }
+}
+export default Tags;

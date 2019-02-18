@@ -1,13 +1,11 @@
-import React, { FunctionComponent, ComponentClass } from 'react';
+import React, { FunctionComponent, ComponentClass, Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
   RouteComponentProps
 } from 'react-router-dom';
-import HomePage from './pages/Home';
 import { StaticContext } from 'react-router';
 import Header from './fragments/Header';
-import SignalAnnotation from './pages/SignalAnnotation';
 
 export interface AppRoute {
   path: string;
@@ -22,25 +20,31 @@ export interface AppRoute {
 }
 
 interface Props {
+  defaultRoute: AppRoute;
   routes: AppRoute[];
+  hiddenRoutes?: AppRoute[];
 }
 
-const AppRouter = (props: Props) => (
-  <Router>
-    <div>
-      <Header routes={props.routes} />
-      <Route path='/' exact={true} component={HomePage} />
-      <Route path='/annotations/:id' component={SignalAnnotation} />
-      {props.routes.map((r, index) => (
-        <Route
-          key={index}
-          path={r.path}
-          component={r.component}
-          exact={r.exact}
+export default (props: Props) => {
+  const { routes, hiddenRoutes, defaultRoute } = props;
+  const hiddens = hiddenRoutes ? hiddenRoutes : [];
+  return (
+    <Router>
+      <div>
+        <Header
+          defaultRoute={defaultRoute}
+          routes={routes}
+          hiddenRoutes={hiddens}
         />
-      ))}
-    </div>
-  </Router>
-);
-
-export default AppRouter;
+        {[...hiddens, ...routes].map((r, index) => (
+          <Route
+            key={index}
+            path={r.path}
+            component={r.component}
+            exact={r.exact}
+          />
+        ))}
+      </div>
+    </Router>
+  );
+};
