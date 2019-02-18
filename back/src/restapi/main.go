@@ -44,9 +44,11 @@ func main() {
 	router.HandleFunc("/roles", auth.ValidateMiddleware(u.GetAllRoles)).Methods("GET")
 
 	// Interval
-	router.HandleFunc("/intervals/tags", auth.ValidateMiddleware(i.CreateIntervalTag)).Methods("POST")
-	router.HandleFunc("/intervals", auth.ValidateMiddleware(i.CreateInterval)).Methods("POST")
-	router.HandleFunc("/intervals", auth.ValidateMiddleware(i.GetInterval)).Methods("GET")
+	router.HandleFunc("/intervals", i.GetInterval).Methods("GET")
+	router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
+	router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
+	router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
+	router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
 
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")

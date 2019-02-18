@@ -9,6 +9,7 @@ CREATE DATABASE heartnotation OWNER heart;
 
 -- TABLES INIT
 
+<<<<<<< HEAD
 DROP TABLE IF EXISTS Tag ;
 CREATE TABLE Tag (id SERIAL NOT NULL,
 name VARCHAR(50),
