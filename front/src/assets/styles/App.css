@@ -1,3 +1,5 @@
+@import "~antd/dist/antd.css";
+
 .menu-container {
   padding: 7px;
 }
@@ -43,6 +45,10 @@
   margin: 10px 30px 0 0 !important;
 }
 
+.ant-table-row:hover {
+  cursor: pointer;
+}
+
 .ant-table-pagination.ant-pagination {
   float: none !important;
   text-align: center !important;
@@ -58,10 +64,7 @@
 
 .signal-header {
   background: #dddddd;
-  padding: 30px;
-}
-
-.signal-main-container {
+  padding: 1em;
 }
 
 .text-left {
@@ -207,8 +210,6 @@ div > .fixed-bottom-button {
 
 .fixed-bottom-button {
   font-size: 24px !important;
-  background-color: #6669c9 !important;
-  border-color: #6669c9 !important;
   color: #f9fbf2 !important;
   border-radius: 35px !important;
   height: 55px !important;

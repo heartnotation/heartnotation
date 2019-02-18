@@ -133,7 +133,12 @@ class Dashboard extends Component<Props, State> {
       title: 'Edit',
       dataIndex: 'edit',
       render: _ => (
-        <Icon className='anticon-edit-dashboard' type='edit' theme='twoTone' />
+        <Icon
+          className='anticon-edit-dashboard'
+          type='edit'
+          theme='twoTone'
+          twoToneColor='#6669c9'
+        />
       )
     }
   ];
@@ -222,26 +227,30 @@ class Dashboard extends Component<Props, State> {
 
   public render() {
     const { currentAnnotations } = this.state;
-    return (
-      <div>
-        <Table<Annotation>
-          rowKey='id'
-          columns={this.columns}
-          dataSource={currentAnnotations}
-          pagination={{
-            position: 'bottom',
-            pageSizeOptions: ['10', '20', '30', '40'],
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`
-          }}
-          onRow={a => ({
-            onClick: () => this.props.history.push(`/annotations/${a.id}`)
-          })}
-        />
-        <AddButton url='/new/annotations' />
-      </div>
-    );
+    return [
+      <Table<Annotation>
+        key={1}
+        rowKey='id'
+        columns={this.columns}
+        dataSource={currentAnnotations}
+        pagination={{
+          position: 'bottom',
+          pageSizeOptions: ['10', '20', '30', '40'],
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+        }}
+        onRow={a => ({
+          onClick: () => this.props.history.push(`/annotations/${a.id}`)
+        })}
+      />,
+      <AddButton
+        key={2}
+        onClick={() => {
+          this.props.history.push('/new/annotations');
+        }}
+      />
+    ];
   }
 }
 

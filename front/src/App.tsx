@@ -33,18 +33,6 @@ const r = {
       title: 'Signal annotation'
     },
     {
-      path: '/new/users',
-      component: () => (
-        <UserCreation
-          getOrganizations={api.getOrganizations}
-          getRoles={api.getRoles}
-          sendUser={api.sendUser}
-        />
-      ),
-      title: 'Create User',
-      iconName: 'user-add'
-    },
-    {
       path: '/new/tags',
       component: TagCreation,
       title: 'Create Tags',
@@ -80,6 +68,7 @@ const r = {
           getOrganizations={api.getOrganizations}
           getRoles={api.getRoles}
           modifyUser={api.modifyUser}
+          sendUser={api.sendUser}
           getAllUsers={api.getAllUsers}
           deleteUser={api.deleteUser}
         />
