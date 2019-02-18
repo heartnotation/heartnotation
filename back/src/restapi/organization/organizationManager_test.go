@@ -1,5 +1,6 @@
 package organization
 
+/*
 import (
 	"restapi/utils"
 	u "restapi/utils"
@@ -20,3 +21,4 @@ func TestReadOrganizations(t *testing.T) {
 		t.Error("Expected content", `[{"id":1,"name":"Cardiologs","is_active":true},{"id":2,"name":"Podologs","is_active":true},{"id":3,"name":"Heartnotalogs","is_active":true}]`)
 	}
 }
+*/

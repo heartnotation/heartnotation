@@ -1,5 +1,6 @@
 package signal
 
+/*
 import (
 	"encoding/json"
 	"restapi/utils"
@@ -30,3 +31,4 @@ func TestFormatData(t *testing.T) {
 	assert.Equal(t, "[[{\"x\":0,\"y\":1}],[{\"x\":0,\"y\":515}],[{\"x\":0,\"y\":1029}]]", string(resAsJSON))
 	assert.Equal(t, nil, err)
 }
+*/
