@@ -4,12 +4,12 @@ import "time"
 
 // IntervalComment database representation
 type IntervalComment struct {
-	ID         uint      `json:"id"`
+	ID         int       `json:"id"`
 	Comment    string    `json:"comment"`
 	Date       time.Time `json:"date"`
-	IntervalID uint      `json:"interval_id,omitempty"`
+	IntervalID int       `json:"interval_id,omitempty"`
 	Interval   Interval  `json:"interval" gorm:"foreignkey:AnnotationID"`
-	UserID     uint      `json:"user_id"`
+	UserID     int       `json:"user_id"`
 	User       User      `json:"user" gorm:"foreignkey:UserID"`
 }
 

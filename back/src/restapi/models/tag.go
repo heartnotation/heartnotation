@@ -2,8 +2,8 @@ package models
 
 // Tag database representation
 type Tag struct {
-	ID          uint         `json:"id" gorm:"AUTO_INCREMENT"`
-	ParentID    *uint        `json:"parent_id,omitempty" gorm:"foreignkey:ID"`
+	ID          int          `json:"id" gorm:"AUTO_INCREMENT"`
+	ParentID    *int         `json:"parent_id,omitempty" gorm:"foreignkey:ID"`
 	Name        string       `json:"name"`
 	Color       string       `json:"color"`
 	Annotations []Annotation `json:"users" gorm:"many2many:annotation_tag;"`

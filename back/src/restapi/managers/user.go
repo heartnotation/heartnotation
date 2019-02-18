@@ -99,6 +99,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := u.GetConnection().Set("gorm:auto_preload", true)
+	if u.CheckErrorCode(db.First(&user, *a.ID).Error, w) {
+		return
+	}
 	if a.RolesID != nil {
 		if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
 			return
@@ -118,9 +121,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		db.Model(&user).Association("Organizations").Replace(organizations)
-	}
-	if u.CheckErrorCode(db.First(&user, *a.ID).Error, w) {
-		return
 	}
 	if a.Mail != nil {
 		user.Mail = *a.Mail
