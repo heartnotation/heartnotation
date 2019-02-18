@@ -88,7 +88,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const focus = svg
       .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-      
+
     const context = svg
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
@@ -121,16 +121,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .range([0, height2])
       .domain(yScale.domain());
 
-    focus
-      .append('g')
-      .attr('id', 'mainGraph');
+    focus.append('g').attr('id', 'mainGraph');
 
-    context
-      .append('g')
-      .attr('id', 'previewGraph');
+    context.append('g').attr('id', 'previewGraph');
 
     let i = 0;
-    for(const lead of leads) {
+    for (const lead of leads) {
       lead.sort((a, b) => {
         return a.x - b.x;
       });
@@ -140,7 +136,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         .x(d => xScale(d.x))
         .y(d => yScale(d.y))
         .curve(d3.curveBasis);
-      
+
       focus
         .datum<Point[]>(lead)
         .select('#mainGraph')
@@ -150,18 +146,23 @@ class SignalAnnotation extends Component<RouteProps, State> {
         .attr('d', lineMain)
         .attr('stroke', _ => colors[i % colors.length])
         .attr('clip-path', 'url(#clip)');
-      
+
       const linePreview = d3
         .line<Point>()
         .x(d => xScale2(d.x))
         .y(d => yScale2(d.y))
         .curve(d3.curveBasis);
 
-      this.setState({graphElements: [...this.state.graphElements, {
-        selector: '#line' + i,
-        data: lead,
-        object: lineMain
-      }]});
+      this.setState({
+        graphElements: [
+          ...this.state.graphElements,
+          {
+            selector: '#line' + i,
+            data: lead,
+            object: lineMain
+          }
+        ]
+      });
 
       context
         .datum<Point[]>(lead)
@@ -172,7 +173,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         .attr('stroke', _ => colors[i % colors.length]);
 
       i++;
-    }    
+    }
 
     const yAxis = d3.axisLeft(yScale).tickSize(-width);
     const yAxisGroup = focus.append('g').call(yAxis);
@@ -189,50 +190,55 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('transform', 'translate(0,' + height2 + ')')
       .call(xAxis2);
 
-      const zoomed = () => {
-        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
-        xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
-  
-        for (const g of this.state.graphElements) {
-          focus
-            .datum<Point[]>(g.data)
-            .select(g.selector)
-            .attr('d', g.object);
-        }
-  
-        xAxisGroup.call(xAxis);
-  
-        context
-          .select('.brush')
-          .call(brush.move, [
-            xScale2(d3.event.transform.rescaleX(xScale2).domain()[0]),
-            xScale2(d3.event.transform.rescaleX(xScale2).domain()[1])
-          ]);
-      };
-  
-      const brushed = () => {
-        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
-  
-        if (d3.event.selection) {
-          xScale.domain([
-            xScale2.invert(d3.event.selection[0]),
-            xScale2.invert(d3.event.selection[1])
-          ]);
-          // Change graph zone when brush moved
-          focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
-            .scale(width / (d3.event.selection[1] - d3.event.selection[0]))
-            .translate(-d3.event.selection[0], 0));
-        }
-  
-        for (const g of this.state.graphElements) {
-          focus
-            .datum<Point[]>(g.data)
-            .select(g.selector)
-            .attr('d', g.object);
-        }
-  
-        xAxisGroup.call(xAxis);
-      };
+    const zoomed = () => {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
+      xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
+
+      for (const g of this.state.graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+
+      xAxisGroup.call(xAxis);
+
+      context
+        .select('.brush')
+        .call(brush.move, [
+          xScale2(d3.event.transform.rescaleX(xScale2).domain()[0]),
+          xScale2(d3.event.transform.rescaleX(xScale2).domain()[1])
+        ]);
+    };
+
+    const brushed = () => {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return;
+
+      if (d3.event.selection) {
+        xScale.domain([
+          xScale2.invert(d3.event.selection[0]),
+          xScale2.invert(d3.event.selection[1])
+        ]);
+        // Change graph zone when brush moved
+        focus
+          .select('.zoom')
+          .call(
+            zoom.transform,
+            d3.zoomIdentity
+              .scale(width / (d3.event.selection[1] - d3.event.selection[0]))
+              .translate(-d3.event.selection[0], 0)
+          );
+      }
+
+      for (const g of this.state.graphElements) {
+        focus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
+
+      xAxisGroup.call(xAxis);
+    };
 
     const zoom: any = d3
       .zoom()
@@ -285,21 +291,29 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .attr('id', 'interval-area-preview-' + idGraphElement)
           .attr('d', areaPreviewGraph);
 
-        this.setState({graphElements: [...this.state.graphElements, {
-          selector: '#interval-area-' + idGraphElement,
-          data: areaData,
-          object: areaMainGraph
-        }]});
+        this.setState({
+          graphElements: [
+            ...this.state.graphElements,
+            {
+              selector: '#interval-area-' + idGraphElement,
+              data: areaData,
+              object: areaMainGraph
+            }
+          ]
+        });
 
         this.setState({
           popperVisible: true,
           xIntervalStart: xStart,
           xIntervalEnd: xEnd,
-          intervalSelectors: [...this.state.intervalSelectors, '#interval-area-' + idGraphElement, '#interval-area-preview-' + idGraphElement]
+          intervalSelectors: [
+            ...this.state.intervalSelectors,
+            '#interval-area-' + idGraphElement,
+            '#interval-area-preview-' + idGraphElement
+          ]
         });
 
         idGraphElement++;
-        
       });
 
     focus
@@ -319,10 +333,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('class', 'brush')
       .call(brush)
       .call(brush.move, xScale2.range());
-
-    
-
-    
 
     svg
       .append('defs')
@@ -354,9 +364,13 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public confirmDelete = (selectors: string[]) => {
-    for(const selector of selectors) {
+    for (const selector of selectors) {
       d3.select(selector).remove(); // Remove in graph
-      this.setState({graphElements: this.state.graphElements.filter((g:GraphElement) => g.selector !== selector)}); // Remove in elements
+      this.setState({
+        graphElements: this.state.graphElements.filter(
+          (g: GraphElement) => g.selector !== selector
+        )
+      }); // Remove in elements
     }
     this.setState({ popperVisible: false, intervalSelectors: [] });
     message.error('Interval has been deleted.', 5);
@@ -389,7 +403,10 @@ class SignalAnnotation extends Component<RouteProps, State> {
     return (
       annotation && (
         <div>
-          <HeaderSignalAnnotation annotation={annotation} />
+          <HeaderSignalAnnotation
+            annotation={annotation}
+            onToggle={this.onChange}
+          />
           <div className='signal-main-container'>
             <div className='signal-legend-container'>
               <Tag color='magenta'>magenta</Tag>
@@ -404,22 +421,21 @@ class SignalAnnotation extends Component<RouteProps, State> {
               <Tag color='geekblue'>geekblue</Tag>
               <Tag color='purple'>purple</Tag>
             </div>
-            <div className='signal-toolbox-container'>
-              Navigation Mode <Switch onChange={this.onChange} /> Annotation
-              Mode
-            </div>
             <div className='signal-graph-container' id='signal' />
           </div>
-          {this.state.popperVisible && this.state.annotation && this.state.xIntervalStart && this.state.xIntervalEnd && (
-            <FormIntervalSignalAnnotation
-              start={this.state.xIntervalStart}
-              end={this.state.xIntervalEnd}
-              selectors={this.state.intervalSelectors}
-              annotation={this.state.annotation}
-              confirmCreate={this.confirmCreate}
-              confirmDelete={this.confirmDelete}
-            />
-          )}
+          {this.state.popperVisible &&
+            this.state.annotation &&
+            this.state.xIntervalStart &&
+            this.state.xIntervalEnd && (
+              <FormIntervalSignalAnnotation
+                start={this.state.xIntervalStart}
+                end={this.state.xIntervalEnd}
+                selectors={this.state.intervalSelectors}
+                annotation={this.state.annotation}
+                confirmCreate={this.confirmCreate}
+                confirmDelete={this.confirmDelete}
+              />
+            )}
         </div>
       )
     );
@@ -427,4 +443,3 @@ class SignalAnnotation extends Component<RouteProps, State> {
 }
 
 export default withRouter(SignalAnnotation);
-

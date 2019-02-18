@@ -140,6 +140,7 @@ class Users extends Component<Props, State> {
               key={1}
               type='edit'
               theme='twoTone'
+              twoToneColor='#6669c9'
               style={{ fontSize: '1.3em' }}
               onClick={() => {
                 this.setState({ modalVisible: true, user });
@@ -151,6 +152,7 @@ class Users extends Component<Props, State> {
               key={2}
               type='delete'
               theme='twoTone'
+              twoToneColor='red'
               style={{ fontSize: '1.3em' }}
               onClick={async () => {
                 this.props.deleteUser(user).then(async () => {
