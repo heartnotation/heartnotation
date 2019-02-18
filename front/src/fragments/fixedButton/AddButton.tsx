@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 interface Props extends RouteComponentProps {
-  url: string;
+  onClick: () => void;
 }
 /*
 class AddButton extends Component<Props> {
@@ -32,7 +32,7 @@ const AddButton = (props: Props) => (
     icon='plus'
     size='large'
     className='fixed-bottom-button'
-    onClick={() => props.history.push(props.url)}
+    onClick={props.onClick}
   />
 );
 

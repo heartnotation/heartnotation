@@ -225,6 +225,10 @@ class Dashboard extends Component<Props, State> {
     });
   }
 
+  public onClick() {
+    return {};
+  }
+
   public render() {
     const { currentAnnotations } = this.state;
     return [
@@ -244,7 +248,7 @@ class Dashboard extends Component<Props, State> {
           onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
-      <AddButton key={2} url='/new/annotations' />
+      <AddButton key={2} onClick={this.onClick} />
     ];
   }
 }
