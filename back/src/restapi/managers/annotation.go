@@ -44,7 +44,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v := mux.Vars(r)
-	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
+	if len(v) != 1 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
@@ -64,62 +64,25 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-
-	if !a.SignalID || !a.Name || !a.OrganizationID || !a.TagsID {
+	var a d.Annotation
+	json.NewDecoder(r.Body).Decode(&a)
+	if a.SignalID == nil || a.Name == nil || a.OrganizationID == nil || a.TagsID == nil {
 		http.Error(w, "invalid args", 204)
 		return
 	}
-
 	db := u.GetConnection().Set("gorm:auto_preload", true)
-	var a d.Annotation
-	json.NewDecoder(r.Body).Decode(&a)
-
 	tags := []m.Tag{}
-
 	if u.CheckErrorCode(db.Find(&tags, a.TagsID).Error, w) {
 		return
 	}
-
-	if len(tags) != len(a.TagsID) || a.SignalID == nil || a.Name == "" {
-		http.Error(w, "invalid args", 204)
-		return
-	}
-	if a.ParentID != 0 {
-		parent := &m.Annotation{ID: a.ParentID}
-		err = db.Find(&parent).Error
-		if err != nil {
-			u.CheckErrorCode(err, w)
-			return
-		}
-	}
-	var status int
-	if a.OrganizationID != 0 {
-		status = 2
-	} else {
-		status = 1
-	}
 	date := time.Now()
-	annotation := &Annotation{Name: a.Name, OrganizationID: &a.OrganizationID, ParentID: &a.ParentID, SignalID: a.SignalID, StatusID: &status, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
-	if a.OrganizationID == 0 {
-		annotation.OrganizationID = nil
-	}
-	if a.ParentID == 0 {
-		annotation.ParentID = nil
-	}
-	err = db.Create(&annotation).Error
-	if err != nil {
-		u.CheckErrorCode(err, w)
+	annotation := m.Annotation{Name: *a.Name, OrganizationID: *a.OrganizationID, ParentID: a.ParentID, SignalID: *a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	if u.CheckErrorCode(db.Create(&annotation).Error, w) {
 		return
 	}
-	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
-	if err != nil {
-		u.CheckErrorCode(err, w)
+	if u.CheckErrorCode(db.First(&annotation, annotation.ID).Error, w) {
 		return
 	}
-	annotation.ParentID = nil
-	annotation.OrganizationID = nil
-	annotation.StatusID = nil
-
 	u.RespondCreate(w, annotation)
 }
 
@@ -128,19 +91,10 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
+	annotations := []m.Annotation{}
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error, w) {
 		return
 	}
-
-	for i := range *annotations {
-		arr := *annotations
-		arr[i].OrganizationID = nil
-		arr[i].StatusID = nil
-	}
-
 	u.Respond(w, annotations)
 }
 
@@ -149,32 +103,27 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	annotation := Annotation{}
+	annotation := m.Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&annotation, vars["id"]).Error, w) {
 		return
 	}
-
 	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))
 	if e != nil {
 		http.Error(w, e.Error(), 500)
 	}
 	annotation.Signal = signal
-	annotation.OrganizationID = nil
-	annotation.StatusID = nil
-
 	u.Respond(w, annotation)
 }
 
+/*
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	db := u.GetConnection()
-	var annotation Annotation
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+	var annotation d.Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
 
@@ -187,8 +136,9 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, annotation)
 }
+*/
 
-func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
+func formatToJSONFromAPI(api string) ([][]*m.Point, error) {
 	httpResponse, err := http.Get(api)
 	if err != nil {
 		return nil, err
@@ -205,7 +155,7 @@ func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
 	} else {
 		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
 	}
-	signalFormated, err := s.FormatData(dataBrut, int(leads))
+	signalFormated, err := m.FormatData(dataBrut, int(leads))
 	if err != nil {
 		return nil, err
 	}

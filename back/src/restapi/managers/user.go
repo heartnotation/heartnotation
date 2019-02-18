@@ -13,7 +13,6 @@ import (
 
 // GetAllUsers users
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	log.Println("a")
 	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
 		return
 	}
@@ -30,102 +29,67 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["users"], w, r) {
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
 	var a d.User
 	json.NewDecoder(r.Body).Decode(&a)
-
+	if a.Mail == nil || a.OrganizationsID == nil || a.RolesID == nil {
+		http.Error(w, "invalid args", 204)
+		return
+	}
+	db := u.GetConnection().Set("gorm:auto_preload", true)
 	organizations := []m.Organization{}
 	roles := []m.Role{}
-
-	err := db.Find(&organizations, a.OrganizationsID).Error
-	if err != nil {
-		u.CheckErrorCode(err, w)
+	if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
 		return
 	}
-
-	err = db.Find(&roles, a.RolesID).Error
-	if err != nil {
-		u.CheckErrorCode(err, w)
+	if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
 		return
 	}
-
-	if len(organizations) != len(a.OrganizationsID) {
-		http.Error(w, "Organization not found", 204)
+	if len(organizations) != len(a.OrganizationsID) || len(roles) != len(a.RolesID) {
+		http.Error(w, "invalid args", 204)
 		return
 	}
-
-	user := &m.User{Mail: *a.Mail, Roles: roles, Organizations: organizations, IsActive: true}
-
-	err = db.Create(&user).Error
-
-	if err != nil {
-		http.Error(w, err.Error(), 403)
+	user := m.User{Mail: *a.Mail, Roles: roles, Organizations: organizations, IsActive: true}
+	if u.CheckErrorCode(db.Create(&user).Error, w) {
 		return
 	}
-
 	u.Respond(w, user)
 }
 
-/*
-// GetAllUsers return users from database
-func GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
-		return
-	}
-	users := &[]m.User{}
-	err := u.GetConnection().Preload("Role").Preload("Organizations").Find(&users).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
-		return
-	}
-
-	for i := range *users {
-		arr := *users
-		arr[i].Roles = nil
-	}
-
-	u.Respond(w, users)
-}*/
-
 // Find user by ID using GET Request
 func FindUserByID(w http.ResponseWriter, r *http.Request) {
-	log.Println("c")
 	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
 		return
 	}
 	user := m.User{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&user, vars["id"]).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&user, vars["id"]).Error, w) {
 		return
 	}
-
 	u.Respond(w, user)
 }
 
 // DeleteUser disable user give in URL information (IsActive -> false)
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("d")
 	if u.CheckMethodPath("DELETE", u.CheckRoutes["users"], w, r) {
 		return
 	}
-	db := u.GetConnection()
 	user := m.User{}
-	vars := mux.Vars(r)
-
-	err := db.First(&user, vars["id"]).Error
-	if err != nil {
-		http.Error(w, err.Error(), 404)
+	v := mux.Vars(r)
+	if len(v) != 1 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+	db := u.GetConnection()
+	if u.CheckErrorCode(db.First(&user, v["id"]).Error, w) {
 		return
 	}
 	user.IsActive = false
 	db.Save(&user)
 }
 
+/*
 // ModifyUser modifies an annotation
 func ModifyUser(w http.ResponseWriter, r *http.Request) {
-	log.Println("e")
 	if u.CheckMethodPath("PUT", u.CheckRoutes["users"], w, r) {
 		return
 	}
@@ -158,7 +122,7 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			u.CheckErrorCode(err, w)
 			return
-		}*/
+		}
 
 	user = &m.User{ID: *a.ID, Mail: *a.Mail, Roles: roles, Organizations: organizations, IsActive: true}
 
@@ -168,3 +132,4 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, user)
 }
+*/
