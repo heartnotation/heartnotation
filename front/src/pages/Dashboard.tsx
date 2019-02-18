@@ -247,7 +247,7 @@ class Dashboard extends Component<Props, State> {
       <AddButton
         key={2}
         onClick={() => {
-          return;
+          this.props.history.push('/new/annotations');
         }}
       />
     ];
