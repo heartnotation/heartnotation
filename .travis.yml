@@ -25,8 +25,15 @@ jobs:
         - cd back/src/restapi
       install:
         - dep ensure -vendor-only
+      before_script:
+        - sudo /etc/init.d/postgresql stop
+        - docker-compose up -d database
+        - go run main.go &
+        - sleep 5
       script:
         - go test -v -cover ./...
+      after_script:
+        - docker-compose down
 
     # Deploying the API
     - stage: deploy
@@ -69,7 +76,7 @@ jobs:
       before_script:
         - export APP=$REPO/web-app
       script:
-        - docker build --build-arg api=$SERVER_URL -t $APP:$TAG ./front
+        - docker build --build-arg api=$SERVER_URL client_id=$CLIENT_ID -t $APP:$TAG ./front
       deploy:
         provider: script
         script: bash .travis/deploy.sh
