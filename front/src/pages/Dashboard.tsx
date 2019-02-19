@@ -1,6 +1,5 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
-import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation, Organization, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
@@ -95,17 +94,22 @@ class Dashboard extends Component<Props, State> {
         {
           title: 'Organization',
           dataIndex: 'organization.name',
-          filters: this.state.initialAnnotations
-            .map((a: Annotation) => a.organization.name)
-            .filter((o, i, array) => array.indexOf(o) === i)
-            .map(o => ({ text: o, value: o })),
-          onFilter: (value: string, record: Annotation) =>
-            record.organization.name.indexOf(value) === 0,
-          sorter: (a: Annotation, b: Annotation) =>
-            a.organization.name.localeCompare(b.organization.name, 'en', {
-              sensitivity: 'base',
-              ignorePunctuation: true
-            }),
+          sorter: (a: Annotation, b: Annotation) => {
+            if (a.organization === undefined) {
+              return -1;
+            }
+            if (b.organization === undefined) {
+              return 1;
+            }
+            return a.organization.name.localeCompare(
+              b.organization.name,
+              'en',
+              {
+                sensitivity: 'base',
+                ignorePunctuation: true
+              }
+            );
+          },
           render: (_, record: Annotation) => {
             const colors = [
               'geekblue',
@@ -121,17 +125,20 @@ class Dashboard extends Component<Props, State> {
               'red'
             ];
             const { organization } = record;
-            const ui = (
-              <span>
-                <Tag
-                  color={colors[(organization.id % colors.length) - 1]}
-                  key={organization.name}
-                >
-                  {organization.name}
-                </Tag>
-              </span>
-            );
-            return ui;
+            if (organization) {
+              const ui = (
+                <span>
+                  <Tag
+                    color={colors[(organization.id % colors.length) - 1]}
+                    key={organization.name}
+                  >
+                    {organization.name}
+                  </Tag>
+                </span>
+              );
+              return ui;
+            }
+            return '';
           }
         }
       ],
@@ -287,7 +294,7 @@ class Dashboard extends Component<Props, State> {
           }
         }
         const organizations = searches.get('organization');
-        if (organizations) {
+        if (organizations && record.organization) {
           if (
             !record.organization.name
               .toLowerCase()
