@@ -12,7 +12,7 @@ import { Authenticated, authenticate } from './utils/auth';
 import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
-import PageNotFound from './pages/errors/PageNotFound';
+import NotFound from './pages/errors/NotFound';
 
 const r = {
   defaultRoute: {
@@ -127,13 +127,14 @@ class App extends Component<
       );
     }
     if (user) {
+      console.log(user.role.name);
       if (
         r.routes
           .map(p => p.path)
           .concat('/new/tags')
           .every(p => window.location.pathname !== p)
       ) {
-        return <PageNotFound />;
+        return <NotFound />;
       }
       return (
         <Authenticated user={user}>

@@ -6,7 +6,7 @@ import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
-import PageNotFound from './errors/PageNotFound';
+import NotFound from './errors/NotFound';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -65,7 +65,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       annotation = await getAnnotation(parseInt(id, 10));
     } catch (e) {
       if (e.status === 404) {
-        return <PageNotFound/>;
+        return <NotFound/>;
       }
       return;
     }
