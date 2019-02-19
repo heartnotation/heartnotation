@@ -128,18 +128,6 @@ class Dashboard extends Component<Props, State> {
           sensitivity: 'base',
           ignorePunctuation: true
         })
-    },
-    {
-      title: 'Edit',
-      dataIndex: 'edit',
-      render: _ => (
-        <Icon
-          className='anticon-edit-dashboard'
-          type='edit'
-          theme='twoTone'
-          twoToneColor='#6669c9'
-        />
-      )
     }
   ];
 
