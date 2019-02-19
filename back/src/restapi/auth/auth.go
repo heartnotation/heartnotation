@@ -52,7 +52,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userFound := u.User{}
-	err = utils.GetConnection().Set("gorm:auto_preload", true).Where("mail=?", googleUser.Email).Find(&userFound).Error
+	err = utils.GetConnection().Set("gorm:auto_preload", true).Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&userFound).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -144,7 +144,7 @@ func getUserFromClaims(claims jwt.Claims) (*u.User, error) {
 
 	var u u.User
 
-	if err := db.Set("gorm:auto_preload", true).Where("mail=?", googleUser.Email).Find(&u).Error; err != nil {
+	if err := db.Set("gorm:auto_preload", true).Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&u).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil
