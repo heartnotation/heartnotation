@@ -168,16 +168,20 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
 	db.Where(a.ID).Find(&annotation)
 
-	if len(a.TagsID) <= 0 {
-		http.Error(w, "You must provide some authorized tags", 400)
-		return
-	}
-
 	if annotation.Status.ID > 2 {
 		if annotation.Organization != nil && annotation.Organization.ID != uint(a.OrganizationID) {
 			http.Error(w, "Cannot change organization for started annotations", 400)
 			return
 		}
+		if !compareTags(a, annotation) {
+			http.Error(w, "Cannot change authorized tags for started annotations", 400)
+			return
+		}
+	}
+
+	if len(a.TagsID) <= 0 {
+		http.Error(w, "You must provide some authorized tags", 400)
+		return
 	}
 
 	m := a.toMap(annotation)

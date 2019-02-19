@@ -35,6 +35,7 @@ type dto struct {
 	SignalID       int    `json:"signal_id,omitempty"`
 	ParentID       int    `json:"parent_id,omitempty"`
 	TagsID         []int  `json:"tags,omitempty"`
+	StatusID       int    `json:"status_id,omitempty"`
 }
 
 // TableName sets table name of the struct
@@ -62,12 +63,17 @@ func (d dto) toMap(annotation Annotation) map[string]interface{} {
 	m["organization_id"] = nil
 
 	var newStatus uint
-	if d.OrganizationID == 0 {
-		newStatus = 1
-	} else if annotation.Status.ID < 3 && d.OrganizationID != 0 {
-		newStatus = 2
+
+	if uint(d.StatusID) != annotation.Status.ID {
+		newStatus = uint(d.StatusID)
 	} else {
-		newStatus = annotation.Status.ID
+		if d.OrganizationID == 0 {
+			newStatus = 1
+		} else if annotation.Status.ID < 3 && d.OrganizationID != 0 {
+			newStatus = 2
+		} else {
+			newStatus = annotation.Status.ID
+		}
 	}
 
 	status := &s.Status{}
@@ -80,4 +86,17 @@ func (d dto) toMap(annotation Annotation) map[string]interface{} {
 	m["edit_date"] = time.Now()
 
 	return m
+}
+
+func compareTags(d dto, a Annotation) bool {
+	if len(d.TagsID) != len(a.Tags) {
+		return false
+	}
+
+	for index, tag := range a.Tags {
+		if tag.ID != uint(d.TagsID[index]) {
+			return false
+		}
+	}
+	return true
 }
