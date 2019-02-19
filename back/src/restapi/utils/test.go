@@ -20,6 +20,7 @@ var CheckRoutes = map[string]string{
 	"annotationscomments": "/annotation/comments",
 	"enumstatus":          "/enumstatus",
 	"intervaltags":        "/interval/tags",
+	"interval":            "/interval",
 	"intervals":           "/intervals",
 	"intervalscomment":    "/intervals/comment",
 	"intervalcomments":    "/interval/comments",
@@ -29,6 +30,7 @@ var CheckRoutes = map[string]string{
 	"roles":               "/roles",
 	"signal":              "/signal",
 	"status":              "/status",
+	"tag":                 "/tag",
 	"tags":                "/tags",
 	"users":               "/users"}
 

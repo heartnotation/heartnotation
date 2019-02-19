@@ -29,6 +29,9 @@ func main() {
 
 	// Tags
 	router.HandleFunc("/tags", m.GetAllTags).Methods("GET")
+	router.HandleFunc("/tag", m.CreateTag).Methods("POST")
+	router.HandleFunc("/tag/{id}", m.RemoveTagByID).Methods("DELETE")
+	router.HandleFunc("/tag", m.UpdateTagByID).Methods("PUT")
 
 	// EnumStatus
 	router.HandleFunc("/enumstatus", m.GetAllEnumStatus).Methods("GET")
@@ -48,14 +51,14 @@ func main() {
 
 	// Interval
 	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
-	router.HandleFunc("/interval/tags/{id}", m.AddTagsOnIntervalByID).Methods("POST")
-	router.HandleFunc("/interval/comments/{id}", m.GetCommentOnIntervalByID).Methods("GET")
+	router.HandleFunc("/interval/{id}/tags", m.AddTagsOnIntervalByID).Methods("POST")
+	router.HandleFunc("/interval/{id}/comments", m.GetCommentOnIntervalByID).Methods("GET")
+	router.HandleFunc("/interval", m.CreateInterval).Methods("POST")
+	router.HandleFunc("/interval/{id}", m.RemoveIntervalByID).Methods("DELETE")
 
-	/*
-		router.HandleFunc("/intervals", i.CreateInterval).Methods("POST")
-		router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
-		router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
-		router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
+	/*router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
+	router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
+	router.HandleFunc("/intervals/comment", i.CreateComment).Methods("POST")
 	*/
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
