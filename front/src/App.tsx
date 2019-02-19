@@ -4,6 +4,7 @@ import AppRouter from './Routes';
 import AnnotationForm from './pages/CreateAnnotationForm';
 import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
+import EditAnnotationForm from './pages/EditAnnotationForm';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
