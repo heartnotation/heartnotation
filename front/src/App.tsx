@@ -15,7 +15,6 @@ import Login from './pages/Login';
 import NotFound from './pages/errors/NotFound';
 import Forbidden from './pages/errors/Forbidden';
 
-
 const r = {
   defaultRoute: {
     path: '/',
@@ -119,6 +118,8 @@ class App extends Component<
 
   public render = () => {
     const { logged, token, user } = this.state;
+    console.log(window.location.pathname.split('/'));
+
     if (token && !logged) {
       return (
         <img
@@ -129,21 +130,29 @@ class App extends Component<
       );
     }
     if (user) {
-      console.log(user.role.name);
-      const f = r.routes.find(p => window.location.pathname === p.path);
-      if (!window.location.pathname.startsWith('/annotation/')){ 
-        if(f === undefined){
-          const fhidden = r.hiddenRoutes.find(p => window.location.pathname === p.path);
-          if(fhidden === undefined){
+      const checkIntUrl = window.location.pathname.split('/');
+      if (checkIntUrl.length === 3 && checkIntUrl[1] === 'annotations') {
+        if (isNaN(Number(checkIntUrl[2]))) {
+          return <NotFound />;
+        } else if (!r.hiddenRoutes[0].roles.includes(user.role.name)) {
+          return <Forbidden />;
+        }
+      } else {
+        const f = r.routes.find(p => window.location.pathname === p.path);
+        if (f === undefined) {
+          const fhidden = r.hiddenRoutes.find(
+            p => window.location.pathname === p.path
+          );
+          if (fhidden === undefined) {
             return <NotFound />;
-          } else if(!fhidden.roles.includes(user.role.name)){
+          } else if (!fhidden.roles.includes(user.role.name)) {
             return <Forbidden />;
           }
-        } else if(!f.roles.includes(user.role.name)){
+        } else if (!f.roles.includes(user.role.name)) {
           return <Forbidden />;
         }
       }
-      
+
       return (
         <Authenticated user={user}>
           <AppRouter
