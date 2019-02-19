@@ -6,6 +6,7 @@ import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
+import PageNotFound from './errors/PageNotFound';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -59,7 +60,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
     } = this.props;
 
     const colors = ['blue', 'green', 'red'];
-    const annotation = await getAnnotation(parseInt(id, 10));
+    let annotation;
+    try {
+      annotation = await getAnnotation(parseInt(id, 10));
+    } catch (e) {
+      if (e.status === 404) {
+        return <PageNotFound/>;
+      }
+      return;
+    }
     let leads: Point[][];
     let idGraphElement: number = 0;
 
@@ -344,7 +353,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
-
 
   public confirmDelete = (selectors: string[]) => {
     for (const selector of selectors) {

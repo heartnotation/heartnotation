@@ -12,6 +12,7 @@ import { Authenticated, authenticate } from './utils/auth';
 import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
+import PageNotFound from './pages/errors/PageNotFound';
 
 const r = {
   defaultRoute: {
@@ -113,9 +114,9 @@ class App extends Component<
   private handleSuccess = (user: User) => {
     this.setState({ user, logged: true });
   }
+
   public render = () => {
     const { logged, token, user } = this.state;
-
     if (token && !logged) {
       return (
         <img
@@ -126,6 +127,14 @@ class App extends Component<
       );
     }
     if (user) {
+      if (
+        r.routes
+          .map(p => p.path)
+          .concat('/new/tags')
+          .every(p => window.location.pathname !== p)
+      ) {
+        return <PageNotFound />;
+      }
       return (
         <Authenticated user={user}>
           <AppRouter
