@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
-import { Interval } from './objects';
+import { Interval, AnnotationComments } from './objects';
 
 const get = <T>(url: string): Promise<T> => {
   const jwt = localStorage.getItem('auth_token');

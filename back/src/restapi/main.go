@@ -22,8 +22,8 @@ func main() {
 	//router.HandleFunc("/annotations", a.UpdateAnnotation).Methods("PUT")
 	router.HandleFunc("/annotations", m.CreateAnnotation).Methods("POST")
 	router.HandleFunc("/annotations/{id}", m.DeleteAnnotation).Methods("DELETE")
-	router.HandleFunc("/annotation/comments/{id}", m.GetCommentOnAnnotationByID).Methods("GET")
-	router.HandleFunc("/annotation/comments/{id}", m.CreateCommentOnAnnotation).Methods("POST")
+	router.HandleFunc("/annotation/comments/{id}", m.GetCommentsOnAnnotationByID).Methods("GET")
+	router.HandleFunc("/annotation/comments", m.CreateCommentOnAnnotation).Methods("POST")
 	router.HandleFunc("/signal/{id}", m.CheckSignal).Methods("GET")
 
 	// Organizations
