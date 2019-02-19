@@ -22,9 +22,9 @@ func GetAllIntervals(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, intervals)
 }
 
-// FindInterval get an interval
-func FindIntervalById(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
+// FindIntervalByID get an interval bi ID
+func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -55,7 +55,7 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 
 // RemoveIntervalByID Remove an interval by his ID
 func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("DELETE", u.CheckRoutes["tag"], w, r) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	interval := m.Interval{}
@@ -72,7 +72,7 @@ func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
 
 // AddTagsOnIntervalByID create a tag on an interval
 func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["intervaltags"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	var i d.Interval

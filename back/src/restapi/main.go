@@ -52,9 +52,11 @@ func main() {
 	// Interval
 	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
 	router.HandleFunc("/interval/{id}/tags", m.AddTagsOnIntervalByID).Methods("POST")
+	router.HandleFunc("/intervals/comments", m.GetAllIntervalsComments).Methods("GET")
 	router.HandleFunc("/interval/{id}/comments", m.GetCommentOnIntervalByID).Methods("GET")
 	router.HandleFunc("/interval", m.CreateInterval).Methods("POST")
 	router.HandleFunc("/interval/{id}", m.RemoveIntervalByID).Methods("DELETE")
+	router.HandleFunc("/interval/{id}", m.FindIntervalByID).Methods("GET")
 
 	/*router.HandleFunc("/intervals/tags", i.CreateIntervalTag).Methods("POST")
 	router.HandleFunc("/intervals/comment/{id}", i.GetIntervalComment).Methods("GET")
