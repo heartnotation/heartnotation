@@ -86,18 +86,6 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.RespondCreate(w, annotation)
 }
 
-// FindAnnotations receive request to get all annotations in database
-func FindAnnotations(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
-		return
-	}
-	annotations := []m.Annotation{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error, w) {
-		return
-	}
-	u.Respond(w, annotations)
-}
-
 // FindAnnotationByID Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
@@ -117,8 +105,8 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 }
 
 /*
-// ModifyAnnotation modifies an annotation
-func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
+// UpdateAnnotation modifies an annotation
+func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
@@ -126,6 +114,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	var annotation d.Annotation
 	json.NewDecoder(r.Body).Decode(&annotation)
 	annotation.EditDate = time.Now()
+	//db.Model(&annotation).Association("OK").Replace()
 
 	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
 		return

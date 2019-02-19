@@ -5,13 +5,13 @@ import (
 )
 
 type Status struct {
-	ID           uint       `json:"id"`
+	ID           int        `json:"id"`
 	Date         time.Time  `json:"date"`
-	EnumStatusID uint       `json:"enumstatus_id"`
+	EnumStatusID int        `json:"organization_id,omitempty"`
 	EnumStatus   EnumStatus `json:"enum_status" gorm:"foreignkey:EnumStatusID"`
-	AnnotationID uint       `json:"annotation_id,omitempty"`
-	Annotation   Annotation `json:"annotation,omitempty" gorm:"foreignkey:AnnotationID;PRELOAD:false"`
-	UserID       uint       `json:"user_id"`
+	AnnotationID int        `json:"annotation_id,omitempty"`
+	Annotation   Annotation `json:"annotation" gorm:"foreignkey:AnnotationID;PRELOAD:false"`
+	UserID       int        `json:"user_id"`
 	User         User       `json:"user" gorm:"foreignkey:UserID"`
 }
 
