@@ -1,41 +1,34 @@
 import axios from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
 import { Interval } from './objects';
+import { string } from 'prop-types';
+
+const request = <T>(
+  method: string,
+  url: string,
+  body: any | undefined
+): Promise<T> => {
+  return axios({ method, url, data: body })
+    .then(res => res.data)
+    .catch(err => {
+      console.log(err.response.status);
+    });
+};
 
 const get = <T>(url: string): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .get<T>(`${API_URL}/${url}`, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return request<T>('GET', `${API_URL}/${url}`, undefined);
 };
 
 const post = <T>(url: string, values: any): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .post<T>(`${API_URL}/${url}`, values, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return axios.post<T>(`${API_URL}/${url}`, values).then(res => res.data);
 };
 
 const del = <T>(url: string): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .delete(`${API_URL}/${url}`, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return axios.delete(`${API_URL}/${url}`).then(res => res.data);
 };
 
 const put = <T>(url: string, values: any): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .put(`${API_URL}/${url}`, values, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return axios.put(`${API_URL}/${url}`, values).then(res => res.data);
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
