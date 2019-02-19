@@ -4,7 +4,7 @@ package models
 type Role struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	Users    []User `json:"users" gorm:"many2many:user_role;"`
+	Users    []User `json:"users,omitempty" gorm:"many2many:user_role;"`
 	IsActive bool   `json:"is_active"`
 }
 
