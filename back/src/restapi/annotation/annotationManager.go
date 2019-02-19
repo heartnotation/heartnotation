@@ -126,7 +126,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		u.CheckErrorCode(err, w)
 		return
 	}
-	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
+	err = db.Set("gorm:auto_preload", true).First(&annotation, annotation.ID).Error
 	if err != nil {
 		u.CheckErrorCode(err, w)
 		return
@@ -151,7 +151,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	annotations := &[]Annotation{}
 
-  db := u.GetConnection().Set("gorm:auto_preload", true)
+	db := u.GetConnection().Set("gorm:auto_preload", true)
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
@@ -164,7 +164,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-  if err != nil {
+	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
 	}
@@ -186,13 +186,13 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	annotation := Annotation{}
 	vars := mux.Vars(r)
 
-  var err error
+	var err error
 	var currentUserOganizations []uint
 	contextUser := c.Get(r, "user").(*user.User)
 	for i := range contextUser.Organizations {
 		currentUserOganizations = append(currentUserOganizations, contextUser.Organizations[i].ID)
 	}
-  db := u.GetConnection().Set("gorm:auto_preload", true)
+	db := u.GetConnection().Set("gorm:auto_preload", true)
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
@@ -249,7 +249,7 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  contextUser := c.Get(r, "user").(*user.User)
+	contextUser := c.Get(r, "user").(*user.User)
 
 	switch contextUser.Role.ID {
 	// Role Annotateur

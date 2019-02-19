@@ -4,7 +4,6 @@ import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
 import { withAuth, AuthProps } from '../utils/auth';
-import { withRouter, RouteComponentProps } from 'react-router';
 import EditUserForm from './EditUserForm';
 import UserCreation from './UserCreation';
 import AddButton from '../fragments/fixedButton/AddButton';
@@ -17,7 +16,7 @@ export interface State {
   creationVisible: boolean;
 }
 
-interface Props extends RouteComponentProps, AuthProps {
+interface Props extends AuthProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
@@ -26,7 +25,7 @@ interface Props extends RouteComponentProps, AuthProps {
   deleteUser: (datas: User) => Promise<User>;
 }
 
-export interface ColumnsPersonnalizedUser extends ColumnProps<User> {
+interface ConditionnalColumn extends ColumnProps<User> {
   roles: string[];
 }
 
@@ -52,7 +51,7 @@ class Users extends Component<Props, State> {
     return annotations;
   }
 
-  public columns: ColumnsPersonnalizedUser[] = [
+  public columns: ConditionnalColumn[] = [
     {
       title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
@@ -287,8 +286,9 @@ class Users extends Component<Props, State> {
       <Table<User>
         key={1}
         rowKey='id'
-        columns={this.columns.filter(value => value.roles.includes(this.props.user.role.name)
-              )}
+        columns={this.columns.filter(value =>
+          value.roles.includes(this.props.user.role.name)
+        )}
         dataSource={currentUsers}
         pagination={{
           position: 'bottom',
@@ -310,12 +310,14 @@ class Users extends Component<Props, State> {
           modalVisible={modifyVisible}
         />
       ),
-      this.props.user.role.name === 'Admin' && <AddButton
-        key={3}
-        onClick={() => {
-          this.setState({ creationVisible: true });
-        }}
-      />,
+      this.props.user.role.name === 'Admin' && (
+        <AddButton
+          key={3}
+          onClick={() => {
+            this.setState({ creationVisible: true });
+          }}
+        />
+      ),
       <UserCreation
         key={4}
         getOrganizations={this.props.getOrganizations}
@@ -329,4 +331,4 @@ class Users extends Component<Props, State> {
   }
 }
 
-export default withRouter(withAuth(Users));
+export default withAuth(Users);

@@ -2,7 +2,7 @@ import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation,Organization ,api } from '../utils';
+import { Annotation, Organization, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -20,7 +20,7 @@ interface Props extends RouteComponentProps, AuthProps {
   getAnnotations: () => Promise<Annotation[]>;
 }
 
-export interface ColumnsPersonnalizedAnnotation extends ColumnProps<Annotation> {
+interface ConditionnalColumn extends ColumnProps<Annotation> {
   roles: string[];
 }
 
@@ -51,7 +51,7 @@ class Dashboard extends Component<Props, State> {
     return annotations;
   }
 
-  public columns: ColumnsPersonnalizedAnnotation[] = [
+  public columns: ConditionnalColumn[] = [
     {
       title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
@@ -134,7 +134,8 @@ class Dashboard extends Component<Props, State> {
             return ui;
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('creation_date', 'creation date'),
@@ -329,8 +330,9 @@ class Dashboard extends Component<Props, State> {
       <Table<Annotation>
         key={1}
         rowKey='id'
-        columns={this.columns.filter(value => value.roles.includes(this.props.user.role.name)
-          )}
+        columns={this.columns.filter(value =>
+          value.roles.includes(this.props.user.role.name)
+        )}
         dataSource={currentAnnotations}
         pagination={{
           position: 'bottom',
@@ -358,12 +360,13 @@ class Dashboard extends Component<Props, State> {
         />
       ),
       this.props.user.role.name !== 'Annotateur' && (
-      <AddButton
-        key={3}
-        onClick={() => {
-          this.props.history.push('/new/annotations');
-        }}
-      />)
+        <AddButton
+          key={3}
+          onClick={() => {
+            this.props.history.push('/new/annotations');
+          }}
+        />
+      )
     ];
   }
 }

@@ -157,9 +157,12 @@ class App extends Component<
           <Authenticated user={user}>
             <AppRouter
               defaultRoute={r.defaultRoute}
-              routes={r.routes.filter(value => value.roles.includes(user.role.name)
+              routes={r.routes.filter(value =>
+                value.roles.includes(user.role.name)
               )}
-              hiddenRoutes={r.hiddenRoutes}
+              hiddenRoutes={r.hiddenRoutes.filter(value =>
+                value.roles.includes(user.role.name)
+              )}
             />
           </Authenticated>
         )

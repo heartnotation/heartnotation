@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
-import { withRouter, RouteComponentProps } from 'react-router';
 // TODO
 
-interface Props extends RouteComponentProps, AuthProps {}
-
-class Tags extends Component<Props> {
+class Tags extends Component<AuthProps> {
   public render() {
     return (
       this.props.user.role.name === 'Admin' && (
@@ -19,4 +16,4 @@ class Tags extends Component<Props> {
     );
   }
 }
-export default withRouter(withAuth(Tags));
+export default withAuth(Tags);
