@@ -11,13 +11,19 @@ interface Props {
 }
 
 export default (props: Props) => {
-  const { clientId, onSuccess, onFailure } = props;
+  const { onSuccess, onFailure } = props;
   const handleSucces = (response: any) => {
     auth
       .authenticate(response.getAuthResponse().access_token)
       .then(onSuccess)
       .catch(onFailure);
   };
+
+  const clientId = process.env.REACT_APP_CLIENT_ID;
+  if (!clientId) {
+    return <div>REACT_APP_CLIENT_ID variable not found</div>;
+  }
+
   return (
     <div className='login-container'>
       <img className='login-logo' src={logo} alt='Heartnotation Logo' />

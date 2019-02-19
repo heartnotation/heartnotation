@@ -93,7 +93,7 @@ const r = {
   ]
 };
 class App extends Component<
-  { clientId: string },
+  {},
   { user?: User; logged: boolean; token?: string }
 > {
   constructor(props: any) {
