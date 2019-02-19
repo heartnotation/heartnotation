@@ -16,7 +16,7 @@ func GetAllIntervals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	intervals := []m.Interval{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&intervals).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Tags").Find(&intervals).Error, w) {
 		return
 	}
 	u.Respond(w, intervals)

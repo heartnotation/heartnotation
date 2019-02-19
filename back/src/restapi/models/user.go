@@ -4,8 +4,8 @@ package models
 type User struct {
 	ID            int            `json:"id"`
 	Mail          string         `json:"mail"`
-	Organizations []Organization `json:"organizations" gorm:"many2many:user_organization"`
-	Roles         []Role         `json:"roles" gorm:"many2many:user_role;"`
+	Organizations []Organization `json:"organizations,omitempty" gorm:"many2many:user_organization"`
+	Roles         []Role         `json:"roles,omitempty" gorm:"many2many:user_role;"`
 	IsActive      bool           `json:"is_active"`
 }
 

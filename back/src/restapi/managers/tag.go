@@ -16,7 +16,7 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tags := []m.Tag{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&tags).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Find(&tags).Error, w) {
 		return
 	}
 	u.Respond(w, tags)
@@ -69,7 +69,7 @@ func UpdateTagByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad args", 204)
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
+	db := u.GetConnection()
 	tag := m.Tag{}
 	if u.CheckErrorCode(db.First(&tag, *t.ID).Error, w) {
 		return
