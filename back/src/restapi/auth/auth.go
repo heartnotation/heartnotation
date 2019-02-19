@@ -52,7 +52,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userFound := u.User{}
-	err = utils.GetConnection().Preload("Role").Where("mail=?", googleUser.Email).Find(&userFound).Error
+	err = utils.GetConnection().Preload("Role").Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&userFound).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
