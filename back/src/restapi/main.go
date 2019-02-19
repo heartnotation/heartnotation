@@ -54,6 +54,7 @@ func main() {
 	// Interval
 	router.HandleFunc("/intervals", m.GetAllIntervals).Methods("GET")
 	router.HandleFunc("/interval/{id}/tags", m.AddTagsOnIntervalByID).Methods("POST")
+	router.HandleFunc("/interval/comments", m.CreateCommentOnInterval).Methods("POST")
 	router.HandleFunc("/intervals/comments", m.GetAllIntervalsComments).Methods("GET")
 	router.HandleFunc("/interval/{id}/comments", m.GetCommentOnIntervalByID).Methods("GET")
 	router.HandleFunc("/interval", m.CreateInterval).Methods("POST")

@@ -8,7 +8,7 @@ type IntervalComment struct {
 	Comment    string    `json:"comment"`
 	Date       time.Time `json:"date"`
 	IntervalID int       `json:"interval_id,omitempty"`
-	Interval   Interval  `json:"interval" gorm:"foreignkey:AnnotationID"`
+	Interval   Interval  `json:"interval" gorm:"foreignkey:IntervalID"`
 	UserID     int       `json:"user_id"`
 	User       User      `json:"user" gorm:"foreignkey:UserID"`
 }
