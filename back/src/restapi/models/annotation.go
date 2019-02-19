@@ -16,6 +16,7 @@ type Annotation struct {
 	Signal         [][]*Point   `json:"signal,omitempty" gorm:"-"`
 	OrganizationID int          `json:"organization_id,omitempty"`
 	Organization   Organization `json:"organization,omitempty" gorm:"foreignkey:OrganizationID"`
+	Status         []Status     `json:"status" gorm:"foreignkey:AnnotationID"`
 	ParentID       *int         `json:"parent_id,omitempty" gorm:"foreignkey:Parent"`
 	Parent         *Annotation  `json:"parent,omitempty"`
 	Tags           []Tag        `json:"tags,omitempty" gorm:"many2many:annotation_tag"`

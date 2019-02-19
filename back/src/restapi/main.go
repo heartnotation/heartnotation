@@ -32,6 +32,14 @@ func main() {
 	// Tags
 	router.HandleFunc("/tags", m.GetAllTags).Methods("GET")
 
+	// EnumStatus
+	router.HandleFunc("/enumstatus", m.GetAllEnumStatus).Methods("GET")
+	router.HandleFunc("/enumstatus/{id}", m.FindEnumStatusByID).Methods("GET")
+
+	// Status
+	router.HandleFunc("/status", m.GetAllStatus).Methods("GET")
+	router.HandleFunc("/status/{id}", m.FindStatusByID).Methods("GET")
+
 	// Users
 	router.HandleFunc("/users", m.CreateUser).Methods("POST")
 	router.HandleFunc("/users", m.GetAllUsers).Methods("GET")

@@ -7,10 +7,10 @@ import (
 type Status struct {
 	ID           uint       `json:"id"`
 	Date         time.Time  `json:"date"`
-	EnumStatusID uint       `json:"organization_id,omitempty"`
+	EnumStatusID uint       `json:"enumstatus_id"`
 	EnumStatus   EnumStatus `json:"enum_status" gorm:"foreignkey:EnumStatusID"`
 	AnnotationID uint       `json:"annotation_id,omitempty"`
-	Annotation   Annotation `json:"annotation" gorm:"foreignkey:AnnotationID"`
+	Annotation   Annotation `json:"annotation,omitempty" gorm:"foreignkey:AnnotationID;PRELOAD:false"`
 	UserID       uint       `json:"user_id"`
 	User         User       `json:"user" gorm:"foreignkey:UserID"`
 }
