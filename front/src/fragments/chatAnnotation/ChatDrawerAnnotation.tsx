@@ -20,15 +20,6 @@ class ChatDrawerAnnotation extends Component {
   public render() {
     return (
       <div className='chat-drawer-container'>
-        <Button
-          type='primary'
-          icon='message'
-          size='large'
-          onClick={this.showDrawer}
-          className='btn-space'
-        >
-          Comments
-        </Button>
         <Drawer
           title='Annotation Comments'
           placement='right'

@@ -77,13 +77,6 @@ const r = {
       iconName: 'user'
     },
     {
-      path: '/tags',
-      exact: true,
-      component: Tags,
-      title: 'Tags',
-      iconName: 'tags'
-    },
-    {
       path: '/about',
       component: () => <h2>About</h2>,
       title: 'About',

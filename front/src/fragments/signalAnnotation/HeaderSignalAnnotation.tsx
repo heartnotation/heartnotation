@@ -3,6 +3,7 @@ import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
 import { Annotation, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
 import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
+import { forceCenter } from 'd3';
 
 interface State {
   stepProcess: number;
@@ -59,47 +60,6 @@ const InvalidateButton = (props: PropsButton) => {
   );
 };
 
-const CompleteButton = (props: PropsButton) => {
-  const { annotation, handleSubmit } = props;
-  return (
-    <Button
-      type='default'
-      icon='check-circle'
-      size='large'
-      onClick={() => {
-        handleSubmit({
-          ...annotation,
-          status: { ...annotation.status, id: 4 }
-        });
-      }}
-    >
-      Complete
-    </Button>
-  );
-};
-
-const ConditionalButton = (props: PropsButton) => {
-  const { conditionnal_id } = props;
-  console.log(conditionnal_id);
-  if (conditionnal_id === 0) {
-    return <CompleteButton {...props} />;
-  } else if (conditionnal_id === 1) {
-    return (
-      <>
-        <Col span={12}>
-          <InvalidateButton key={1} {...props} />
-        </Col>
-        <Col span={12}>
-          <ValidateButton key={2} {...props} />
-        </Col>
-      </>
-    );
-  } else if (conditionnal_id === 2) {
-    return null;
-  }
-  return null;
-};
-
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -153,18 +113,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         align='middle'
         justify='space-between'
       >
-        <Col span={4}>
-          <Switch
-            checkedChildren={<Icon type='check' />}
-            unCheckedChildren={<Icon type='close' />}
-            defaultChecked={true}
-          />{' '}
-          Display Leads
-        </Col>
-        <Col span={4}>
-          {mode} Mode <Switch onChange={this.handleToggle} />
-        </Col>
-        <Col span={8}>
+        <Col>
           <Steps
             style={{ paddingTop: 30 }}
             progressDot={true}
@@ -181,11 +130,6 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         </Col>
         <Col span={4}>
           <Row type='flex' align='middle' justify='end'>
-            <ConditionalButton
-              conditionnal_id={stepProcess}
-              annotation={annotation}
-              handleSubmit={this.handleSubmit}
-            />
             {error && <Alert message={error} type='error' />}
           </Row>
         </Col>
