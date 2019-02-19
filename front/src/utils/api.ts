@@ -72,6 +72,7 @@ export const changeAnnotation = (datas: Annotation): Promise<Annotation> => {
     status_id: datas.status.id,
     organization_id: datas.organization ? datas.organization.id : undefined,
     parent_id: datas.parent ? datas.parent.id : undefined,
+    tags: datas.tags.map(t => t.id),
     status: undefined,
     organization: undefined,
     parent: undefined

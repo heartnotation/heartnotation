@@ -1,7 +1,7 @@
 export interface Annotation {
   id: number;
   name: string;
-  organization: Organization;
+  organization?: Organization;
   status: Status;
   parent: Annotation;
   signal?: Point[][];
@@ -10,6 +10,7 @@ export interface Annotation {
   edit_date?: Date;
   is_active: boolean;
   is_editable: boolean;
+  tags: Tag[];
 }
 
 export interface Point {
