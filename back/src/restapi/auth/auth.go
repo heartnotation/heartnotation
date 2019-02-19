@@ -144,7 +144,7 @@ func getUserFromClaims(claims jwt.Claims) (*u.User, error) {
 
 	var u u.User
 
-	if err := db.Preload("Role").Where("mail=?", googleUser.Email).Find(&u).Error; err != nil {
+	if err := db.Set("gorm:auto_preload", true).Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&u).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil
