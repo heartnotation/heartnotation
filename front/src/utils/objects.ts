@@ -44,13 +44,20 @@ export interface Role {
 export interface User {
   id: number;
   mail: string;
-  role: Role;
+  role: Role[];
   organizations: Organization[];
   is_active: boolean;
 }
 
 export interface AnnotationCommentPayload {
   content: string;
+}
+
+export interface AnnotationComments {
+  id?: number;
+  comment?: string;
+  date: Date;
+  user?: User;
 }
 
 export interface Interval {

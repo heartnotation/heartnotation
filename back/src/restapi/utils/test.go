@@ -17,18 +17,16 @@ var checkMethods = [4]string{"GET", "POST", "PUT", "DELETE"}
 // CheckRoutes const to test all route
 var CheckRoutes = map[string]string{
 	"annotations":         "/annotations",
-	"annotationscomments": "/annotation/comments",
 	"enumstatus":          "/enumstatus",
 	"intervaltags":        "/interval/tags",
+	"interval":            "/interval",
 	"intervals":           "/intervals",
-	"intervalscomment":    "/intervals/comment",
-	"intervalcomments":    "/interval/comments",
-	"intervalstag":        "/intervals/tag",
-	"intervalstagcomment": "/intervals/tag/comment",
+	"intervalscomments":   "/intervals/comments",
 	"organizations":       "/organizations",
 	"roles":               "/roles",
 	"signal":              "/signal",
 	"status":              "/status",
+	"tag":                 "/tag",
 	"tags":                "/tags",
 	"users":               "/users"}
 

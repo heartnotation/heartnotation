@@ -22,9 +22,9 @@ func GetAllIntervals(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, intervals)
 }
 
-// FindInterval get an interval
-func FindIntervalById(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
+// FindIntervalByID get an interval bi ID
+func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -37,25 +37,42 @@ func FindIntervalById(w http.ResponseWriter, r *http.Request) {
 
 // CreateInterval create an interval
 func CreateInterval(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["intervals"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	var i d.Interval
 	err := json.NewDecoder(r.Body).Decode(&i)
-	if err != nil || i.TimeStart == nil || i.TimeEnd == nil {
+	if err != nil || i.TimeStart == nil || i.TimeEnd == nil || i.AnnotationID == nil && (*i.TimeStart > *i.TimeEnd) {
 		http.Error(w, "Bad args", 204)
 		return
 	}
-	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd}
+	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID}
 	if u.CheckErrorCode(u.GetConnection().Create(&c).Error, w) {
 		return
 	}
 	u.Respond(w, c)
 }
 
+// RemoveIntervalByID Remove an interval by his ID
+func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["interval"], w, r) {
+		return
+	}
+	interval := m.Interval{}
+	v := mux.Vars(r)
+	if len(v) != 1 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad args", 204)
+		return
+	}
+	db := u.GetConnection()
+	if u.CheckErrorCode(db.First(&interval, v["id"]).Error, w) || u.CheckErrorCode(db.Delete(&interval).Error, w) {
+		return
+	}
+}
+
 // AddTagsOnIntervalByID create a tag on an interval
 func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["intervaltags"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	var i d.Interval

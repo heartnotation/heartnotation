@@ -22,7 +22,7 @@ func GetAllIntervalsComments(w http.ResponseWriter, r *http.Request) {
 
 // GetCommentOnIntervalByID get comment of an interval
 func GetCommentOnIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["intervalcomments"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
 		return
 	}
 	vars := mux.Vars(r)

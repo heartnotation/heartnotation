@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
-import { Interval } from './objects';
+import { Interval, AnnotationComments } from './objects';
 
 const get = <T>(url: string): Promise<T> => {
   const jwt = localStorage.getItem('auth_token');
@@ -115,8 +115,15 @@ export const deleteUser = (datas: User): Promise<User> => {
   return del(`${urls.users}/${datas.id}`);
 };
 
+export const getCommentsOnAnnotationById = (
+  id: number
+): Promise<AnnotationComments> => {
+  return get<AnnotationComments>(`${urls.annotationComments}/${id}`);
+};
+
 const urls = {
   annotations: 'annotations',
+  annotationComments: 'annotation/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',

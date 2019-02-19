@@ -84,7 +84,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	db.Model(&user).Update("is_active", false)
 }
 
-// UpdateUser modifies an annotation
+// UpdateUser modifies a user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["users"], w, r) {
 		return
