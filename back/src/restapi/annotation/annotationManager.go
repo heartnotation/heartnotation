@@ -11,8 +11,10 @@ import (
 
 	s "restapi/signal"
 	t "restapi/tag"
+	user "restapi/user"
 	u "restapi/utils"
 
+	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
@@ -32,6 +34,19 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v := mux.Vars(r)
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
+
 	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
@@ -55,6 +70,18 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 	var a dto
 	json.NewDecoder(r.Body).Decode(&a)
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	// Role Gestionnaire & Admin
+	default:
+		break
+	}
 
 	tags := []t.Tag{}
 
@@ -99,7 +126,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		u.CheckErrorCode(err, w)
 		return
 	}
-	err = db.Preload("Organization").Preload("Status").Preload("Tags").Preload("Parent").First(&annotation, annotation.ID).Error
+	err = db.Set("gorm:auto_preload", true).First(&annotation, annotation.ID).Error
 	if err != nil {
 		u.CheckErrorCode(err, w)
 		return
@@ -116,8 +143,27 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
+	var err error
+	var currentUserOganizations []uint
+	contextUser := c.Get(r, "user").(*user.User)
+	for i := range contextUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, contextUser.Organizations[i].ID)
+	}
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error
+
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		err = db.Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).Find(&annotations).Error
+		break
+	// Role Gestionnaire & Admin
+	default:
+		err = db.Find(&annotations).Error
+		break
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -139,7 +185,26 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+
+	var err error
+	var currentUserOganizations []uint
+	contextUser := c.Get(r, "user").(*user.User)
+	for i := range contextUser.Organizations {
+		currentUserOganizations = append(currentUserOganizations, contextUser.Organizations[i].ID)
+	}
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		err = db.Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).First(&annotation, vars["id"]).Error
+		break
+	// Role Gestionnaire & Admin
+	default:
+		err = db.First(&annotation, vars["id"]).Error
+		break
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -182,6 +247,19 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	if len(a.TagsID) <= 0 {
 		http.Error(w, "You must provide some authorized tags", 400)
 		return
+	}
+
+	contextUser := c.Get(r, "user").(*user.User)
+
+	switch contextUser.Role.ID {
+	// Role Annotateur
+	case 1:
+		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		break
+	// Role Gestionnaire & Admin
+	default:
+		break
 	}
 
 	m := a.toMap(annotation)
