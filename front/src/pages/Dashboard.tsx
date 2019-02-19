@@ -1,18 +1,22 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api } from '../utils';
+import { Annotation, Organization, api, Status, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
 import EditAnnotationForm from './EditAnnotationForm';
+import { createCipheriv } from 'crypto';
+import CreateAnnotationForm from './CreateAnnotationForm';
 
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
   currentAnnotations: Annotation[];
   annotation?: Annotation;
-  modalVisibility: boolean;
+  editVisible: boolean;
+  creationVisible: boolean;
+  keepCreationData: boolean;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
@@ -28,7 +32,9 @@ class Dashboard extends Component<Props, State> {
     searches: new Map<string, string>(),
     initialAnnotations: [],
     currentAnnotations: [],
-    modalVisibility: false
+    editVisible: false,
+    creationVisible: false,
+    keepCreationData: true
   };
 
   public async componentDidMount() {
@@ -41,12 +47,6 @@ class Dashboard extends Component<Props, State> {
 
   public async getDatas(): Promise<Annotation[]> {
     const annotations = await this.props.getAnnotations();
-    annotations.forEach((a: Annotation) => {
-      a.creation_date = new Date(a.creation_date);
-      if (a.edit_date) {
-        a.edit_date = new Date(a.edit_date);
-      }
-    });
     return annotations;
   }
 
@@ -190,18 +190,16 @@ class Dashboard extends Component<Props, State> {
     },
     {
       title: 'Status',
-      dataIndex: 'status.name',
-      filters: this.state.initialAnnotations
-        .map((a: Annotation) => a.status.name)
-        .filter((s, i, array) => array.indexOf(s) === i)
-        .map(s => ({ text: s, value: s })),
-      onFilter: (value: string, record: Annotation) =>
-        record.status.name.indexOf(value) === 0,
-      sorter: (a: Annotation, b: Annotation) =>
-        a.status.name.localeCompare(b.status.name, 'en', {
+      dataIndex: 'last_status',
+      sorter: (a: Annotation, b: Annotation) => {
+        return a.last_status.enum_status.name.localeCompare(b.last_status.enum_status.name, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
-        }),
+        });
+      },
+      render: (_, record: Annotation) => {
+        return record.last_status.enum_status.name;
+      },
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
@@ -215,7 +213,7 @@ class Dashboard extends Component<Props, State> {
           twoToneColor='#6669c9'
           onClick={(e: MouseEvent) => {
             e.stopPropagation();
-            this.setState({ modalVisibility: true, annotation });
+            this.setState({ editVisible: true, annotation });
           }}
         />
       ),
@@ -287,11 +285,11 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        const statusName = searches.get('status.name');
-        if (statusName) {
+        const statusName = searches.get('last_status');
+        if (statusName && record.status) {
           if (
-            !record.status.name
-              .toLowerCase()
+            !record.last_status
+              .enum_status.name.toLowerCase()
               .startsWith(statusName.toLowerCase())
           ) {
             return false;
@@ -315,28 +313,54 @@ class Dashboard extends Component<Props, State> {
     });
   }
 
-  public handleCancel = () => {
-    this.closeModal();
+  // Edit Annotation Form
+  public editHandleCancel = () => {
+    this.editCloseModal();
   }
-
-  public handleOk = async () => {
-    this.closeModal();
+  public editHandleOk = async () => {
+    this.editCloseModal();
     const data = await this.getDatas();
     this.setState({
       initialAnnotations: data,
       currentAnnotations: data.slice()
     });
   }
-
-  public closeModal() {
+  public editCloseModal() {
     this.setState({
-      modalVisibility: false,
+      editVisible: false,
       annotation: undefined
     });
   }
 
+  // Create Annotation Form
+  public createHandleOk = async () => {
+    this.createCloseModal();
+    const data = await this.getDatas();
+    this.setState({
+      keepCreationData: false,
+      initialAnnotations: data,
+      currentAnnotations: data.slice()
+    });
+  }
+  public createHandleCancel = () => {
+    this.createCloseModal();
+    this.setState({
+      keepCreationData: true
+    });
+  }
+  public createCloseModal() {
+    this.setState({
+      creationVisible: false
+    });
+  }
+
   public render() {
-    const { currentAnnotations, annotation, modalVisibility } = this.state;
+    const {
+      currentAnnotations,
+      annotation,
+      editVisible,
+      keepCreationData
+    } = this.state;
     return [
       <Table<Annotation>
         key={1}
@@ -356,26 +380,40 @@ class Dashboard extends Component<Props, State> {
           onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
+      this.props.user.role.name !== 'Annotateur' && (
+        <AddButton
+          key={2}
+          onClick={() => {
+            this.setState({ creationVisible: true, keepCreationData: true });
+          }}
+        />
+      ),
       annotation && (
         <EditAnnotationForm
-          key={2}
+          key={3}
           getAnnotations={api.getAnnotations}
           getOrganizations={api.getOrganizations}
           changeAnnotation={api.changeAnnotation}
           getTags={api.getTags}
           annotation={annotation}
           checkSignal={api.checkSignal}
-          handleOk={this.handleOk}
-          handleCancel={this.handleCancel}
-          modalVisibility={modalVisibility}
+          handleOk={this.editHandleOk}
+          handleCancel={this.editHandleCancel}
+          editVisible={editVisible}
         />
       ),
-      this.props.user.role.name !== 'Annotateur' && (
-        <AddButton
-          key={3}
-          onClick={() => {
-            this.props.history.push('/new/annotations');
-          }}
+
+      keepCreationData && (
+        <CreateAnnotationForm
+          key={4}
+          getTags={api.getTags}
+          getOrganizations={api.getOrganizations}
+          getAnnotations={api.getAnnotations}
+          checkSignal={api.checkSignal}
+          sendAnnotation={api.sendAnnotation}
+          creationVisible={this.state.creationVisible}
+          handleOk={this.createHandleOk}
+          handleCancel={this.createHandleCancel}
         />
       )
     ];

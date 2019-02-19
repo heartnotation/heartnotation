@@ -38,21 +38,6 @@ const r = {
       title: 'Create Tags',
       iconName: 'tag',
       roles: ['Admin']
-    },
-    {
-      path: '/new/annotations',
-      component: () => (
-        <AnnotationForm
-          getTags={api.getTags}
-          getOrganizations={api.getOrganizations}
-          getAnnotations={api.getAnnotations}
-          checkSignal={api.checkSignal}
-          sendAnnotation={api.sendAnnotation}
-        />
-      ),
-      title: 'Create annotation',
-      iconName: 'plus',
-      roles: ['Gestionnaire', 'Admin']
     }
   ],
   routes: [
@@ -119,7 +104,7 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(err => {
+        .catch(_ => {
           this.setState({ logged: false, user: undefined });
         });
     }

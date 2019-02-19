@@ -176,6 +176,7 @@ class EditUserForm extends Component<Props, States> {
     return (
       <Modal
         key={2}
+        title='Edit user'
         visible={this.props.modalVisible}
         onCancel={this.props.handleCancel}
         footer={[

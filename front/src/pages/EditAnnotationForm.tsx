@@ -13,7 +13,7 @@ import {
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Organization, Tag, Annotation } from '../utils';
+import { Organization, Tag, Annotation, Status } from '../utils';
 
 const { Option } = Select;
 
@@ -43,7 +43,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   checkSignal: (id: number) => Promise<any>;
   handleOk: () => void;
   handleCancel: () => void;
-  modalVisibility: boolean;
+  editVisible: boolean;
 }
 
 class EditAnnotationForm extends Component<Props, States> {
@@ -161,18 +161,25 @@ class EditAnnotationForm extends Component<Props, States> {
       const o = this.state.organizations.find(
         orga => orga.name === values.organization
       );
-      a.organization = o;
-      a.name = values.name;
-      a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
+      if(o) {
+        a.organization = o;
+        a.name = values.name;
+        a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
 
-      this.props
-        .changeAnnotation(a)
-        .then(() => {
-          this.props.handleOk();
-        })
-        .catch(() => {
-          this.setState({ error: 'Error while sending datas' });
+        this.props
+          .changeAnnotation(a)
+          .then(() => {
+            this.props.handleOk();
+          })
+          .catch(() => {
+            this.setState({ error: 'Error while sending datas' });
+          });
+      } else {
+        this.setState({
+          error:
+            'Organization is invalid'
         });
+      }
     });
   }
 
@@ -180,7 +187,7 @@ class EditAnnotationForm extends Component<Props, States> {
     const {
       form: { getFieldDecorator },
       annotation,
-      modalVisibility,
+      editVisible,
       handleCancel
     } = this.props;
     const { tags, organizationsSearch, tagsSelected, error } = this.state;
@@ -191,14 +198,15 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
-    const started = annotation.status.id > 2;
+    const started = annotation.last_status.enum_status.id > 2;
 
     return (
       <Modal
         key={2}
-        visible={modalVisibility}
+        visible={editVisible}
         onOk={this.handleOk}
         onCancel={handleCancel}
+        title='Edit annotation'
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
@@ -225,7 +233,7 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Current status'>
                 {getFieldDecorator('status', {
-                  initialValue: annotation.status.name
+                  initialValue: annotation.last_status.enum_status.name
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>

@@ -1,4 +1,4 @@
-package organization
+package tests
 
 /*
 import (
