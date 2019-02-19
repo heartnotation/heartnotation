@@ -117,16 +117,16 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Status").Preload("Organization").Find(&annotations).Error
+	err := u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
 	}
-
 	for i := range *annotations {
 		arr := *annotations
 		arr[i].OrganizationID = nil
 		arr[i].StatusID = nil
+		arr[i].ParentID = nil
 	}
 
 	u.Respond(w, annotations)
@@ -139,7 +139,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	err := u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&annotation, vars["id"]).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -158,21 +158,45 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
-		return
+	a := dto{}
+	err := json.NewDecoder(r.Body).Decode(&a)
+	if err != nil {
+		http.Error(w, "Fail to parse request body", 400)
 	}
-	db := u.GetConnection()
-	var annotation Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
-	annotation.EditDate = time.Now()
+	db := u.GetConnection().Set("gorm:auto_preload", true)
 
-	if u.CheckErrorCode(db.Save(&annotation).Error, w) {
+	annotation := Annotation{}
+	db.Where(a.ID).Find(&annotation)
+
+	if annotation.Status.ID > 2 {
+		if annotation.Organization != nil && annotation.Organization.ID != uint(a.OrganizationID) {
+			http.Error(w, "Cannot change organization for started annotations", 400)
+			return
+		}
+		if !compareTags(a, annotation) {
+			http.Error(w, "Cannot change authorized tags for started annotations", 400)
+			return
+		}
+	}
+
+	if len(a.TagsID) <= 0 {
+		http.Error(w, "You must provide some authorized tags", 400)
 		return
 	}
-	if err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, annotation.ID).Error; err != nil {
-		u.CheckErrorCode(err, w)
+
+	m := a.toMap(annotation)
+
+	transaction := db.Begin()
+	if u.CheckErrorCode(transaction.Model(&annotation).Updates(m).Error, w) {
+		transaction.Rollback()
 		return
 	}
+
+	if u.CheckErrorCode(transaction.Model(&annotation).Association("Tags").Replace(m["tags"]).Error, w) {
+		transaction.Rollback()
+		return
+	}
+	transaction.Commit()
 	u.Respond(w, annotation)
 }
 
