@@ -73,7 +73,7 @@ func createJWTFromCredentials(user GoogleUser) (string, error) {
 
 	claims["authorized"] = true
 	claims["email"] = user.Email
-	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
 
 	tokenString, err := token.SignedString(signingKey)
 
@@ -113,7 +113,7 @@ func ValidateMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					return signingKey, nil
 				})
 				if err != nil {
-					http.Error(w, err.Error(), 400)
+					http.Error(w, err.Error(), http.StatusUnauthorized)
 					return
 				}
 				if !token.Valid {

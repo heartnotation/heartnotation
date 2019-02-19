@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
 import { Interval } from './objects';
-import { string } from 'prop-types';
+import { authenticate } from './auth';
 
 const request = <T>(
   method: string,
@@ -10,8 +10,16 @@ const request = <T>(
 ): Promise<T> => {
   return axios({ method, url, data: body })
     .then(res => res.data)
-    .catch(err => {
-      console.log(err.response.status);
+    .catch(async (err: AxiosResponse) => {
+      if (err.status === 401) {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          return Promise.reject(err);
+        }
+        await authenticate(token);
+        return axios({ method, url, data: body }).then(res => res.data);
+      }
+      return Promise.reject(err);
     });
 };
 
@@ -20,15 +28,15 @@ const get = <T>(url: string): Promise<T> => {
 };
 
 const post = <T>(url: string, values: any): Promise<T> => {
-  return axios.post<T>(`${API_URL}/${url}`, values).then(res => res.data);
+  return request<T>('POST', `${API_URL}/${url}`, values);
 };
 
 const del = <T>(url: string): Promise<T> => {
-  return axios.delete(`${API_URL}/${url}`).then(res => res.data);
+  return request<T>('DELETE', `${API_URL}/${url}`, undefined);
 };
 
 const put = <T>(url: string, values: any): Promise<T> => {
-  return axios.put(`${API_URL}/${url}`, values).then(res => res.data);
+  return request<T>('PUT', `${API_URL}/${url}`, values);
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {

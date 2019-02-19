@@ -20,13 +20,7 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
   request => request,
-  error => {
-    if (error.request !== undefined) {
-      if (error.request.responseURL.includes('login')) {
-        return Promise.reject(error);
-      }
-    }
-  }
+  error => Promise.reject(error.response)
 );
 
 export const authenticate = (token: string): Promise<User> => {
@@ -42,9 +36,9 @@ export const authenticate = (token: string): Promise<User> => {
       localStorage.setItem('auth_token', auth.token);
       return auth.user;
     })
-    .catch(() => {
+    .catch(err => {
       localStorage.removeItem('access_token');
-      localStorage.removeItem('auth_token');
+      return Promise.reject(err);
     });
 };
 

@@ -2,15 +2,12 @@ import React, { Component } from 'react';
 import './assets/styles/App.css';
 import AppRouter from './Routes';
 import AnnotationForm from './pages/CreateAnnotationForm';
-import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
-import EditAnnotationForm from './pages/EditAnnotationForm';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
 import { api, User } from './utils';
-import GoogleLogin from 'react-google-login';
 import { Authenticated, authenticate } from './utils/auth';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
@@ -112,7 +109,7 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(() => {
+        .catch(err => {
           this.setState({ logged: false, user: undefined });
         });
     }
@@ -133,28 +130,18 @@ class App extends Component<
         />
       );
     }
-
-    if (!logged) {
-      return (
-        <Login
-          onSuccess={this.handleSuccess}
-          onFailure={err => console.log(err.details)}
-        />
-      );
-    }
     if (user) {
       return (
-        user && (
-          <Authenticated user={user}>
-            <AppRouter
-              defaultRoute={r.defaultRoute}
-              routes={r.routes}
-              hiddenRoutes={r.hiddenRoutes}
-            />
-          </Authenticated>
-        )
+        <Authenticated user={user}>
+          <AppRouter
+            defaultRoute={r.defaultRoute}
+            routes={r.routes}
+            hiddenRoutes={r.hiddenRoutes}
+          />
+        </Authenticated>
       );
     }
+    return <Login onSuccess={this.handleSuccess} />;
   }
 }
 export default App;
