@@ -191,6 +191,7 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
+    const started = annotation.status.id > 2;
 
     return (
       <Modal
@@ -248,6 +249,7 @@ class EditAnnotationForm extends Component<Props, States> {
                   <AutoComplete
                     dataSource={organizationsSearch}
                     onSearch={this.handleSearchOrganization}
+                    disabled={started}
                   />
                 )}
               </Form.Item>
@@ -273,6 +275,7 @@ class EditAnnotationForm extends Component<Props, States> {
                     mode='multiple'
                     onChange={this.handleChangeTag}
                     filterOption={this.filterSearchTag}
+                    disabled={started}
                   >
                     {filteredTags.map((tag: Tag) => (
                       <Option key='key' value={tag.id}>
