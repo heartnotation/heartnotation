@@ -1,18 +1,22 @@
 import React, { Component } from 'react';
 import AddButton from '../fragments/fixedButton/AddButton';
+import { withAuth, AuthProps } from '../utils/auth';
+import { withRouter, RouteComponentProps } from 'react-router';
 // TODO
 
-class Tags extends Component {
+interface Props extends RouteComponentProps, AuthProps {}
+
+class Tags extends Component<Props> {
   public render() {
     return (
-      <div>
+      this.props.user.role.name === 'Admin' && (
         <AddButton
           onClick={() => {
             return;
           }}
         />
-      </div>
+      )
     );
   }
 }
-export default Tags;
+export default withRouter(withAuth(Tags));

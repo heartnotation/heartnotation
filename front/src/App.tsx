@@ -9,8 +9,8 @@ import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
 import { api, User } from './utils';
-import GoogleLogin from 'react-google-login';
 import { Authenticated, authenticate } from './utils/auth';
+import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
 
@@ -30,13 +30,15 @@ const r = {
           changeAnnotation={api.changeAnnotation}
         />
       ),
-      title: 'Signal annotation'
+      title: 'Signal annotation',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/new/tags',
       component: TagCreation,
       title: 'Create Tags',
-      iconName: 'tag'
+      iconName: 'tag',
+      roles: ['Admin']
     },
     {
       path: '/new/annotations',
@@ -50,7 +52,8 @@ const r = {
         />
       ),
       title: 'Create annotation',
-      iconName: 'plus'
+      iconName: 'plus',
+      roles: ['Gestionnaire', 'Admin']
     }
   ],
   routes: [
@@ -59,7 +62,8 @@ const r = {
       exact: true,
       component: () => <Dashboard getAnnotations={api.getAnnotations} />,
       title: 'Dashboard',
-      iconName: 'dashboard'
+      iconName: 'dashboard',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/users',
@@ -74,20 +78,23 @@ const r = {
         />
       ),
       title: 'Users',
-      iconName: 'user'
+      iconName: 'user',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/tags',
       exact: true,
       component: Tags,
       title: 'Tags',
-      iconName: 'tags'
+      iconName: 'tags',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/about',
       component: () => <h2>About</h2>,
       title: 'About',
-      iconName: 'question'
+      iconName: 'question',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     }
   ]
 };
@@ -149,7 +156,8 @@ class App extends Component<
           <Authenticated user={user}>
             <AppRouter
               defaultRoute={r.defaultRoute}
-              routes={r.routes}
+              routes={r.routes.filter(value => value.roles.includes(user.role.name)
+              )}
               hiddenRoutes={r.hiddenRoutes}
             />
           </Authenticated>
