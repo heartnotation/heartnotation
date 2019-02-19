@@ -161,7 +161,7 @@ class EditAnnotationForm extends Component<Props, States> {
       const o = this.state.organizations.find(
         orga => orga.name === values.organization
       );
-      a.organization = o ? o : this.props.annotation.organization;
+      a.organization = o;
       a.name = values.name;
       a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
 
@@ -170,8 +170,8 @@ class EditAnnotationForm extends Component<Props, States> {
         .then(() => {
           this.props.handleOk();
         })
-        .catch(error => {
-          this.setState({ error });
+        .catch(() => {
+          this.setState({ error: 'Error while sending datas' });
         });
     });
   }
@@ -222,6 +222,11 @@ class EditAnnotationForm extends Component<Props, States> {
                   ]
                 })(<Input />)}
               </Form.Item>
+              <Form.Item {...formItemLayout} label='Current status'>
+                {getFieldDecorator('status', {
+                  initialValue: annotation.status.name
+                })(<Input disabled={true} />)}
+              </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>
                 {getFieldDecorator('signal_id', {
                   initialValue: annotation.signal_id
@@ -258,7 +263,7 @@ class EditAnnotationForm extends Component<Props, States> {
                     : [],
                   rules: [
                     {
-                      required: false,
+                      required: true,
                       message: msgRequired
                     },
                     { validator: this.validateTag }
