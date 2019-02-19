@@ -34,7 +34,7 @@ type dto struct {
 	OrganizationID int    `json:"organization_id,omitempty"`
 	SignalID       int    `json:"signal_id,omitempty"`
 	ParentID       int    `json:"parent_id,omitempty"`
-	TagsID         []int  `json:"tags_id,omitempty"`
+	TagsID         []int  `json:"tags,omitempty"`
 }
 
 // TableName sets table name of the struct
