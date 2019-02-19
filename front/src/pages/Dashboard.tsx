@@ -4,7 +4,9 @@ import { ColumnProps } from 'antd/lib/table';
 import { Annotation, Organization, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
+import { withAuth, AuthProps } from '../utils/auth';
 import EditAnnotationForm from './EditAnnotationForm';
+
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
@@ -13,8 +15,12 @@ export interface State {
   modalVisibility: boolean;
 }
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps, AuthProps {
   getAnnotations: () => Promise<Annotation[]>;
+}
+
+interface ConditionnalColumn extends ColumnProps<Annotation> {
+  roles: string[];
 }
 
 class Dashboard extends Component<Props, State> {
@@ -44,7 +50,7 @@ class Dashboard extends Component<Props, State> {
     return annotations;
   }
 
-  public columns: Array<ColumnProps<Annotation>> = [
+  public columns: ConditionnalColumn[] = [
     {
       title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
@@ -53,7 +59,8 @@ class Dashboard extends Component<Props, State> {
           dataIndex: 'id',
           sorter: (a: Annotation, b: Annotation) => a.id - b.id
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('signal_id', 'signal ID'),
@@ -63,7 +70,8 @@ class Dashboard extends Component<Props, State> {
           dataIndex: 'signal_id',
           sorter: (a: Annotation, b: Annotation) => a.signal_id - b.signal_id
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('name', 'annotation'),
@@ -77,7 +85,8 @@ class Dashboard extends Component<Props, State> {
               ignorePunctuation: true
             })
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('organization', 'Organizations'),
@@ -132,7 +141,8 @@ class Dashboard extends Component<Props, State> {
             return '';
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('creation_date', 'creation date'),
@@ -144,7 +154,8 @@ class Dashboard extends Component<Props, State> {
           sorter: (a: Annotation, b: Annotation) =>
             a.creation_date.getTime() - b.creation_date.getTime()
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('edit_date', 'last edit date'),
@@ -170,7 +181,8 @@ class Dashboard extends Component<Props, State> {
             return timeA - timeB;
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Status',
@@ -185,7 +197,8 @@ class Dashboard extends Component<Props, State> {
         a.status.name.localeCompare(b.status.name, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
-        })
+        }),
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Edit',
@@ -201,7 +214,8 @@ class Dashboard extends Component<Props, State> {
             this.setState({ modalVisibility: true, annotation });
           }}
         />
-      )
+      ),
+      roles: ['Gestionnaire', 'Admin']
     }
   ];
 
@@ -323,7 +337,9 @@ class Dashboard extends Component<Props, State> {
       <Table<Annotation>
         key={1}
         rowKey='id'
-        columns={this.columns}
+        columns={this.columns.filter(value =>
+          value.roles.includes(this.props.user.role.name)
+        )}
         dataSource={currentAnnotations}
         pagination={{
           position: 'bottom',
@@ -350,14 +366,16 @@ class Dashboard extends Component<Props, State> {
           modalVisibility={modalVisibility}
         />
       ),
-      <AddButton
-        key={3}
-        onClick={() => {
-          this.props.history.push('/new/annotations');
-        }}
-      />
+      this.props.user.role.name !== 'Annotateur' && (
+        <AddButton
+          key={3}
+          onClick={() => {
+            this.props.history.push('/new/annotations');
+          }}
+        />
+      )
     ];
   }
 }
 
-export default withRouter(Dashboard);
+export default withRouter(withAuth(Dashboard));
