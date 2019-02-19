@@ -3,6 +3,7 @@ import { Table, Input, Icon, Tag, Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
+import { withAuth, AuthProps } from '../utils/auth';
 import { withRouter, RouteComponentProps } from 'react-router';
 import EditUserForm from './EditUserForm';
 import UserCreation from './UserCreation';
@@ -16,13 +17,17 @@ export interface State {
   creationVisible: boolean;
 }
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps, AuthProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
   sendUser: (datas: User) => Promise<User>;
   getAllUsers: () => Promise<User[]>;
   deleteUser: (datas: User) => Promise<User>;
+}
+
+export interface ColumnsPersonnalizedUser extends ColumnProps<User> {
+  roles: string[];
 }
 
 class Users extends Component<Props, State> {
@@ -47,7 +52,7 @@ class Users extends Component<Props, State> {
     return annotations;
   }
 
-  public columns: Array<ColumnProps<User>> = [
+  public columns: ColumnsPersonnalizedUser[] = [
     {
       title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
@@ -56,7 +61,8 @@ class Users extends Component<Props, State> {
           dataIndex: 'id',
           sorter: (a: User, b: User) => a.id - b.id
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('mail', 'Mail'),
@@ -69,7 +75,8 @@ class Users extends Component<Props, State> {
               sensitivity: 'base'
             })
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('role', 'Role'),
@@ -82,7 +89,8 @@ class Users extends Component<Props, State> {
               sensitivity: 'base'
             })
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('organizations', 'Organizations'),
@@ -122,7 +130,8 @@ class Users extends Component<Props, State> {
             }
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Active',
@@ -132,7 +141,8 @@ class Users extends Component<Props, State> {
           type={active ? 'check' : 'close'}
           style={{ color: active ? 'green' : 'red', fontSize: '1.2em' }}
         />
-      )
+      ),
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Actions',
@@ -171,7 +181,8 @@ class Users extends Component<Props, State> {
             />
           </Col>
         </Row>
-      )
+      ),
+      roles: ['Admin']
     }
   ];
 
@@ -276,7 +287,9 @@ class Users extends Component<Props, State> {
       <Table<User>
         key={1}
         rowKey='id'
-        columns={this.columns}
+        columns={this.columns.filter((value) => {
+          return value.roles.indexOf(this.props.user.role.name) > -1;
+        })}
         dataSource={currentUsers}
         pagination={{
           position: 'bottom',
@@ -298,7 +311,7 @@ class Users extends Component<Props, State> {
           modalVisible={modifyVisible}
         />
       ),
-      <AddButton
+      this.props.user.role.name === 'Admin' && <AddButton
         key={3}
         onClick={() => {
           this.setState({ creationVisible: true });
@@ -317,4 +330,4 @@ class Users extends Component<Props, State> {
   }
 }
 
-export default withRouter(Users);
+export default withRouter(withAuth(Users));
