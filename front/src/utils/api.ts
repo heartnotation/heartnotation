@@ -1,5 +1,10 @@
 import { API_URL, Annotation, Organization, Tag, Role, User, Status } from '.';
-import { Interval, AnnotationComments, StatusInserter } from './objects';
+import {
+  Interval,
+  StatusInserter,
+  AnnotationCommentPayload,
+  AnnotationComment
+} from './objects';
 import axios, { AxiosResponse } from 'axios';
 import { authenticate } from './auth';
 
@@ -71,16 +76,27 @@ export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
   return post<Annotation>(`${urls.annotations}`, datas);
 };
 
+export const sendAnnotationComment = (
+  datas: AnnotationCommentPayload
+): Promise<AnnotationComment> => {
+  return post<AnnotationComment>(`${urls.annotationsComments}`, datas).then(
+    (response: AnnotationComment) => {
+      response.date = new Date(response.date);
+      return response;
+    }
+  );
+};
+
 export const sendInterval = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.interval}`, datas);
+  return post<Interval>(`${urls.intervals}`, datas);
 };
 
 export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalComment}`, datas);
+  return post<Interval>(`${urls.intervalsComment}`, datas);
 };
 
 export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalTags}`, datas);
+  return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
@@ -138,8 +154,13 @@ export const deleteUser = (datas: User): Promise<User> => {
 
 export const getCommentsOnAnnotationById = (
   id: number
-): Promise<AnnotationComments> => {
-  return get<AnnotationComments>(`${urls.annotationComments}/${id}`);
+): Promise<AnnotationComment[]> => {
+  return get<AnnotationComment[]>(`${urls.annotationsComments}/${id}`).then(
+    (response: AnnotationComment[]) => {
+      response.forEach(comment => (comment.date = new Date(comment.date)));
+      return response;
+    }
+  );
 };
 
 export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
@@ -147,16 +168,15 @@ export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
 };
 
 const urls = {
-  annotation: 'annotation',
   annotations: 'annotations',
-  annotationComments: 'annotation/comments',
+  annotationsComments: 'annotations/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',
   status: 'status',
   roles: 'roles',
   users: 'users',
-  interval: 'interval',
-  intervalComment: 'interval/comment',
-  intervalTags: 'interval/tags'
+  intervals: 'intervals',
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags'
 };

@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api, Status, Role } from '../utils';
+import { Annotation, Organization, api, Status, Role, User } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -162,6 +162,21 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
+      title: () => this.getColumnSearchBox('first_status.user.mail', 'created by'),
+      children: [
+        {
+          title: 'Created by',
+          dataIndex: 'first_status.user.mail', 
+          sorter: (a: Annotation, b: Annotation) =>
+            a.first_status.user.mail.localeCompare(b.first_status.user.mail, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            })
+        }
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
+    },
+    {
       title: () => this.getColumnSearchBox('edit_date', 'last edit date'),
       children: [
         {
@@ -183,6 +198,22 @@ class Dashboard extends Component<Props, State> {
               timeB = b.edit_date.getTime();
             }
             return timeA - timeB;
+          }
+        }
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
+    },
+    {
+      title: () => this.getColumnSearchBox('last_status.user.mail', 'last edit by'),
+      children: [
+        {
+          title: 'Last edit by',
+          dataIndex: 'last_status.user.mail',
+          sorter: (a: Annotation, b: Annotation) => {
+            return a.last_status.user.mail.localeCompare(b.last_status.user.mail, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            })
           }
         }
       ],
@@ -222,7 +253,7 @@ class Dashboard extends Component<Props, State> {
   ];
 
   public getColumnSearchBox = (
-    dataIndex: keyof Annotation,
+    dataIndex: string,
     displayText: string
   ) => (
     <div style={{ paddingTop: 8, textAlign: 'center' }}>
@@ -234,7 +265,7 @@ class Dashboard extends Component<Props, State> {
     </div>
   )
 
-  public handleChange = (dataIndex: keyof Annotation, value: string) => {
+  public handleChange = (dataIndex: string, value: string) => {
     this.state.searches.set(dataIndex, value);
     this.handleSearch();
   }
@@ -273,6 +304,13 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
+
+        const creationUser = searches.get('first_status.user.mail');
+        if (creationUser) {
+          if (!record.first_status.user.mail.toLowerCase().startsWith(creationUser.toLowerCase())) {
+            return false;
+          }
+        }
         const editDate = searches.get('edit_date');
         if (editDate) {
           if (!record.edit_date && editDate !== '-') {
@@ -285,8 +323,15 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        const statusName = searches.get('last_status');
-        if (statusName && record.status) {
+        
+        const editUser = searches.get('last_status.user.mail');
+        if (editUser) {
+          if (!record.last_status.user.mail.toLowerCase().startsWith(editUser.toLowerCase())) {
+            return false;
+          }
+        }
+        const statusName = searches.get('status.name');
+        if (statusName) {
           if (
             !record.last_status
               .enum_status.name.toLowerCase()

@@ -31,7 +31,7 @@ interface DataComment {
   avatar: any;
 }
 
-interface States {
+interface State {
   tags: Tag[];
   confirmLoading: boolean;
   comments: DataComment[];
@@ -53,7 +53,7 @@ const CommentList = (props: { comments: DataComment[] }) => (
   </div>
 );
 
-class FormIntervalSignalAnnotation extends Component<Props, States> {
+class FormIntervalSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
