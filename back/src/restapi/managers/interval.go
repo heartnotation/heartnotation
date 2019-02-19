@@ -10,18 +10,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// GetAllIntervals list all intervals
-func GetAllIntervals(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
-		return
-	}
-	intervals := []m.Interval{}
-	if u.CheckErrorCode(u.GetConnection().Preload("Tags").Find(&intervals).Error, w) {
-		return
-	}
-	u.Respond(w, intervals)
-}
-
 // FindIntervalByID get an interval bi ID
 func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
@@ -29,7 +17,7 @@ func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 	}
 	interval := []m.Interval{}
 	vars := mux.Vars(r)
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).Find(&interval, vars["id"]).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Commentinterval").Preload("Commentinterval.User").Preload("Tags").Where("is_active = ?", true).Find(&interval, vars["id"]).Error, w) {
 		return
 	}
 	u.Respond(w, interval)

@@ -12,7 +12,7 @@ func GetAllRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	roles := []m.Role{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&roles).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Find(&roles).Error, w) {
 		return
 	}
 	u.Respond(w, roles)

@@ -24,7 +24,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // CreateUser function which receive a POST request and return a fresh-new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["users"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["user"], w, r) {
 		return
 	}
 	var a d.User
@@ -55,7 +55,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 // FindUserByID user by ID using GET Request
 func FindUserByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["users"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["user"], w, r) {
 		return
 	}
 	user := m.User{}
@@ -68,7 +68,7 @@ func FindUserByID(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser disable user give in URL information (IsActive -> false)
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("DELETE", u.CheckRoutes["users"], w, r) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["user"], w, r) {
 		return
 	}
 	user := m.User{}
@@ -86,7 +86,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 // UpdateUser modifies a user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("PUT", u.CheckRoutes["users"], w, r) {
+	if u.CheckMethodPath("PUT", u.CheckRoutes["user"], w, r) {
 		return
 	}
 	var a d.User

@@ -88,12 +88,12 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 // FindAnnotationByID Find annotation by ID using GET Request
 func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["annotations"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["annotation"], w, r) {
 		return
 	}
 	annotation := m.Annotation{}
 	vars := mux.Vars(r)
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&annotation, vars["id"]).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Where("is_active = ?", true).First(&annotation, vars["id"]).Error, w) {
 		return
 	}
 	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))

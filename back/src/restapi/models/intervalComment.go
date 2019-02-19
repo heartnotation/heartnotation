@@ -7,10 +7,11 @@ type IntervalComment struct {
 	ID         int       `json:"id"`
 	Comment    string    `json:"comment"`
 	Date       time.Time `json:"date"`
-	IntervalID int       `json:"interval_id,omitempty"`
-	Interval   Interval  `json:"interval" gorm:"foreignkey:IntervalID"`
-	UserID     int       `json:"user_id"`
-	User       User      `json:"user" gorm:"foreignkey:UserID"`
+	IntervalID int       `json:"-"`
+	Interval   *Interval `json:"interval,omitempty" gorm:"foreignkey:IntervalID"`
+	UserID     int       `json:"-"`
+	User       *User     `json:"user,omitempty" gorm:"foreignkey:UserID"`
+	Tags       []Tag     `json:"tags,omitempty" gorm:"many2many:interval_tag"`
 }
 
 // TableName sets table name of the struct
