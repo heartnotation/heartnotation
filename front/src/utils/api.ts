@@ -115,8 +115,15 @@ export const deleteUser = (datas: User): Promise<User> => {
   return del(`${urls.users}/${datas.id}`);
 };
 
+export const getCommentsOnAnnotationById = (
+  id: number
+): Promise<AnnotationComments> => {
+  return get<AnnotationComments>(`${urls.annotationComments}/${id}`);
+};
+
 const urls = {
   annotations: 'annotations',
+  annotationComments: 'annotation/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',
