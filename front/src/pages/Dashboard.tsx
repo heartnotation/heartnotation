@@ -5,6 +5,7 @@ import { ColumnProps } from 'antd/lib/table';
 import { Annotation } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
+import { render } from 'enzyme';
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
@@ -128,6 +129,19 @@ class Dashboard extends Component<Props, State> {
           sensitivity: 'base',
           ignorePunctuation: true
         })
+      },
+      {
+        title: 'Edit',
+        dataIndex: 'edit',
+        render:_ =>(
+          <Icon
+            className='anticon-edit-dashboard'
+            type='edit'
+            theme='twoTone'
+            twoToneColor='#6669c9'
+          />
+        )
+      
     }
   ];
 
