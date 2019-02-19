@@ -1,8 +1,8 @@
 import React, { Component, MouseEvent } from 'react';
-import { Table, Input, Icon } from 'antd';
+import { Table, Input, Icon, Tag } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, api } from '../utils';
+import { Annotation,Organization ,api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import EditAnnotationForm from './EditAnnotationForm';
@@ -77,6 +77,53 @@ class Dashboard extends Component<Props, State> {
               sensitivity: 'base',
               ignorePunctuation: true
             })
+        }
+      ]
+    },
+    {
+      title: () => this.getColumnSearchBox('organization', 'Organizations'),
+      children: [
+        {
+          title: 'Organization',
+          dataIndex: 'organization.name',
+          filters: this.state.initialAnnotations
+            .map((a: Annotation) => a.organization.name)
+            .filter((o, i, array) => array.indexOf(o) === i)
+            .map(o => ({ text: o, value: o })),
+          onFilter: (value: string, record: Annotation) =>
+            record.organization.name.indexOf(value) === 0,
+          sorter: (a: Annotation, b: Annotation) =>
+            a.organization.name.localeCompare(b.organization.name, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            }),
+          render: (_, record: Annotation) => {
+            const colors = [
+              'geekblue',
+              'green',
+              'volcano',
+              'orange',
+              'yellow',
+              'gold',
+              'lime',
+              'cyan',
+              'purple',
+              'magenta',
+              'red'
+            ];
+            const { organization } = record;
+            const ui = (
+              <span>
+                <Tag
+                  color={colors[(organization.id % colors.length) - 1]}
+                  key={organization.name}
+                >
+                  {organization.name}
+                </Tag>
+              </span>
+            );
+            return ui;
+          }
         }
       ]
     },
@@ -221,6 +268,16 @@ class Dashboard extends Component<Props, State> {
             !record.status.name
               .toLowerCase()
               .startsWith(statusName.toLowerCase())
+          ) {
+            return false;
+          }
+        }
+        const organizations = searches.get('organization');
+        if (organizations) {
+          if (
+            !record.organization.name
+              .toLowerCase()
+              .startsWith(organizations.toLowerCase())
           ) {
             return false;
           }
