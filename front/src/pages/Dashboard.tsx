@@ -243,9 +243,8 @@ class Dashboard extends Component<Props, State> {
       <Table<Annotation>
         key={1}
         rowKey='id'
-        columns={this.columns.filter((value) => {
-          return value.roles.indexOf(this.props.user.role.name) > -1;
-        })}
+        columns={this.columns.filter(value => value.roles.includes(this.props.user.role.name)
+          )}
         dataSource={currentAnnotations}
         pagination={{
           position: 'bottom',
