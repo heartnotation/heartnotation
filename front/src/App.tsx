@@ -13,6 +13,8 @@ import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
 import NotFound from './pages/errors/NotFound';
+import Forbidden from './pages/errors/Forbidden';
+
 
 const r = {
   defaultRoute: {
@@ -128,14 +130,20 @@ class App extends Component<
     }
     if (user) {
       console.log(user.role.name);
-      if (
-        r.routes
-          .map(p => p.path)
-          .concat('/new/tags')
-          .every(p => window.location.pathname !== p)
-      ) {
-        return <NotFound />;
+      const f = r.routes.find(p => window.location.pathname === p.path);
+      if (!window.location.pathname.startsWith('/annotation/')){ 
+        if(f === undefined){
+          const fhidden = r.hiddenRoutes.find(p => window.location.pathname === p.path);
+          if(fhidden === undefined){
+            return <NotFound />;
+          } else if(!fhidden.roles.includes(user.role.name)){
+            return <Forbidden />;
+          }
+        } else if(!f.roles.includes(user.role.name)){
+          return <Forbidden />;
+        }
       }
+      
       return (
         <Authenticated user={user}>
           <AppRouter
