@@ -5,7 +5,6 @@ import logo from '../assets/images/logo-name.png';
 import '../assets/styles/Login.css';
 
 interface Props {
-  clientId: string;
   onSuccess: (user: User) => void;
   onFailure: (err: any) => void;
 }

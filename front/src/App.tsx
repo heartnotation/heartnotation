@@ -123,7 +123,6 @@ class App extends Component<
   }
   public render = () => {
     const { logged, token, user } = this.state;
-    const { clientId } = this.props;
 
     if (token && !logged) {
       return (
@@ -138,7 +137,6 @@ class App extends Component<
     if (!logged) {
       return (
         <Login
-          clientId={clientId}
           onSuccess={this.handleSuccess}
           onFailure={err => console.log(err.details)}
         />
