@@ -151,8 +151,6 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	annotations := &[]Annotation{}
 
-	fmt.Printf("%v\n", currentUserOganizations)
-
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
