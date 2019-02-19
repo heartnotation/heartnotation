@@ -117,7 +117,7 @@ func FindAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	annotations := &[]Annotation{}
-	err := u.GetConnection().Preload("Parent").Preload("Status").Preload("Organization").Preload("Tags").Find(&annotations).Error
+	err := u.GetConnection().Set("gorm:auto_preload", true).Find(&annotations).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -139,7 +139,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation := Annotation{}
 	vars := mux.Vars(r)
-	err := u.GetConnection().Preload("Status").Preload("Organization").Where("is_active = ?", true).First(&annotation, vars["id"]).Error
+	err := u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&annotation, vars["id"]).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
