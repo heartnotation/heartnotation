@@ -14,7 +14,7 @@ func GetAllStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	status := []m.Status{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&status).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("User").Preload("EnumStatus").Find(&status).Error, w) {
 		return
 	}
 	u.Respond(w, status)
@@ -27,7 +27,7 @@ func FindStatusByID(w http.ResponseWriter, r *http.Request) {
 	}
 	status := m.Status{}
 	vars := mux.Vars(r)
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).First(&status, vars["id"]).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("User").Preload("EnumStatus").First(&status, vars["id"]).Error, w) {
 		return
 	}
 	u.Respond(w, status)

@@ -12,7 +12,7 @@ func GetAllOrganizations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	organizations := []m.Organization{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&organizations).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Find(&organizations).Error, w) {
 		return
 	}
 	u.Respond(w, organizations)

@@ -14,7 +14,7 @@ type Annotation struct {
 	IsEditable     bool         `json:"is_editable"`
 	SignalID       int          `json:"signal_id"`
 	Signal         [][]*Point   `json:"signal,omitempty" gorm:"-"`
-	OrganizationID int          `json:"organization_id,omitempty"`
+	OrganizationID int          `json:"-"`
 	Organization   Organization `json:"organization,omitempty" gorm:"foreignkey:OrganizationID"`
 	Status         []Status     `json:"status" gorm:"foreignkey:AnnotationID"`
 	ParentID       *int         `json:"parent_id,omitempty" gorm:"foreignkey:Parent"`
