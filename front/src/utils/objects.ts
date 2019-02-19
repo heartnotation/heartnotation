@@ -1,7 +1,7 @@
 export interface Annotation {
   id: number;
   name: string;
-  organization: Organization;
+  organization?: Organization;
   status: Status;
   parent: Annotation;
   signal?: Point[][];

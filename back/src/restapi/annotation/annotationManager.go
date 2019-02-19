@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -159,32 +158,42 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 
 // ModifyAnnotation modifies an annotation
 func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	var a dto
-	json.NewDecoder(r.Body).Decode(&a)
-
-	tags := []t.Tag{}
-	db := u.GetConnection()
-	if u.CheckErrorCode(db.Where(a.TagsID).Find(&tags).Error, w) {
-		log.Println("erreur tags")
-		return
+	a := dto{}
+	err := json.NewDecoder(r.Body).Decode(&a)
+	if err != nil {
+		http.Error(w, "Fail to parse request body", 400)
 	}
+	db := u.GetConnection().Set("gorm:auto_preload", true)
+
 	annotation := Annotation{}
-	if u.CheckErrorCode(db.Find(&annotation, a.ID).Error, w) {
+	db.Where(a.ID).Find(&annotation)
+
+	if len(a.TagsID) <= 0 {
+		http.Error(w, "You must provide some authorized tags", 400)
 		return
 	}
 
-	ann := Annotation{StatusID: &a.StatusID, Name: a.Name, OrganizationID: &a.OrganizationID, EditDate: time.Now()}
+	if annotation.Status.ID > 2 {
+		if annotation.Organization != nil && annotation.Organization.ID != uint(a.OrganizationID) {
+			http.Error(w, "Cannot change organization for started annotations", 400)
+			return
+		}
+	}
+
+	m := a.toMap(annotation)
+
 	transaction := db.Begin()
-	if u.CheckErrorCode(transaction.Model(&annotation).Update(&ann).Error, w) {
+	if u.CheckErrorCode(transaction.Model(&annotation).Updates(m).Error, w) {
 		transaction.Rollback()
 		return
 	}
-	if u.CheckErrorCode(transaction.Model(&annotation).Association("Tags").Replace(&tags).Error, w) {
+
+	if u.CheckErrorCode(transaction.Model(&annotation).Association("Tags").Replace(m["tags"]).Error, w) {
 		transaction.Rollback()
 		return
 	}
 	transaction.Commit()
-	u.Respond(w, ann)
+	u.Respond(w, annotation)
 }
 
 func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
