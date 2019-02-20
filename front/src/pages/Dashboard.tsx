@@ -68,7 +68,11 @@ class Dashboard extends Component<Props, State> {
         {
           title: 'Signal ID',
           dataIndex: 'signal_id',
-          sorter: (a: Annotation, b: Annotation) => a.signal_id - b.signal_id
+          sorter: (a: Annotation, b: Annotation) =>
+            a.signal_id.localeCompare(b.signal_id, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            })
         }
       ],
       roles: ['Annotateur', 'Gestionnaire', 'Admin']

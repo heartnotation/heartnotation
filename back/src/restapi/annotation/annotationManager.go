@@ -95,7 +95,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Tag not found", 204)
 		return
 	}
-	if a.SignalID == 0 || a.Name == "" {
+	if a.SignalID == "" || a.Name == "" {
 		http.Error(w, "Missing field", 424)
 		return
 	}
@@ -210,9 +210,10 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signal, e := formatToJSONFromAPI(fmt.Sprintf(templateURLAPI, strconv.Itoa(annotation.SignalID)))
+	signal, e := formatToJSONFromAPI(annotation.SignalID)
 	if e != nil {
 		http.Error(w, e.Error(), 500)
+		return
 	}
 	annotation.Signal = signal
 	annotation.OrganizationID = nil
@@ -278,8 +279,8 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 
-func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
-	httpResponse, err := http.Get(api)
+func formatToJSONFromAPI(signalID string) ([][]*s.Point, error) {
+	httpResponse, err := http.Get(fmt.Sprintf(templateURLAPI, signalID))
 	if err != nil {
 		return nil, err
 	}
@@ -290,7 +291,9 @@ func formatToJSONFromAPI(api string) ([][]*s.Point, error) {
 	}
 	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
 	var leads int64
-	if leadNumber == "" {
+	if signalID == "ecg" {
+		leads = 2
+	} else if leadNumber == "" {
 		leads = 3
 	} else {
 		leads, _ = strconv.ParseInt(leadNumber, 10, 64)

@@ -17,7 +17,7 @@ type Annotation struct {
 	OrganizationID *int            `gorm:"TYPE:integer REFERENCES organization" json:"organization_id,omitempty"`
 	Status         *s.Status       `json:"status"`
 	StatusID       *int            `gorm:"TYPE:integer REFERENCES status" json:"status_id,integer,omitempty"`
-	SignalID       int             `json:"signal_id"`
+	SignalID       string          `json:"signal_id"`
 	Signal         [][]*sig.Point  `gorm:"-" json:"signal,omitempty"`
 	CreationDate   time.Time       `json:"creation_date"`
 	EditDate       time.Time       `json:"edit_date"`
@@ -32,7 +32,7 @@ type dto struct {
 	ID             int    `json:"id"`
 	Name           string `json:"name"`
 	OrganizationID int    `json:"organization_id,omitempty"`
-	SignalID       int    `json:"signal_id,omitempty"`
+	SignalID       string `json:"signal_id,omitempty"`
 	ParentID       int    `json:"parent_id,omitempty"`
 	TagsID         []int  `json:"tags,omitempty"`
 	StatusID       int    `json:"status_id,omitempty"`
