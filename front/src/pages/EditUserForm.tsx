@@ -205,7 +205,7 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Role'>
                 {getFieldDecorator('role_id', {
-                  initialValue: this.props.user.role.id,
+                  initialValue: this.props.user.roles,
                   rules: [
                     {
                       required: true,

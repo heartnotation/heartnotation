@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Table, Input, Icon } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation } from '../utils';
+import { Annotation, Status } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 export interface State {
@@ -32,12 +32,6 @@ class Dashboard extends Component<Props, State> {
 
   public async getDatas(): Promise<Annotation[]> {
     const annotations = await this.props.getAnnotations();
-    annotations.forEach((a: Annotation) => {
-      a.creation_date = new Date(a.creation_date);
-      if (a.edit_date) {
-        a.edit_date = new Date(a.edit_date);
-      }
-    });
     return annotations;
   }
 
@@ -116,18 +110,34 @@ class Dashboard extends Component<Props, State> {
     },
     {
       title: 'Status',
-      dataIndex: 'status.name',
-      filters: this.state.initialAnnotations
-        .map((a: Annotation) => a.status.name)
-        .filter((s, i, array) => array.indexOf(s) === i)
-        .map(s => ({ text: s, value: s })),
-      onFilter: (value: string, record: Annotation) =>
-        record.status.name.indexOf(value) === 0,
-      sorter: (a: Annotation, b: Annotation) =>
-        a.status.name.localeCompare(b.status.name, 'en', {
+      dataIndex: 'status',
+      sorter: (a: Annotation, b: Annotation) => {
+        if (!a.status) {
+          return -1;
+        }
+        if (!b.status) {
+          return 1;
+        }
+        const aCurrentStatus = a.status.sort(
+          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
+        )[0].enum_status.name;
+        const bCurrentStatus = b.status.sort(
+          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
+        )[0].enum_status.name;
+        return aCurrentStatus.localeCompare(bCurrentStatus, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
-        })
+        });
+      },
+      render: (_, record: Annotation) => {
+        if (!record.status) {
+          return '';
+        }
+        record.status.sort(
+          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
+        );
+        return record.status[0].enum_status.name;
+      }
     },
     {
       title: 'Edit',
@@ -208,10 +218,14 @@ class Dashboard extends Component<Props, State> {
           }
         }
         const statusName = searches.get('status.name');
-        if (statusName) {
+        if (statusName && record.status) {
           if (
-            !record.status.name
-              .toLowerCase()
+            !record.status
+              .sort(
+                (s1: Status, s2: Status) =>
+                  s2.date.getTime() - s1.date.getTime()
+              )[0]
+              .enum_status.name.toLowerCase()
               .startsWith(statusName.toLowerCase())
           ) {
             return false;

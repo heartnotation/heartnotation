@@ -25,6 +25,9 @@ func main() {
 	router.HandleFunc("/annotation/comment", m.CreateCommentOnAnnotation).Methods("POST")
 	router.HandleFunc("/signal/{id}", m.CheckSignal).Methods("GET")
 
+	//Status
+	router.HandleFunc("/status", m.CreateStatus).Methods("POST")
+
 	// Organizations
 	router.HandleFunc("/organizations", m.GetAllOrganizations).Methods("GET")
 
@@ -47,11 +50,12 @@ func main() {
 	router.HandleFunc("/roles", m.GetAllRoles).Methods("GET")
 
 	// Interval
-	router.HandleFunc("/interval/{id}/tags", m.AddTagsOnIntervalByID).Methods("POST")
+	router.HandleFunc("/interval/tags", m.AddTagsOnInterval).Methods("POST")
 	router.HandleFunc("/interval/comment", m.CreateCommentOnInterval).Methods("POST")
 	router.HandleFunc("/interval", m.CreateInterval).Methods("POST")
 	router.HandleFunc("/interval/{id}", m.RemoveIntervalByID).Methods("DELETE")
 	router.HandleFunc("/interval/{id}", m.FindIntervalByID).Methods("GET")
+	router.HandleFunc("/interval/annotation/{id}", m.FindIntervalByAnnotationID).Methods("GET")
 
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")

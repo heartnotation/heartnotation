@@ -9,6 +9,7 @@ type Interval struct {
 	AnnotationID    int               `json:"-"`
 	Annotation      *Annotation       `json:"annotation,omitempty" gorm:"foreignkey:AnnotationID"`
 	Commentinterval []IntervalComment `json:"comments,omitempty" gorm:"foreignkey:IntervalID"`
+	IsActive        bool              `json:"is_active"`
 }
 
 // TableName sets table name of the struct

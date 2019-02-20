@@ -32,7 +32,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	annotations := []m.Annotation{}
-	if u.CheckErrorCode(u.GetConnection().Preload("Organization").Preload("Status").Find(&annotations).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Find(&annotations).Error, w) {
 		return
 	}
 	u.Respond(w, annotations)

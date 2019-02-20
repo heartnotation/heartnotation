@@ -43,8 +43,8 @@ class Users extends Component<Props, State> {
   }
 
   public async getDatas(): Promise<User[]> {
-    const annotations = await this.props.getAllUsers();
-    return annotations;
+    const users = await this.props.getAllUsers();
+    return users;
   }
 
   public columns: Array<ColumnProps<User>> = [
@@ -72,15 +72,42 @@ class Users extends Component<Props, State> {
       ]
     },
     {
-      title: () => this.getColumnSearchBox('role', 'Role'),
+      title: () => this.getColumnSearchBox('roles', 'Role'),
       children: [
         {
-          title: 'Role',
-          dataIndex: 'role.name',
-          sorter: (a: User, b: User) =>
-            a.role.name.localeCompare(b.role.name, 'fr', {
-              sensitivity: 'base'
-            })
+          title: 'Roles',
+          dataIndex: 'roles',
+          render: (roles: Role[]) => {
+            const colors = [
+              'geekblue',
+              'green',
+              'volcano',
+              'orange',
+              'yellow',
+              'gold',
+              'lime',
+              'cyan',
+              'purple',
+              'magenta',
+              'red'
+            ];
+            if (roles !== undefined) {
+              roles.sort();
+              const ui = (
+                <span>
+                  {roles.map(role => (
+                    <Tag
+                      color={colors[(role.id % colors.length) - 1]}
+                      key={role.name}
+                    >
+                      {role.name}
+                    </Tag>
+                  ))}
+                </span>
+              );
+              return ui;
+            }
+          }
         }
       ]
     },
@@ -206,20 +233,31 @@ class Users extends Component<Props, State> {
           return false;
         }
       }
-      const role = searches.get('role');
+      const role = searches.get('roles');
       if (role) {
-        if (!record.role.name.toLowerCase().startsWith(role.toLowerCase())) {
+        let found = false;
+        for (const r of record.roles) {
+          if (r.name.toLowerCase().startsWith(role.toLowerCase())) {
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
           return false;
         }
       }
-      const organizations = searches.get('organizations');
-      if (organizations) {
+      const organization = searches.get('organizations');
+      if (organization) {
+        let found = false;
         for (const o of record.organizations) {
-          if (o.name.toLowerCase().startsWith(organizations.toLowerCase())) {
-            return true;
+          if (o.name.toLowerCase().startsWith(organization.toLowerCase())) {
+            found = true;
+            break;
           }
         }
-        return false;
+        if(!found) {
+          return false;
+        }
       }
       return true;
     });

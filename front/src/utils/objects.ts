@@ -2,7 +2,7 @@ export interface Annotation {
   id: number;
   name: string;
   organization: Organization;
-  status: Status;
+  status?: Status[];
   parent: Annotation;
   signal?: Point[][];
   signal_id: number;
@@ -25,6 +25,23 @@ export interface Organization {
 
 export interface Status {
   id: number;
+  date: Date;
+  enum_status_id: number;
+  enum_status: EnumStatus;
+  user_id: number;
+  user: User;
+  annotation_id: number;
+  annotation: Annotation;
+}
+
+export interface StatusInserter {
+  enum_status_id: number;
+  user_id: number;
+  annotation_id: number;
+}
+
+export interface EnumStatus {
+  id: number;
   name: string;
   is_active: boolean;
 }
@@ -44,7 +61,7 @@ export interface Role {
 export interface User {
   id: number;
   mail: string;
-  role: Role[];
+  roles: Role[];
   organizations: Organization[];
   is_active: boolean;
 }
@@ -65,7 +82,7 @@ export interface Interval {
   annotation_id: number;
   user_id?: number;
   comment?: string;
-  start: number;
-  end: number;
+  time_start: number;
+  time_end: number;
   tags?: number[];
 }

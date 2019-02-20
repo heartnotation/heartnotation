@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
-import { Interval, AnnotationComments } from './objects';
+import { API_URL, Annotation, Organization, Tag, Role, User, Status } from '.';
+import { Interval, AnnotationComments, StatusInserter } from './objects';
 
 const get = <T>(url: string): Promise<T> => {
   const jwt = localStorage.getItem('auth_token');
@@ -39,11 +39,31 @@ const put = <T>(url: string, values: any): Promise<T> => {
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
-  return get<Annotation[]>(urls.annotations);
+  return get<Annotation[]>(urls.annotations).then(annotations => {
+    annotations.forEach((a: Annotation) => {
+      a.creation_date = new Date(a.creation_date);
+      if (a.edit_date) {
+        a.edit_date = new Date(a.edit_date);
+      }
+      if (a.status) {
+        a.status.forEach((s: Status) => (s.date = new Date(s.date)));
+      }
+    });
+    return annotations;
+  });
 };
 
 export const getAnnotationById = (id: number): Promise<Annotation> => {
-  return get<Annotation>(`${urls.annotations}/${id}`);
+  return get<Annotation>(`${urls.annotation}/${id}`).then(annotation => {
+    annotation.creation_date = new Date(annotation.creation_date);
+    if (annotation.edit_date) {
+      annotation.edit_date = new Date(annotation.edit_date);
+    }
+    if (annotation.status) {
+      annotation.status.forEach((s: Status) => (s.date = new Date(s.date)));
+    }
+    return annotation;
+  });
 };
 
 export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
@@ -51,15 +71,15 @@ export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
 };
 
 export const sendInterval = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervals}`, datas);
+  return post<Interval>(`${urls.interval}`, datas);
 };
 
 export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalsComment}`, datas);
+  return post<Interval>(`${urls.intervalComment}`, datas);
 };
 
 export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalsTags}`, datas);
+  return post<Interval>(`${urls.intervalTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
@@ -69,7 +89,6 @@ export const sendUser = (datas: User): Promise<User> => {
 export const changeAnnotation = (datas: Annotation): Promise<Annotation> => {
   const d: any = {
     ...datas,
-    status_id: datas.status.id,
     organization_id: datas.organization ? datas.organization.id : undefined,
     parent_id: datas.parent ? datas.parent.id : undefined,
     status: undefined,
@@ -121,15 +140,21 @@ export const getCommentsOnAnnotationById = (
   return get<AnnotationComments>(`${urls.annotationComments}/${id}`);
 };
 
+export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
+  return post<StatusInserter>(`${urls.status}`, s);
+};
+
 const urls = {
+  annotation: 'annotation',
   annotations: 'annotations',
   annotationComments: 'annotation/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',
+  status: 'status',
   roles: 'roles',
   users: 'users',
-  intervals: 'intervals',
-  intervalsTags: 'intervals/tags',
-  intervalsComment: 'intervals/comment'
+  interval: 'interval',
+  intervalComment: 'interval/comment',
+  intervalTags: 'interval/tags'
 };

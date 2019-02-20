@@ -2,6 +2,7 @@ package managers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	d "restapi/dtos"
 	m "restapi/models"
@@ -10,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// FindIntervalByID get an interval bi ID
+// FindIntervalByID get an interval by ID
 func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
 		return
@@ -18,6 +19,19 @@ func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 	interval := []m.Interval{}
 	vars := mux.Vars(r)
 	if u.CheckErrorCode(u.GetConnection().Preload("Commentinterval").Preload("Commentinterval.User").Preload("Tags").Where("is_active = ?", true).Find(&interval, vars["id"]).Error, w) {
+		return
+	}
+	u.Respond(w, interval)
+}
+
+// FindIntervalByAnnotationID get an interval by annotation ID
+func FindIntervalByAnnotationID(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
+		return
+	}
+	interval := []m.Interval{}
+	vars := mux.Vars(r)
+	if u.CheckErrorCode(u.GetConnection().Preload("Commentinterval").Preload("Commentinterval.User").Preload("Tags").Where("is_active = ?", true).Where("annotation_id = ?", vars["id"]).Find(&interval).Error, w) {
 		return
 	}
 	u.Respond(w, interval)
@@ -34,7 +48,7 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad args", 204)
 		return
 	}
-	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID}
+	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID, IsActive: true}
 	if u.CheckErrorCode(u.GetConnection().Create(&c).Error, w) {
 		return
 	}
@@ -53,23 +67,27 @@ func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := u.GetConnection()
-	if u.CheckErrorCode(db.First(&interval, v["id"]).Error, w) || u.CheckErrorCode(db.Delete(&interval).Error, w) {
+	if u.CheckErrorCode(db.First(&interval, v["id"]).Delete(&interval).Error, w) {
 		return
 	}
 }
 
-// AddTagsOnIntervalByID create a tag on an interval
-func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
+// AddTagsOnInterval create a tag on an interval
+func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
+	log.Println("coucou")
 	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
 		return
 	}
+	log.Println("la")
 	var i d.Interval
 	err := json.NewDecoder(r.Body).Decode(&i)
-	v := mux.Vars(r)
-	if err != nil || i.Tags == nil || len(i.Tags) == 0 || i.ID == nil || len(v) != 1 || !u.IsStringInt(v["id"]) {
+	log.Println(i.Tags)
+	log.Println(i.ID)
+	if err != nil || i.Tags == nil || len(i.Tags) == 0 || i.ID == nil {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
+	log.Println("b")
 	tags := []m.Tag{}
 	db := u.GetConnection()
 	if u.CheckErrorCode(db.Find(&tags, i.Tags).Error, w) {
@@ -79,8 +97,11 @@ func AddTagsOnIntervalByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
+	log.Println("c")
+	log.Println(*i.ID)
+	log.Println(i.Tags)
 	interval := m.Interval{}
-	if u.CheckErrorCode(db.Find(&interval, v["id"]).Error, w) {
+	if u.CheckErrorCode(db.Find(&interval, *i.ID).Error, w) {
 		return
 	}
 	db.Model(&interval).Association("Tags").Replace(tags)
