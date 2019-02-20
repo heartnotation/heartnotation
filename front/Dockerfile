@@ -14,6 +14,9 @@ ENV REACT_APP_API=${api}
 ARG client_id
 ENV REACT_APP_CLIENT_ID=${client_id}
 
+ARG version
+ENV REACT_APP_VERSION=${version}
+
 RUN npm run build
 
 # Stage 1 : "deploy"

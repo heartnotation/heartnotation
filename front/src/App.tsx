@@ -90,7 +90,9 @@ const r = {
     },
     {
       path: '/about',
-      component: () => <h2>About</h2>,
+      component: () => (
+        <h2>Version : {process.env.REACT_APP_VERSION || 'unstable'}</h2>
+      ),
       title: 'About',
       iconName: 'question',
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
@@ -143,11 +145,11 @@ class App extends Component<
         <Authenticated user={user}>
           <AppRouter
             defaultRoute={r.defaultRoute}
-            routes={r.routes.filter(value =>	           
+            routes={r.routes.filter(value =>
               value.roles.includes(user.role.name)
             )}
-            hiddenRoutes={r.hiddenRoutes.filter(value =>	
-              value.roles.includes(user.role.name)	
+            hiddenRoutes={r.hiddenRoutes.filter(value =>
+              value.roles.includes(user.role.name)
             )}
           />
         </Authenticated>
