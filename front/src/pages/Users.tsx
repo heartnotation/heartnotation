@@ -14,6 +14,7 @@ export interface State {
   user?: User;
   modifyVisible: boolean;
   creationVisible: boolean;
+  keepCreationData: boolean;
   error: string;
 }
 
@@ -37,6 +38,7 @@ class Users extends Component<Props, State> {
     currentUsers: [],
     modifyVisible: false,
     creationVisible: false,
+    keepCreationData: true,
     error: ''
   };
 
@@ -256,7 +258,10 @@ class Users extends Component<Props, State> {
   }
 
   public handleCancelCreation = () => {
-    this.closeModalCreation();
+    this.setState({
+      creationVisible: false,
+      keepCreationData: true
+    });
   }
 
   public handleOkCreation = async () => {
@@ -288,7 +293,8 @@ class Users extends Component<Props, State> {
 
   public closeModalCreation() {
     this.setState({
-      creationVisible: false
+      creationVisible: false,
+      keepCreationData: false
     });
   }
 
@@ -298,6 +304,7 @@ class Users extends Component<Props, State> {
       user,
       modifyVisible,
       creationVisible,
+      keepCreationData,
       error
     } = this.state;
     return [
@@ -332,11 +339,11 @@ class Users extends Component<Props, State> {
         <AddButton
           key={3}
           onClick={() => {
-            this.setState({ creationVisible: true });
+            this.setState({ creationVisible: true, keepCreationData: true });
           }}
         />
       ),
-      <UserCreation
+      keepCreationData && (<UserCreation
         key={4}
         getOrganizations={this.props.getOrganizations}
         getRoles={this.props.getRoles}
@@ -344,7 +351,7 @@ class Users extends Component<Props, State> {
         handleCancel={this.handleCancelCreation}
         handleOk={this.handleOkCreation}
         modalVisible={creationVisible}
-      />,
+      />),
       error && <Alert key={5} message={error} type='error' showIcon={true} />
     ];
   }
