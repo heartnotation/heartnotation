@@ -35,22 +35,21 @@ export default (props: Props) => {
   }
 
   return (
-    <Layout>
-      <div className='login-container'>
-        <Header className='login-header'>
-          <div className='top-content-blurred' />
-          <div className='top-content-visible'>
-            <img className='login-logo' src={logo} alt='Heartnotation Logo' />
-          </div>
-        </Header>
-        <Content className='login-center'>
-          <h3>Define, comment, tag them intervals</h3>
+    <main className='login-container'>
+      <header className='login-header'>
+        <img className='login-logo' src={logo} alt='Heartnotation Logo' />
+      </header>
+      <article className='login-background'>&nbsp;</article>
+      <article className='login-center'>
+        <h2>Define, comment, tag intervals</h2>
+        <div>
           {error && (
             <div style={{ color: '#db0000', fontWeight: 'bold' }}>
               Error while authenticating, please retry
             </div>
           )}
           <GoogleLogin
+            className='login-button'
             clientId={clientId}
             buttonText='Sign in'
             onSuccess={handleSucces}
@@ -58,14 +57,14 @@ export default (props: Props) => {
               setError(err);
             }}
           />
-          <h2 className='login-text'>
+          <p className='login-text'>
             To access the application, you must log in with Google
-          </h2>
-        </Content>
-        <Footer className='login-footer'>
-          <div className='blurred' />
-        </Footer>
-      </div>
-    </Layout>
+          </p>
+        </div>
+      </article>
+      <footer className='login-footer'>
+        <div className='blurred' />
+      </footer>
+    </main>
   );
 };
