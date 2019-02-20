@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Input, Icon, Tag, Row, Col } from 'antd';
+import { Table, Input, Icon, Tag, Row, Col, Alert } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
@@ -14,6 +14,7 @@ export interface State {
   user?: User;
   modifyVisible: boolean;
   creationVisible: boolean;
+  error: string;
 }
 
 interface Props extends AuthProps {
@@ -35,7 +36,8 @@ class Users extends Component<Props, State> {
     initialUsers: [],
     currentUsers: [],
     modifyVisible: false,
-    creationVisible: false
+    creationVisible: false,
+    error: ''
   };
 
   public async componentDidMount() {
@@ -160,25 +162,35 @@ class Users extends Component<Props, State> {
               }}
             />
           </Col>
-          <Col sm={24} md={12}>
-            <Icon
-              key={2}
-              type='delete'
-              theme='twoTone'
-              twoToneColor='red'
-              style={{ fontSize: '1.3em' }}
-              onClick={async () => {
-                this.props.deleteUser(user).then(async () => {
-                  const users = await this.getDatas();
-                  this.setState({
-                    user: undefined,
-                    initialUsers: users,
-                    currentUsers: users.slice()
-                  });
-                });
-              }}
-            />
-          </Col>
+          {user.id !== this.props.user.id && (
+            <Col sm={24} md={12}>
+              <Icon
+                key={2}
+                type='delete'
+                theme='twoTone'
+                twoToneColor='red'
+                style={{ fontSize: '1.3em' }}
+                onClick={() => {
+                  this.props
+                    .deleteUser(user)
+                    .then(async () => {
+                      const users = await this.getDatas();
+                      this.setState({
+                        user: undefined,
+                        initialUsers: users,
+                        currentUsers: users.slice(),
+                        error: ''
+                      });
+                    })
+                    .catch(error =>
+                      this.setState({
+                        error: error.data
+                      })
+                    );
+                }}
+              />
+            </Col>
+          )}
         </Row>
       ),
       roles: ['Admin']
@@ -281,7 +293,13 @@ class Users extends Component<Props, State> {
   }
 
   public render() {
-    const { currentUsers, user, modifyVisible, creationVisible } = this.state;
+    const {
+      currentUsers,
+      user,
+      modifyVisible,
+      creationVisible,
+      error
+    } = this.state;
     return [
       <Table<User>
         key={1}
@@ -326,7 +344,8 @@ class Users extends Component<Props, State> {
         handleCancel={this.handleCancelCreation}
         handleOk={this.handleOkCreation}
         modalVisible={creationVisible}
-      />
+      />,
+      error && <Alert key={5} message={error} type='error' showIcon={true} />
     ];
   }
 }
