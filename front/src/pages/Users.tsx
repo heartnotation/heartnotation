@@ -170,7 +170,7 @@ class Users extends Component<Props, State> {
                 theme='twoTone'
                 twoToneColor='red'
                 style={{ fontSize: '1.3em' }}
-                onClick={async () => {
+                onClick={() => {
                   this.props
                     .deleteUser(user)
                     .then(async () => {
