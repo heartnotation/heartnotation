@@ -188,6 +188,15 @@ INSERT INTO USERPROFILE (role_id, mail, is_active)
 INSERT INTO USERPROFILE (role_id, mail, is_active)  
 	VALUES (1, 'saidkhalid1996@gmail.com', TRUE);
 
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (3, 'heartnotation@gmail.com', TRUE);
+	
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (2, 'gestion.heart@gmail.com', TRUE);
+
+INSERT INTO USERPROFILE (role_id, mail, is_active)  
+	VALUES (1, 'annotateur.heart@gmail.com', TRUE);
+
 -- STATUS
 
 INSERT INTO STATUS (name, is_active) 
@@ -236,6 +245,9 @@ INSERT INTO ORGANIZATION_USER (organization_id, user_id)
 -- Said
 INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
 	VALUES (4, 7);
+-- Annotateur
+INSERT INTO ORGANIZATION_USER (organization_id, user_id) 
+	VALUES (1, 10);
 -- ANNOTATION
 
 INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
