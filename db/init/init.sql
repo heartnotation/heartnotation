@@ -251,7 +251,7 @@ INSERT INTO ORGANIZATION_USER (organization_id, user_id)
 -- ANNOTATION
 
 INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable) 
-	VALUES (NULL, 'Annotation 1', 1, 1, 1, 'Première annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+	VALUES (NULL, 'Annotation 1', NULL, 1, 1, 'Première annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 INSERT INTO ANNOTATION (parent_id, name, organization_id, status_id, signal_id, annotation_comment, creation_date, edit_date, is_active, is_editable)  
 	VALUES (NULL, 'Annotation 2', 2, 2, 1, 'Seconde annotation', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
