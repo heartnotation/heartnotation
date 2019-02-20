@@ -5,7 +5,7 @@ export interface Annotation {
   status: Status;
   parent: Annotation;
   signal?: Point[][];
-  signal_id: number;
+  signal_id: string;
   creation_date: Date;
   edit_date?: Date;
   is_active: boolean;

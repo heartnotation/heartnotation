@@ -55,7 +55,7 @@ CREATE TABLE ANNOTATION (
 	parent_id bigint REFERENCES ANNOTATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	organization_id bigint REFERENCES ORGANIZATION(id) ON DELETE CASCADE ON UPDATE CASCADE,
 	status_id bigint REFERENCES STATUS(id) ON DELETE CASCADE ON UPDATE CASCADE,
-	signal_id bigint NOT NULL,
+	signal_id varchar(30) NOT NULL,
 	annotation_comment varchar(180),
 	creation_date timestamp NOT NULL,
 	edit_date timestamp NOT NULL,

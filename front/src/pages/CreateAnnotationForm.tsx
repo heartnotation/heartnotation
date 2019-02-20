@@ -84,18 +84,14 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateId = (_: any, value: any, callback: any) => {
-    if (!isNaN(parseInt(value, 10))) {
-      this.props
-        .checkSignal(value)
-        .then(() => {
-          callback();
-        })
-        .catch(() => {
-          callback(`Signal n°${value} not found`);
-        });
-    } else {
-      callback('You should write numbers');
-    }
+    this.props
+      .checkSignal(value)
+      .then(() => {
+        callback();
+      })
+      .catch(() => {
+        callback(`Signal n°${value} not found`);
+      });
   }
 
   public handleSearchOrganization = (value: string) => {
@@ -192,7 +188,6 @@ class CreateAnnotationForm extends Component<Props, States> {
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
       if (!err) {
-        values.signal_id = parseInt(values.signal_id, 10);
         values.parent_id = values.parent_id
           ? parseInt(values.parent_id, 10)
           : null;
