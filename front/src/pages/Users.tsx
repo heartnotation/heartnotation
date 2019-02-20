@@ -162,33 +162,35 @@ class Users extends Component<Props, State> {
               }}
             />
           </Col>
-          <Col sm={24} md={12}>
-            <Icon
-              key={2}
-              type='delete'
-              theme='twoTone'
-              twoToneColor='red'
-              style={{ fontSize: '1.3em' }}
-              onClick={async () => {
-                this.props
-                  .deleteUser(user)
-                  .then(async () => {
-                    const users = await this.getDatas();
-                    this.setState({
-                      user: undefined,
-                      initialUsers: users,
-                      currentUsers: users.slice(),
-                      error: ''
-                    });
-                  })
-                  .catch(error =>
-                    this.setState({
-                      error: error.data
+          {user.id !== this.props.user.id && (
+            <Col sm={24} md={12}>
+              <Icon
+                key={2}
+                type='delete'
+                theme='twoTone'
+                twoToneColor='red'
+                style={{ fontSize: '1.3em' }}
+                onClick={async () => {
+                  this.props
+                    .deleteUser(user)
+                    .then(async () => {
+                      const users = await this.getDatas();
+                      this.setState({
+                        user: undefined,
+                        initialUsers: users,
+                        currentUsers: users.slice(),
+                        error: ''
+                      });
                     })
-                  );
-              }}
-            />
-          </Col>
+                    .catch(error =>
+                      this.setState({
+                        error: error.data
+                      })
+                    );
+                }}
+              />
+            </Col>
+          )}
         </Row>
       ),
       roles: ['Admin']
