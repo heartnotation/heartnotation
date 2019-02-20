@@ -14,6 +14,7 @@ export interface State {
   user?: User;
   modifyVisible: boolean;
   creationVisible: boolean;
+  keepCreationData: boolean;
 }
 
 interface Props extends AuthProps {
@@ -35,7 +36,8 @@ class Users extends Component<Props, State> {
     initialUsers: [],
     currentUsers: [],
     modifyVisible: false,
-    creationVisible: false
+    creationVisible: false,
+    keepCreationData: true
   };
 
   public async componentDidMount() {
@@ -244,7 +246,10 @@ class Users extends Component<Props, State> {
   }
 
   public handleCancelCreation = () => {
-    this.closeModalCreation();
+    this.setState({
+      creationVisible: false,
+      keepCreationData: true
+    });
   }
 
   public handleOkCreation = async () => {
@@ -276,12 +281,19 @@ class Users extends Component<Props, State> {
 
   public closeModalCreation() {
     this.setState({
-      creationVisible: false
+      creationVisible: false,
+      keepCreationData: false
     });
   }
 
   public render() {
-    const { currentUsers, user, modifyVisible, creationVisible } = this.state;
+    const {
+      currentUsers,
+      user,
+      modifyVisible,
+      creationVisible,
+      keepCreationData
+    } = this.state;
     return [
       <Table<User>
         key={1}
@@ -314,19 +326,21 @@ class Users extends Component<Props, State> {
         <AddButton
           key={3}
           onClick={() => {
-            this.setState({ creationVisible: true });
+            this.setState({ creationVisible: true, keepCreationData: true });
           }}
         />
       ),
-      <UserCreation
-        key={4}
-        getOrganizations={this.props.getOrganizations}
-        getRoles={this.props.getRoles}
-        sendUser={this.props.sendUser}
-        handleCancel={this.handleCancelCreation}
-        handleOk={this.handleOkCreation}
-        modalVisible={creationVisible}
-      />
+      keepCreationData && (
+        <UserCreation
+          key={4}
+          getOrganizations={this.props.getOrganizations}
+          getRoles={this.props.getRoles}
+          sendUser={this.props.sendUser}
+          handleCancel={this.handleCancelCreation}
+          handleOk={this.handleOkCreation}
+          modalVisible={creationVisible}
+        />
+      )
     ];
   }
 }
