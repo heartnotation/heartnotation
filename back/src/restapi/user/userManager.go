@@ -145,9 +145,8 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	switch contextUser.Role.ID {
 	// Role Admin
 	case 3:
-		id := vars["id"]
-		u64, _ := strconv.ParseUint(id, 10, 32)
-		if contextUser.ID == uint(u64) {
+		id, _ := strconv.ParseUint(vars["id"], 10, 32)
+		if contextUser.ID == uint(id) {
 			http.Error(w, "This action is not permitted on the actual user", 403)
 			return
 		}
