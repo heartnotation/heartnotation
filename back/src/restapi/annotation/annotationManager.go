@@ -249,19 +249,6 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	contextUser := c.Get(r, "user").(*user.User)
-
-	switch contextUser.Role.ID {
-	// Role Annotateur
-	case 1:
-		// Request only annotation concerned by currentUser organizations and wher status != CREATED
-		http.Error(w, "This action is not permitted on the actual user", 403)
-		break
-	// Role Gestionnaire & Admin
-	default:
-		break
-	}
-
 	m := a.toMap(annotation)
 
 	transaction := db.Begin()
