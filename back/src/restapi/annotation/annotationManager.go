@@ -213,6 +213,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	signal, e := formatToJSONFromAPI(annotation.SignalID)
 	if e != nil {
 		http.Error(w, e.Error(), 500)
+		return
 	}
 	annotation.Signal = signal
 	annotation.OrganizationID = nil

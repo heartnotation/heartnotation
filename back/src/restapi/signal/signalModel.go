@@ -8,7 +8,7 @@ import (
 
 // Point represent a point of a signal
 type Point struct {
-	X int16 `json:"x"`
+	X int64 `json:"x"`
 	Y int16 `json:"y"`
 }
 
@@ -18,17 +18,17 @@ func FormatData(data []byte, leads int) ([][]*Point, error) {
 	if len(data)%int16NumberOfByte > 0 || len(data)%(int16NumberOfByte*leads) > 0 {
 		return nil, fmt.Errorf("Given leads does not correspond to datas")
 	}
-	samples := len(data) / int16NumberOfByte
-	sizeSample := int16(samples / leads)
+	dataSize := len(data)
+	leadSize := int64((dataSize / int16NumberOfByte) / leads)
 
 	formatedDatas := make([][]*Point, leads)
 	buffer := bytes.NewBuffer(data)
 	for lead := 0; lead < leads; lead++ {
-		formatedDatas[lead] = make([]*Point, sizeSample)
+		formatedDatas[lead] = make([]*Point, leadSize)
 	}
-	var sample int16
+	var sample int64
 	var value int16
-	for sample = 0; sample < sizeSample; sample++ {
+	for sample = 0; sample < leadSize; sample++ {
 		for lead := 0; lead < leads; lead++ {
 			if err := binary.Read(buffer, binary.BigEndian, &value); err != nil {
 				return nil, err
