@@ -10,8 +10,8 @@
 }
 
 .logo {
-  margin: 5px 10px 0px 30px;
-  width: 70px;
+  margin-right: 10px;
+  width: 100px;
   float: left;
 }
 
@@ -218,4 +218,8 @@ div > .fixed-bottom-button {
 
 .fixed-bottom-button:hover {
   opacity: 0.85;
+}
+
+.ant-table-wrapper {
+  margin-bottom: 30px;
 }
