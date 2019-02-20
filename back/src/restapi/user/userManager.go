@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	o "restapi/organization"
 	u "restapi/utils"
@@ -144,6 +145,12 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	switch contextUser.Role.ID {
 	// Role Admin
 	case 3:
+		id := vars["id"]
+		u64, _ := strconv.ParseUint(id, 10, 32)
+		if contextUser.ID == uint(u64) {
+			http.Error(w, "This action is not permitted on the actual user", 403)
+			return
+		}
 		break
 	// Role Gestionnaire & Annotateur
 	default:
@@ -173,17 +180,21 @@ func ModifyUser(w http.ResponseWriter, r *http.Request) {
 	organizationuser := OrganizationUser{}
 	contextUser := c.Get(r, "user").(*User)
 
+	json.NewDecoder(r.Body).Decode(&a)
+
 	switch contextUser.Role.ID {
 	// Role Admin
 	case 3:
+		if contextUser.ID == a.ID && a.RoleID != *contextUser.RoleID {
+			http.Error(w, "This action is not permitted on the actual user", 403)
+			return
+		}
 		break
 	// Role Gestionnaire & Annotateur
 	default:
 		http.Error(w, "This action is not permitted on the actual user", 403)
 		return
 	}
-
-	json.NewDecoder(r.Body).Decode(&a)
 
 	err := db.Preload("Role").Preload("Organizations").First(&user).Error
 	if err != nil {
