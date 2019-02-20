@@ -38,7 +38,7 @@ class Users extends Component<Props, State> {
     currentUsers: [],
     modifyVisible: false,
     creationVisible: false,
-    keepCreationData: true
+    keepCreationData: true,
     error: ''
   };
 
@@ -304,7 +304,7 @@ class Users extends Component<Props, State> {
       user,
       modifyVisible,
       creationVisible,
-      keepCreationData
+      keepCreationData,
       error
     } = this.state;
     return [
