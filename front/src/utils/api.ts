@@ -1,41 +1,42 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
 import { Interval } from './objects';
+import { authenticate } from './auth';
+
+const request = <T>(
+  method: string,
+  url: string,
+  body: any | undefined
+): Promise<T> => {
+  return axios({ method, url, data: body })
+    .then(res => res.data)
+    .catch(async (err: AxiosResponse) => {
+      if (err.status === 401) {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          return Promise.reject(err);
+        }
+        await authenticate(token);
+        return axios({ method, url, data: body }).then(res => res.data);
+      }
+      return Promise.reject(err);
+    });
+};
 
 const get = <T>(url: string): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .get<T>(`${API_URL}/${url}`, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return request<T>('GET', `${API_URL}/${url}`, undefined);
 };
 
 const post = <T>(url: string, values: any): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .post<T>(`${API_URL}/${url}`, values, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return request<T>('POST', `${API_URL}/${url}`, values);
 };
 
 const del = <T>(url: string): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .delete(`${API_URL}/${url}`, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return request<T>('DELETE', `${API_URL}/${url}`, undefined);
 };
 
 const put = <T>(url: string, values: any): Promise<T> => {
-  const jwt = localStorage.getItem('auth_token');
-  return axios
-    .put(`${API_URL}/${url}`, values, {
-      headers: { Authorization: `Bearer ${jwt}` }
-    })
-    .then(res => res.data);
+  return request<T>('PUT', `${API_URL}/${url}`, values);
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
