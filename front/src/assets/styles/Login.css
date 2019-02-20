@@ -1,5 +1,6 @@
 .login-container {
-  background-color: #404040;
+  background-image: url("../images/co-screen2.jpeg");
+  background-size: cover;
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -9,13 +10,67 @@
   align-items: center;
 }
 
+.ant-layout-header {
+  padding: 0px !important;
+}
+
+.login-container > .ant-layout-header > .top-content-blurred {
+  height: 15vh;
+  width: 100vw;
+  background-image: url("../images/co-screen2.jpeg");
+  background-size: cover;
+  background-position: top;
+  filter: blur(3px);
+}
+
+.ant-layout-header {
+  height: 15vh !important;
+}
+
+.login-container > .ant-layout-header > .top-content-visible {
+  position: absolute !important;
+  left: 0;
+  top: 0;
+  height: 15vh;
+}
+
+.login-container > .ant-layout-footer {
+  height: 15vh;
+  width: 100vw;
+  background-image: url("../images/co-screen2.jpeg");
+  background-position: bottom;
+  background-size: cover;
+  filter: blur(3px);
+}
+
+.login-container > .ant-layout-content {
+}
+
+.login-center {
+  width: 100vw;
+  height: 70vh;
+  background-color: rgba(66, 61, 61, 0.55);
+  box-shadow: inset 0px 11px 8px -10px #ffffff,
+    inset 0px -11px 8px -10px #ffffff;
+}
+
+.login-center > button > span {
+  width: 170px;
+}
+
+.login-center > button {
+  margin-bottom: 20px;
+}
+
 .login-logo {
   text-align: center;
-  width: 30em;
+  max-width: 100%;
+  max-height: 100%;
+  float: left;
 }
 
 .login-text {
-  color: aliceblue;
+  color: #1f1d1d;
   padding: 1em;
 }
 
@@ -23,4 +78,15 @@
   .login-logo {
     width: 20em;
   }
+}
+
+h3 {
+  font-size: 4em;
+  color: #ffffff;
+  padding-top: 180px;
+}
+
+h2 {
+  font-size: 1.5em;
+  color: #ffffff !important;
 }
