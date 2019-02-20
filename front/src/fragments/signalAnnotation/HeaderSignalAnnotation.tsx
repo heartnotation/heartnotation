@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
 import { Annotation, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
+import { withAuth, AuthProps } from '../../utils/auth';
 import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
@@ -10,12 +11,12 @@ interface State {
   error?: string;
 }
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps, AuthProps {
   annotation: Annotation;
   onToggle: (state: boolean) => void;
 }
 
-interface PropsButton {
+interface PropsButton extends AuthProps {
   conditionnal_id: number;
   annotation: Annotation;
   handleSubmit: (a: Annotation) => void;
@@ -23,7 +24,7 @@ interface PropsButton {
 
 const ValidateButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
-  return (
+  return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='primary'
       icon='check-circle'
@@ -37,12 +38,12 @@ const ValidateButton = (props: PropsButton) => {
     >
       Validate
     </Button>
-  );
+  ) : null;
 };
 
 const InvalidateButton = (props: PropsButton) => {
   const { annotation } = props;
-  return (
+  return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='danger'
       icon='close-circle'
@@ -56,12 +57,12 @@ const InvalidateButton = (props: PropsButton) => {
     >
       Invalidate
     </Button>
-  );
+  ) : null;
 };
 
 const CompleteButton = (props: PropsButton) => {
   const { annotation, handleSubmit } = props;
-  return (
+  return props.user.role.name === 'Annotateur' ? (
     <Button
       type='default'
       icon='check-circle'
@@ -75,7 +76,7 @@ const CompleteButton = (props: PropsButton) => {
     >
       Complete
     </Button>
-  );
+  ) : null;
 };
 
 const ConditionalButton = (props: PropsButton) => {
@@ -104,7 +105,6 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     let step = -1;
-    console.log(props.annotation);
     switch (props.annotation.status.name) {
       case 'ASSIGNED':
       case 'IN_PROCESS':
@@ -144,10 +144,12 @@ class HeaderSignalAnnotation extends Component<Props, State> {
 
   public render() {
     const { Step } = Steps;
-    const { annotation } = this.props;
+    const { annotation, user } = this.props;
     const { stepProcess, error, mode } = this.state;
-    return (
+    console.log(stepProcess);
+    return [
       <Row
+        key={1}
         type='flex'
         className='signal-header'
         align='middle'
@@ -158,12 +160,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
             checkedChildren={<Icon type='check' />}
             unCheckedChildren={<Icon type='close' />}
             defaultChecked={true}
-          />{' '}
+          />
           Display Leads
         </Col>
-        <Col span={4}>
-          {mode} Mode <Switch onChange={this.handleToggle} />
-        </Col>
+        {user.role.name === 'Annotateur' && stepProcess === 0 && (
+          <Col span={4}>
+            {mode} Mode <Switch onChange={this.handleToggle} />
+          </Col>
+        )}
         <Col span={8}>
           <Steps
             style={{ paddingTop: 30 }}
@@ -185,13 +189,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
               conditionnal_id={stepProcess}
               annotation={annotation}
               handleSubmit={this.handleSubmit}
+              user={user}
             />
             {error && <Alert message={error} type='error' />}
           </Row>
         </Col>
       </Row>
-    );
+    ];
   }
 }
 
-export default withRouter(HeaderSignalAnnotation);
+export default withRouter(withAuth(HeaderSignalAnnotation));
