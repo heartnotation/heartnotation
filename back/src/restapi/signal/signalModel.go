@@ -8,8 +8,8 @@ import (
 
 // Point represent a point of a signal
 type Point struct {
-	X int64 `json:"x"`
-	Y int16 `json:"y"`
+	X float64 `json:"x"`
+	Y int16   `json:"y"`
 }
 
 // FormatData take signal's bytes and rearrange them by leads instead of by sample
@@ -33,7 +33,7 @@ func FormatData(data []byte, leads int) ([][]*Point, error) {
 			if err := binary.Read(buffer, binary.BigEndian, &value); err != nil {
 				return nil, err
 			}
-			formatedDatas[lead][sample] = &Point{X: sample, Y: value}
+			formatedDatas[lead][sample] = &Point{X: (float64(sample) / 250), Y: value}
 		}
 	}
 	return formatedDatas, nil
