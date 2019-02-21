@@ -133,7 +133,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tags := []m.Tag{}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
+	db := u.GetConnection()
 	err := db.Where(a.TagsID).Find(&tags).Error
 	if err != nil {
 		u.CheckErrorCode(err, w)
@@ -155,19 +155,34 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	/*
-		var status int
-		if *a.OrganizationID != 0 {
-			status = 2
-		} else {
-			status = 1
-		}*/
+	var statusID int
+	if *a.OrganizationID != 0 {
+		statusID = 2
+	} else {
+		statusID = 1
+	}
+
+	transaction := db.Begin()
+
 	date := time.Now()
 	annotation := m.Annotation{Name: *a.Name, OrganizationID: a.OrganizationID, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
-	if u.CheckErrorCode(db.Create(&annotation).Error, w) {
+	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
+		transaction.Rollback()
 		return
 	}
 
+	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID}
+	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
+		transaction.Rollback()
+		return
+	}
+
+	if u.CheckErrorCode(transaction.Model(&annotation).Association("Status").Append(&status).Error, w) {
+		transaction.Rollback()
+		return
+	}
+
+	transaction.Commit()
 	u.RespondCreate(w, annotation)
 }
 
@@ -220,6 +235,51 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation.Signal = signal
 	u.Respond(w, annotation)
+}
+
+// UpdateAnnotationStatus change the status of an annotation
+func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
+		return
+	}
+
+	contextUser := c.Get(r, "user").(*m.User)
+
+	annotationStatus := d.AnnotationStatus{}
+	json.NewDecoder(r.Body).Decode(&annotationStatus)
+
+	if annotationStatus.ID == 0 || annotationStatus.EnumStatus == 0 {
+		http.Error(w, "One or more field is missing", http.StatusNotAcceptable)
+		return
+	}
+
+	db := u.GetConnection()
+
+	enumStatus := m.EnumStatus{}
+	if u.CheckErrorCode(db.Where(annotationStatus.EnumStatus).First(&enumStatus).Error, w) {
+		return
+	}
+
+	transaction := db.Begin()
+
+	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID}
+	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
+		transaction.Rollback()
+		return
+	}
+
+	annotation := m.Annotation{ID: annotationStatus.ID}
+	if u.CheckErrorCode(transaction.Model(&annotation).Association("Status").Append(&status).Error, w) {
+		transaction.Rollback()
+		return
+	}
+
+	transaction.Commit()
+	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
+		return
+	}
+	u.Respond(w, &annotation)
+
 }
 
 /*
