@@ -198,7 +198,7 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
-    const started = annotation.status.sort((s1:Status, s2:Status) => s2.date.getTime() - s1.date.getTime())[0].enum_status.id > 2;
+    const started = annotation.last_status.enum_status.id > 2;
 
     return (
       <Modal
@@ -232,7 +232,7 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Current status'>
                 {getFieldDecorator('status', {
-                  initialValue: annotation.status.sort((s1:Status, s2:Status) => s2.date.getTime() - s1.date.getTime())[0].enum_status.name
+                  initialValue: annotation.last_status.enum_status.name
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>

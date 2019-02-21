@@ -184,33 +184,15 @@ class Dashboard extends Component<Props, State> {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
+      dataIndex: 'last_status',
       sorter: (a: Annotation, b: Annotation) => {
-        if (!a.status) {
-          return -1;
-        }
-        if (!b.status) {
-          return 1;
-        }
-        const aCurrentStatus = a.status.sort(
-          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
-        )[0].enum_status.name;
-        const bCurrentStatus = b.status.sort(
-          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
-        )[0].enum_status.name;
-        return aCurrentStatus.localeCompare(bCurrentStatus, 'en', {
+        return a.last_status.enum_status.name.localeCompare(b.last_status.enum_status.name, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
         });
       },
       render: (_, record: Annotation) => {
-        if (!record.status) {
-          return '';
-        }
-        record.status.sort(
-          (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
-        );
-        return record.status[0].enum_status.name;
+        return record.last_status.enum_status.name;
       },
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
@@ -297,14 +279,10 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        const statusName = searches.get('status.name');
+        const statusName = searches.get('last_status');
         if (statusName && record.status) {
           if (
-            !record.status
-              .sort(
-                (s1: Status, s2: Status) =>
-                  s2.date.getTime() - s1.date.getTime()
-              )[0]
+            !record.last_status
               .enum_status.name.toLowerCase()
               .startsWith(statusName.toLowerCase())
           ) {
