@@ -82,42 +82,15 @@ class Users extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('roles', 'Role'),
+      title: () => this.getColumnSearchBox('role', 'Role'),
       children: [
         {
-          title: 'Roles',
-          dataIndex: 'roles',
-          render: (roles: Role[]) => {
-            const colors = [
-              'geekblue',
-              'green',
-              'volcano',
-              'orange',
-              'yellow',
-              'gold',
-              'lime',
-              'cyan',
-              'purple',
-              'magenta',
-              'red'
-            ];
-            if (roles !== undefined) {
-              roles.sort();
-              const ui = (
-                <span>
-                  {roles.map(role => (
-                    <Tag
-                      color={colors[(role.id % colors.length) - 1]}
-                      key={role.name}
-                    >
-                      {role.name}
-                    </Tag>
-                  ))}
-                </span>
-              );
-              return ui;
-            }
-          }
+          title: 'Role',
+          dataIndex: 'role.name',
+          sorter: (a: User, b: User) =>
+            a.role.name.localeCompare(b.role.name, 'fr', {
+              sensitivity: 'base'
+            })
         }
       ],
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
@@ -257,16 +230,9 @@ class Users extends Component<Props, State> {
           return false;
         }
       }
-      const role = searches.get('roles');
+      const role = searches.get('role');
       if (role) {
-        let found = false;
-        for (const r of record.roles) {
-          if (r.name.toLowerCase().startsWith(role.toLowerCase())) {
-            found = true;
-            break;
-          }
-        }
-        if(!found) {
+        if (!record.role.name.toLowerCase().startsWith(role.toLowerCase())) {
           return false;
         }
       }
@@ -350,7 +316,7 @@ class Users extends Component<Props, State> {
         key={1}
         rowKey='id'
         columns={this.columns.filter(value =>
-          value.roles.includes(this.props.user.roles[0].name)
+          value.roles.includes(this.props.user.role.name)
         )}
         dataSource={currentUsers}
         pagination={{
@@ -373,7 +339,7 @@ class Users extends Component<Props, State> {
           modalVisible={modifyVisible}
         />
       ),
-      this.props.user.roles.map((r: Role) => r.name).includes('Admin') && (
+      this.props.user.role.name === 'Admin' && (
         <AddButton
           key={3}
           onClick={() => {

@@ -62,7 +62,7 @@ export interface Role {
 export interface User {
   id: number;
   mail: string;
-  roles: Role[];
+  role: Role;
   organizations: Organization[];
   is_active: boolean;
 }

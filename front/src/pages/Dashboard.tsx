@@ -355,15 +355,9 @@ class Dashboard extends Component<Props, State> {
       <Table<Annotation>
         key={1}
         rowKey='id'
-        columns={this.columns.filter(value => {
-          let autorized = false;
-          this.props.user.roles.forEach((r: Role) => {
-            if (value.roles.includes(r.name)) {
-              autorized = true;
-            }
-          });
-          return autorized;
-        })}
+        columns={this.columns.filter(value =>
+          value.roles.includes(this.props.user.role.name)
+        )}
         dataSource={currentAnnotations}
         pagination={{
           position: 'bottom',
@@ -390,7 +384,7 @@ class Dashboard extends Component<Props, State> {
           modalVisibility={modalVisibility}
         />
       ),
-      this.props.user.roles.map((r: Role) => r.name).includes('Annotateur') && (
+      this.props.user.role.name !== 'Annotateur' && (
         <AddButton
           key={3}
           onClick={() => {

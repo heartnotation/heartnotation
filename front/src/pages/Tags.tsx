@@ -7,7 +7,7 @@ import { Role } from '../utils';
 class Tags extends Component<AuthProps> {
   public render() {
     return (
-      this.props.user.roles.map((r: Role) => r.name).includes('Admin') && (
+      this.props.user.role.name === 'Admin' && (
         <AddButton
           onClick={() => {
             return;
