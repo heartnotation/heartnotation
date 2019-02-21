@@ -18,6 +18,7 @@ type Annotation struct {
 	Organization      Organization        `json:"organization,omitempty" gorm:"foreignkey:OrganizationID"`
 	Commentannotation []AnnotationComment `json:"comments,omitempty" gorm:"foreignkey:AnnotationID"`
 	Status            []Status            `json:"status,omitempty" gorm:"foreignkey:AnnotationID"`
+	LastStatus        *Status             `json:"last_status,omitempty"`
 	ParentID          *int                `json:"parent_id,omitempty" gorm:"foreignkey:Parent"`
 	Parent            *Annotation         `json:"parent,omitempty"`
 	Tags              []Tag               `json:"tags,omitempty" gorm:"many2many:annotation_tag"`
