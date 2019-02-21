@@ -1,26 +1,65 @@
 .login-container {
-  background-color: #404040;
   width: 100vw;
   height: 100vh;
-  display: flex;
-  text-align: center;
-  justify-content: space-around;
-  flex-direction: column;
-  align-items: center;
+  background-image: url("../images/co-screen2.jpeg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+.login-header {
+  height: 15vh;
 }
 
 .login-logo {
+  max-height: 100%;
+}
+
+.login-background {
+  height: 70vh;
+  background: inherit;
+  overflow: hidden;
+  filter: blur(3px);
+}
+
+.login-center {
+  position: absolute;
+  top: 15vh;
+  height: 70vh;
+  width: 100vw;
+}
+
+.login-footer {
+  height: 15vh;
+}
+
+.login-center {
+  background-color: rgba(41, 41, 41, 0.65);
   text-align: center;
-  width: 30em;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+  align-content: center;
+  box-shadow: inset 0 0 11px #000000;
+}
+
+h2,
+p {
+  color: #fff;
+}
+
+h2 {
+  font-size: 4em;
 }
 
 .login-text {
-  color: aliceblue;
-  padding: 1em;
+  font-size: 1.5em;
 }
 
-@media only screen and (max-width: 600px) {
-  .login-logo {
-    width: 20em;
-  }
+.login-button {
+  width: 140px;
+}
+
+.login-button span {
+  font-size: 1.3em;
 }

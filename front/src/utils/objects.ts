@@ -2,14 +2,15 @@ export interface Annotation {
   id: number;
   name: string;
   organization: Organization;
-  status?: Status[];
+  status: Status[];
   parent: Annotation;
   signal?: Point[][];
-  signal_id: number;
+  signal_id: string;
   creation_date: Date;
   edit_date?: Date;
   is_active: boolean;
   is_editable: boolean;
+  tags: Tag[];
 }
 
 export interface Point {

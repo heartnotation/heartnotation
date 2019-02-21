@@ -12,9 +12,9 @@ type Annotation struct {
 	EditDate          time.Time           `json:"edit_date"`
 	IsActive          bool                `json:"is_active"`
 	IsEditable        bool                `json:"is_editable"`
-	SignalID          int                 `json:"signal_id"`
+	SignalID          string              `json:"signal_id"`
 	Signal            [][]*Point          `json:"signal,omitempty" gorm:"-"`
-	OrganizationID    int                 `json:"-"`
+	OrganizationID    *int                `json:"-"`
 	Organization      Organization        `json:"organization,omitempty" gorm:"foreignkey:OrganizationID"`
 	Commentannotation []AnnotationComment `json:"comments,omitempty" gorm:"foreignkey:AnnotationID"`
 	Status            []Status            `json:"status,omitempty" gorm:"foreignkey:AnnotationID"`

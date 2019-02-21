@@ -16,7 +16,7 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	users := []m.User{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&users).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Organizations").Preload("Role").Find(&users).Error, w) {
 		return
 	}
 	u.Respond(w, users)
@@ -29,24 +29,24 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.User
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.Mail == nil || a.OrganizationsID == nil || a.RolesID == nil {
+	if a.Mail == nil || a.OrganizationsID == nil {
 		http.Error(w, "invalid args", 204)
 		return
 	}
 	db := u.GetConnection().Set("gorm:auto_preload", true)
 	organizations := []m.Organization{}
-	roles := []m.Role{}
+	role := m.Role{}
 	if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
 		return
 	}
-	if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
+	if u.CheckErrorCode(db.Find(&role, a.RoleID).Error, w) {
 		return
 	}
-	if len(organizations) != len(a.OrganizationsID) || len(roles) != len(a.RolesID) {
+	if len(organizations) != len(a.OrganizationsID) || role.ID != a.RoleID {
 		http.Error(w, "invalid args", 204)
 		return
 	}
-	user := m.User{Mail: *a.Mail, Roles: roles, Organizations: organizations, IsActive: true}
+	user := m.User{Mail: *a.Mail, RoleID: role.ID, Organizations: organizations, IsActive: true}
 	if u.CheckErrorCode(db.Create(&user).Error, w) {
 		return
 	}
@@ -92,7 +92,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var a d.User
 	user := m.User{}
 	organizations := []m.Organization{}
-	roles := []m.Role{}
+	role := m.Role{}
 	json.NewDecoder(r.Body).Decode(&a)
 	if a.ID == nil {
 		http.Error(w, "bad argues", 204)
@@ -102,16 +102,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.First(&user, *a.ID).Error, w) {
 		return
 	}
-	if a.RolesID != nil {
-		if u.CheckErrorCode(db.Find(&roles, a.RolesID).Error, w) {
-			return
-		}
-		if len(roles) != len(a.RolesID) {
-			http.Error(w, "bad argues", 204)
-			return
-		}
-		db.Model(&user).Association("Roles").Replace(roles)
+	if u.CheckErrorCode(db.Find(&role, a.RoleID).Error, w) {
+		return
 	}
+	if role.ID != a.RoleID {
+		http.Error(w, "bad argues", 204)
+		return
+	}
+	db.Model(&user).Association("Role").Replace(role.ID)
 	if a.OrganizationsID != nil {
 		if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
 			return

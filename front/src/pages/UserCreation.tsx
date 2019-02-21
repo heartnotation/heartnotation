@@ -4,6 +4,7 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Role, User } from '../utils';
+import { getAllUsers } from '../utils/api';
 
 const { Option } = Select;
 
@@ -18,6 +19,7 @@ const formTailLayout = {
 
 interface States {
   organizations: Organization[];
+  users: User[];
   organizationsSearch: string[];
   organizationsSelected: Organization[];
   roles: Role[];
@@ -41,6 +43,7 @@ class UserCreation extends Component<Props, States> {
     super(props);
     this.state = {
       organizations: [],
+      users: [],
       organizationsSearch: [],
       organizationsSelected: [],
       roles: [],
@@ -52,18 +55,22 @@ class UserCreation extends Component<Props, States> {
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
-    Promise.all([getOrganizations(), getRoles()]).then(responses => {
-      this.setState({
-        organizations: responses[0],
-        roles: responses[1]
-      });
-    });
+    Promise.all([getOrganizations(), getRoles(), getAllUsers()]).then(
+      responses => {
+        this.setState({
+          organizations: responses[0],
+          roles: responses[1],
+          users: responses[2]
+        });
+      }
+    );
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
+        values.mail = values.mail.toLowerCase();
         this.setState({ loading: true, error: '' });
         this.props.sendUser(values).then(() => {
           this.props.handleOk();
@@ -98,6 +105,15 @@ class UserCreation extends Component<Props, States> {
       values.filter(v => ids.includes(v)).length !== values.length
     ) {
       callback('This organization doesn\'t exist');
+    }
+    callback();
+  }
+
+  public validateMail = (_: any, mail: string, callback: any) => {
+    const { users } = this.state;
+    const mails = users.map(u => u.mail);
+    if (mails.includes(mail)) {
+      callback('This email already exists');
     }
     callback();
   }
@@ -200,7 +216,8 @@ class UserCreation extends Component<Props, States> {
                     {
                       required: true,
                       message: msgRequired
-                    }
+                    },
+                    { validator: this.validateMail }
                   ]
                 })(<Input />)}
               </Form.Item>

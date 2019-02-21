@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Table, Input, Icon, Tag, Row, Col } from 'antd';
+import { Table, Input, Icon, Tag, Row, Col, Alert } from 'antd';
 import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
-import { withRouter, RouteComponentProps } from 'react-router';
+import { withAuth, AuthProps } from '../utils/auth';
 import EditUserForm from './EditUserForm';
 import UserCreation from './UserCreation';
 import AddButton from '../fragments/fixedButton/AddButton';
@@ -14,9 +14,11 @@ export interface State {
   user?: User;
   modifyVisible: boolean;
   creationVisible: boolean;
+  keepCreationData: boolean;
+  error: string;
 }
 
-interface Props extends RouteComponentProps {
+interface Props extends AuthProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
@@ -25,13 +27,19 @@ interface Props extends RouteComponentProps {
   deleteUser: (datas: User) => Promise<User>;
 }
 
+interface ConditionnalColumn extends ColumnProps<User> {
+  roles: string[];
+}
+
 class Users extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
     initialUsers: [],
     currentUsers: [],
     modifyVisible: false,
-    creationVisible: false
+    creationVisible: false,
+    keepCreationData: true,
+    error: ''
   };
 
   public async componentDidMount() {
@@ -47,7 +55,7 @@ class Users extends Component<Props, State> {
     return users;
   }
 
-  public columns: Array<ColumnProps<User>> = [
+  public columns: ConditionnalColumn[] = [
     {
       title: () => this.getColumnSearchBox('id', 'ID'),
       children: [
@@ -56,7 +64,8 @@ class Users extends Component<Props, State> {
           dataIndex: 'id',
           sorter: (a: User, b: User) => a.id - b.id
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('mail', 'Mail'),
@@ -69,7 +78,8 @@ class Users extends Component<Props, State> {
               sensitivity: 'base'
             })
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('roles', 'Role'),
@@ -109,7 +119,8 @@ class Users extends Component<Props, State> {
             }
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: () => this.getColumnSearchBox('organizations', 'Organizations'),
@@ -149,7 +160,8 @@ class Users extends Component<Props, State> {
             }
           }
         }
-      ]
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Active',
@@ -159,7 +171,8 @@ class Users extends Component<Props, State> {
           type={active ? 'check' : 'close'}
           style={{ color: active ? 'green' : 'red', fontSize: '1.2em' }}
         />
-      )
+      ),
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       title: 'Actions',
@@ -178,27 +191,38 @@ class Users extends Component<Props, State> {
               }}
             />
           </Col>
-          <Col sm={24} md={12}>
-            <Icon
-              key={2}
-              type='delete'
-              theme='twoTone'
-              twoToneColor='red'
-              style={{ fontSize: '1.3em' }}
-              onClick={async () => {
-                this.props.deleteUser(user).then(async () => {
-                  const users = await this.getDatas();
-                  this.setState({
-                    user: undefined,
-                    initialUsers: users,
-                    currentUsers: users.slice()
-                  });
-                });
-              }}
-            />
-          </Col>
+          {user.id !== this.props.user.id && (
+            <Col sm={24} md={12}>
+              <Icon
+                key={2}
+                type='delete'
+                theme='twoTone'
+                twoToneColor='red'
+                style={{ fontSize: '1.3em' }}
+                onClick={() => {
+                  this.props
+                    .deleteUser(user)
+                    .then(async () => {
+                      const users = await this.getDatas();
+                      this.setState({
+                        user: undefined,
+                        initialUsers: users,
+                        currentUsers: users.slice(),
+                        error: ''
+                      });
+                    })
+                    .catch(error =>
+                      this.setState({
+                        error: error.data
+                      })
+                    );
+                }}
+              />
+            </Col>
+          )}
         </Row>
-      )
+      ),
+      roles: ['Admin']
     }
   ];
 
@@ -272,7 +296,10 @@ class Users extends Component<Props, State> {
   }
 
   public handleCancelCreation = () => {
-    this.closeModalCreation();
+    this.setState({
+      creationVisible: false,
+      keepCreationData: true
+    });
   }
 
   public handleOkCreation = async () => {
@@ -304,17 +331,27 @@ class Users extends Component<Props, State> {
 
   public closeModalCreation() {
     this.setState({
-      creationVisible: false
+      creationVisible: false,
+      keepCreationData: false
     });
   }
 
   public render() {
-    const { currentUsers, user, modifyVisible, creationVisible } = this.state;
+    const {
+      currentUsers,
+      user,
+      modifyVisible,
+      creationVisible,
+      keepCreationData,
+      error
+    } = this.state;
     return [
       <Table<User>
         key={1}
         rowKey='id'
-        columns={this.columns}
+        columns={this.columns.filter(value =>
+          value.roles.includes(this.props.user.roles[0].name)
+        )}
         dataSource={currentUsers}
         pagination={{
           position: 'bottom',
@@ -336,13 +373,15 @@ class Users extends Component<Props, State> {
           modalVisible={modifyVisible}
         />
       ),
-      <AddButton
-        key={3}
-        onClick={() => {
-          this.setState({ creationVisible: true });
-        }}
-      />,
-      <UserCreation
+      this.props.user.roles.map((r: Role) => r.name).includes('Admin') && (
+        <AddButton
+          key={3}
+          onClick={() => {
+            this.setState({ creationVisible: true, keepCreationData: true });
+          }}
+        />
+      ),
+      keepCreationData && (<UserCreation
         key={4}
         getOrganizations={this.props.getOrganizations}
         getRoles={this.props.getRoles}
@@ -350,9 +389,10 @@ class Users extends Component<Props, State> {
         handleCancel={this.handleCancelCreation}
         handleOk={this.handleOkCreation}
         modalVisible={creationVisible}
-      />
+      />),
+      error && <Alert key={5} message={error} type='error' showIcon={true} />
     ];
   }
 }
 
-export default withRouter(Users);
+export default withAuth(Users);

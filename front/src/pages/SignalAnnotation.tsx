@@ -242,7 +242,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     const zoom: any = d3
       .zoom()
-      .scaleExtent([1, 50]) // Zoom x1 to x50
+      .scaleExtent([1, 10000]) // Zoom x1 to x10000
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
       .on('zoom', zoomed)

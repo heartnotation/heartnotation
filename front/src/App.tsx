@@ -2,15 +2,14 @@ import React, { Component } from 'react';
 import './assets/styles/App.css';
 import AppRouter from './Routes';
 import AnnotationForm from './pages/CreateAnnotationForm';
-import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
 import { api, User } from './utils';
-import GoogleLogin from 'react-google-login';
 import { Authenticated, authenticate } from './utils/auth';
+import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
 
@@ -30,13 +29,15 @@ const r = {
           changeAnnotation={api.changeAnnotation}
         />
       ),
-      title: 'Signal annotation'
+      title: 'Signal annotation',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/new/tags',
       component: TagCreation,
       title: 'Create Tags',
-      iconName: 'tag'
+      iconName: 'tag',
+      roles: ['Admin']
     },
     {
       path: '/new/annotations',
@@ -50,7 +51,8 @@ const r = {
         />
       ),
       title: 'Create annotation',
-      iconName: 'plus'
+      iconName: 'plus',
+      roles: ['Gestionnaire', 'Admin']
     }
   ],
   routes: [
@@ -59,7 +61,8 @@ const r = {
       exact: true,
       component: () => <Dashboard getAnnotations={api.getAnnotations} />,
       title: 'Dashboard',
-      iconName: 'dashboard'
+      iconName: 'dashboard',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/users',
@@ -74,25 +77,30 @@ const r = {
         />
       ),
       title: 'Users',
-      iconName: 'user'
+      iconName: 'user',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/tags',
       exact: true,
       component: Tags,
       title: 'Tags',
-      iconName: 'tags'
+      iconName: 'tags',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/about',
-      component: () => <h2>About</h2>,
+      component: () => (
+        <h2>Version : {process.env.REACT_APP_VERSION || 'unstable'}</h2>
+      ),
       title: 'About',
-      iconName: 'question'
+      iconName: 'question',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     }
   ]
 };
 class App extends Component<
-  { clientId: string },
+  {},
   { user?: User; logged: boolean; token?: string }
 > {
   constructor(props: any) {
@@ -111,7 +119,7 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(() => {
+        .catch(_ => {
           this.setState({ logged: false, user: undefined });
         });
     }
@@ -122,7 +130,6 @@ class App extends Component<
   }
   public render = () => {
     const { logged, token, user } = this.state;
-    const { clientId } = this.props;
 
     if (token && !logged) {
       return (
@@ -133,29 +140,22 @@ class App extends Component<
         />
       );
     }
-
-    if (!logged) {
-      return (
-        <Login
-          clientId={clientId}
-          onSuccess={this.handleSuccess}
-          onFailure={err => console.log(err.details)}
-        />
-      );
-    }
     if (user) {
       return (
-        user && (
-          <Authenticated user={user}>
-            <AppRouter
-              defaultRoute={r.defaultRoute}
-              routes={r.routes}
-              hiddenRoutes={r.hiddenRoutes}
-            />
-          </Authenticated>
-        )
+        <Authenticated user={user}>
+          <AppRouter
+            defaultRoute={r.defaultRoute}
+            routes={r.routes.filter(value =>
+              value.roles.includes(user.roles[0].name)
+            )}
+            hiddenRoutes={r.hiddenRoutes.filter(value =>
+              value.roles.includes(user.roles[0].name)
+            )}
+          />
+        </Authenticated>
       );
     }
+    return <Login onSuccess={this.handleSuccess} />;
   }
 }
 export default App;

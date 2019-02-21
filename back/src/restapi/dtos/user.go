@@ -4,6 +4,6 @@ package dtos
 type User struct {
 	ID              *int    `json:"id"`
 	Mail            *string `json:"mail"`
-	RolesID         []int   `json:"role_id"`
+	RoleID          int     `json:"role_id"`
 	OrganizationsID []int   `json:"organizations"`
 }

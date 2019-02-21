@@ -9,151 +9,288 @@ CREATE DATABASE heartnotation OWNER heart;
 
 -- TABLES INIT
 
-DROP TABLE IF EXISTS Tag ;
-CREATE TABLE Tag (id SERIAL NOT NULL,
-name VARCHAR(50),
-color CHAR(7),
-is_active BOOL,
-parent_id INT,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS Interval ;
-CREATE TABLE Interval (id SERIAL NOT NULL,
-time_start INT,
-time_end INT,
-is_active BOOL,
-annotation_id INT,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS Annotation ;
-CREATE TABLE Annotation (id SERIAL NOT NULL,
-name VARCHAR(50),
-signal_id INT,
-creation_date TIMESTAMP,
-edit_date TIMESTAMP,
-is_active BOOL,
-is_editable BOOL,
-organization_id INT,
-parent_id INT,
-PRIMARY KEY (id));
+------------------------------------------------------------
+-- Table: Role
+------------------------------------------------------------
+CREATE TABLE public.Role(
+	id          SERIAL NOT NULL ,
+	name        VARCHAR (50) NOT NULL ,
+	is_active   BOOL  NOT NULL  ,
+	CONSTRAINT Role_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS CommentInterval ;
-CREATE TABLE CommentInterval (id SERIAL NOT NULL,
-comment VARCHAR(500),
-date TIMESTAMP,
-interval_id INT,
-user_id INT,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS Role ;
-CREATE TABLE Role (id SERIAL NOT NULL,
-name VARCHAR(50),
-is_active BOOL,
-PRIMARY KEY (id));
+------------------------------------------------------------
+-- Table: User
+------------------------------------------------------------
+CREATE TABLE public.User(
+	id          SERIAL NOT NULL ,
+	mail        VARCHAR (50) NOT NULL ,
+	is_active   BOOL  NOT NULL ,
+	role_id     INT  NOT NULL  ,
+	CONSTRAINT User_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS "User" ;
-CREATE TABLE "User" (id SERIAL NOT NULL,
-mail VARCHAR(50),
-is_active BOOL,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS Organization ;
-CREATE TABLE Organization (id SERIAL NOT NULL,
-name VARCHAR(50),
-is_active BOOL,
-PRIMARY KEY (id));
+------------------------------------------------------------
+-- Table: Organization
+------------------------------------------------------------
+CREATE TABLE public.Organization(
+	id          SERIAL NOT NULL ,
+	name        VARCHAR (50) NOT NULL ,
+	is_active   BOOL  NOT NULL  ,
+	CONSTRAINT Organization_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS Status ;
-CREATE TABLE Status (id SERIAL NOT NULL,
-date TIMESTAMP,
-annotation_id INT,
-enumstatus_id INT,
-user_id INT,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS EnumStatus ;
-CREATE TABLE EnumStatus (id SERIAL NOT NULL,
-name VARCHAR(50),
-is_active BOOL,
-PRIMARY KEY (id));
+------------------------------------------------------------
+-- Table: EnumStatus
+------------------------------------------------------------
+CREATE TABLE public.EnumStatus(
+	id          SERIAL NOT NULL ,
+	name        VARCHAR (50) NOT NULL ,
+	is_active   BOOL  NOT NULL  ,
+	CONSTRAINT EnumStatus_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS CommentAnnotation ;
-CREATE TABLE CommentAnnotation (id SERIAL NOT NULL,
-comment VARCHAR(500),
-date TIMESTAMP,
-annotation_id INT,
-user_id INT,
-PRIMARY KEY (id));
 
-DROP TABLE IF EXISTS Notification ;
-CREATE TABLE Notification (id SERIAL NOT NULL,
-title VARCHAR(50),
-content VARCHAR(500),
-date TIMESTAMP,
-user_id INT,
-PRIMARY KEY (id));
+------------------------------------------------------------
+-- Table: Notification
+------------------------------------------------------------
+CREATE TABLE public.Notification(
+	id        SERIAL NOT NULL ,
+	title     VARCHAR (50) NOT NULL ,
+	content   VARCHAR (500) NOT NULL ,
+	date      DATE  NOT NULL ,
+	user_id   INT  NOT NULL  ,
+	CONSTRAINT Notification_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS Annotation_Tag ;
-CREATE TABLE Annotation_Tag (annotation_id INT NOT NULL,
-tag_id INT NOT NULL,
-PRIMARY KEY (annotation_id,
- tag_id));
 
-DROP TABLE IF EXISTS User_Role ;
-CREATE TABLE User_Role (role_id INT NOT NULL,
-user_id INT NOT NULL,
-PRIMARY KEY (role_id,
- user_id));
+------------------------------------------------------------
+-- Table: User_Organization
+------------------------------------------------------------
+CREATE TABLE public.User_Organization(
+	organization_id        INT  NOT NULL ,
+	user_id   INT  NOT NULL  ,
+	CONSTRAINT User_Organization_PK PRIMARY KEY (organization_id,user_id)
+)WITHOUT OIDS;
 
-DROP TABLE IF EXISTS User_Organization ;
-CREATE TABLE User_Organization (user_id INT NOT NULL,
-organization_id INT NOT NULL,
-PRIMARY KEY (user_id,
- organization_id));
 
-DROP TABLE IF EXISTS Interval_Tag ;
-CREATE TABLE Interval_Tag (tag_id INT NOT NULL,
-interval_id INT NOT NULL,
-PRIMARY KEY (tag_id,
- interval_id));
+------------------------------------------------------------
+-- Table: Tag
+------------------------------------------------------------
+CREATE TABLE public.Tag(
+	id          SERIAL NOT NULL ,
+	name        VARCHAR (50) NOT NULL ,
+	color       CHAR (7)  NOT NULL ,
+	is_active   BOOL  NOT NULL ,
+	parent_id      INT    ,
+	CONSTRAINT Tag_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-ALTER TABLE Interval ADD CONSTRAINT FK_Interval_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
 
-ALTER TABLE Annotation ADD CONSTRAINT FK_Annotation_id_Organization FOREIGN KEY (organization_id) REFERENCES Organization (id);
-ALTER TABLE CommentInterval ADD CONSTRAINT FK_CommentInterval_id_Interval FOREIGN KEY (interval_id) REFERENCES Interval (id);
-ALTER TABLE CommentInterval ADD CONSTRAINT FK_CommentInterval_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE Status ADD CONSTRAINT FK_Status_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
-ALTER TABLE Status ADD CONSTRAINT FK_Status_id_EnumStatus FOREIGN KEY (enumstatus_id) REFERENCES EnumStatus (id);
-ALTER TABLE Status ADD CONSTRAINT FK_Status_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE CommentAnnotation ADD CONSTRAINT FK_CommentAnnotation_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
-ALTER TABLE CommentAnnotation ADD CONSTRAINT FK_CommentAnnotation_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE Notification ADD CONSTRAINT FK_Notification_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE Annotation_Tag ADD CONSTRAINT FK_Annotation_Tag_id_Annotation FOREIGN KEY (annotation_id) REFERENCES Annotation (id);
-ALTER TABLE Annotation_Tag ADD CONSTRAINT FK_Annotation_Tag_id_Tag FOREIGN KEY (tag_id) REFERENCES Tag (id);
-ALTER TABLE User_Role ADD CONSTRAINT FK_User_Role_id_Role FOREIGN KEY (role_id) REFERENCES Role (id);
-ALTER TABLE User_Role ADD CONSTRAINT FK_User_Role_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE User_Organization ADD CONSTRAINT FK_User_Organization_id_User FOREIGN KEY (user_id) REFERENCES "User" (id);
-ALTER TABLE User_Organization ADD CONSTRAINT FK_User_Organization_id_Organization FOREIGN KEY (organization_id) REFERENCES Organization (id);
-ALTER TABLE Interval_Tag ADD CONSTRAINT FK_Interval_Tag_id_Tag FOREIGN KEY (tag_id) REFERENCES Tag (id);
-ALTER TABLE Interval_Tag ADD CONSTRAINT FK_Interval_Tag_id_Interval FOREIGN KEY (interval_id) REFERENCES Interval (id);
-ALTER TABLE Tag ADD CONSTRAINT FK_Tag_parent FOREIGN KEY (parent_id) REFERENCES Tag (id);
-ALTER TABLE Annotation ADD CONSTRAINT FK_Annotation_parent FOREIGN KEY (parent_id) REFERENCES Annotation (id);
+------------------------------------------------------------
+-- Table: Interval
+------------------------------------------------------------
+CREATE TABLE public.Interval(
+	id              SERIAL NOT NULL ,
+	time_start      INT  NOT NULL ,
+	time_end        INT  NOT NULL ,
+	is_active       BOOL  NOT NULL ,
+	annotation_id   INT  NOT NULL  ,
+	CONSTRAINT Interval_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
 
-ALTER TABLE Tag OWNER TO heart;
-ALTER TABLE Interval OWNER TO heart;
-ALTER TABLE Annotation OWNER TO heart;
-ALTER TABLE CommentInterval OWNER TO heart;
-ALTER TABLE Role OWNER TO heart;
-ALTER TABLE "User" OWNER TO heart;
-ALTER TABLE Organization OWNER TO heart;
-ALTER TABLE Status OWNER TO heart;
-ALTER TABLE EnumStatus OWNER TO heart;
-ALTER TABLE CommentAnnotation OWNER TO heart;
-ALTER TABLE Notification OWNER TO heart;
-ALTER TABLE Annotation_Tag OWNER TO heart;
-ALTER TABLE User_Role OWNER TO heart;
-ALTER TABLE User_Organization OWNER TO heart;
-ALTER TABLE Interval_Tag OWNER TO heart;
+
+------------------------------------------------------------
+-- Table: Annotation
+------------------------------------------------------------
+CREATE TABLE public.Annotation(
+	id                SERIAL NOT NULL ,
+	name              VARCHAR (50) NOT NULL ,
+	signal_id         VARCHAR (30)  NOT NULL ,
+	creation_date     DATE  NOT NULL ,
+	edit_date         DATE   ,
+	is_active         BOOL  NOT NULL ,
+	is_editable       BOOL  NOT NULL ,
+	organization_id   INT  NOT NULL ,
+	parent_id     INT    ,
+	CONSTRAINT Annotation_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
+
+
+------------------------------------------------------------
+-- Table: CommentInterval
+------------------------------------------------------------
+CREATE TABLE public.CommentInterval(
+	id            SERIAL NOT NULL ,
+	comment       VARCHAR (500) NOT NULL ,
+	date          DATE  NOT NULL ,
+	interval_id   INT  NOT NULL ,
+	user_id       INT  NOT NULL  ,
+	CONSTRAINT CommentInterval_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
+
+
+------------------------------------------------------------
+-- Table: Status
+------------------------------------------------------------
+CREATE TABLE public.Status(
+	id              SERIAL NOT NULL ,
+	date            DATE  NOT NULL ,
+	annotation_id   INT  NOT NULL ,
+	enumstatus_id   INT  NOT NULL ,
+	user_id         INT  NOT NULL  ,
+	CONSTRAINT Status_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
+
+
+------------------------------------------------------------
+-- Table: CommentAnnotation
+------------------------------------------------------------
+CREATE TABLE public.CommentAnnotation(
+	id              SERIAL NOT NULL ,
+	comment         VARCHAR (500) NOT NULL ,
+	date            DATE  NOT NULL ,
+	annotation_id   INT  NOT NULL ,
+	user_id         INT  NOT NULL  ,
+	CONSTRAINT CommentAnnotation_PK PRIMARY KEY (id)
+)WITHOUT OIDS;
+
+
+------------------------------------------------------------
+-- Table: Annotation_Tag
+------------------------------------------------------------
+CREATE TABLE public.Annotation_Tag(
+	tag_id              INT  NOT NULL ,
+	annotation_id   INT  NOT NULL  ,
+	CONSTRAINT Annotation_Tag_PK PRIMARY KEY (tag_id,annotation_id)
+)WITHOUT OIDS;
+
+
+------------------------------------------------------------
+-- Table: Interval_Tag
+------------------------------------------------------------
+CREATE TABLE public.Interval_Tag(
+	interval_id       INT  NOT NULL ,
+	tag_id   INT  NOT NULL  ,
+	CONSTRAINT Interval_Tag_PK PRIMARY KEY (interval_id,tag_id)
+)WITHOUT OIDS;
+
+
+ALTER TABLE public.User
+	ADD CONSTRAINT User_Role0_FK
+	FOREIGN KEY (role_id)
+	REFERENCES public.Role(id);
+
+ALTER TABLE public.Notification
+	ADD CONSTRAINT Notification_User0_FK
+	FOREIGN KEY (user_id)
+	REFERENCES public.User(id);
+
+ALTER TABLE public.User_Organization
+	ADD CONSTRAINT User_Organization_Organization0_FK
+	FOREIGN KEY (organization_id)
+	REFERENCES public.Organization(id);
+
+ALTER TABLE public.User_Organization
+	ADD CONSTRAINT User_Organization_User1_FK
+	FOREIGN KEY (user_id)
+	REFERENCES public.User(id);
+
+ALTER TABLE public.Tag
+	ADD CONSTRAINT Tag_Tag0_FK
+	FOREIGN KEY (parent_id)
+	REFERENCES public.Tag(id);
+
+ALTER TABLE public.Interval
+	ADD CONSTRAINT Interval_Annotation0_FK
+	FOREIGN KEY (annotation_id)
+	REFERENCES public.Annotation(id);
+
+ALTER TABLE public.Annotation
+	ADD CONSTRAINT Annotation_Organization0_FK
+	FOREIGN KEY (organization_id)
+	REFERENCES public.Organization(id);
+
+ALTER TABLE public.Annotation
+	ADD CONSTRAINT Annotation_Annotation1_FK
+	FOREIGN KEY (parent_id)
+	REFERENCES public.Annotation(id);
+
+ALTER TABLE public.CommentInterval
+	ADD CONSTRAINT CommentInterval_Interval0_FK
+	FOREIGN KEY (interval_id)
+	REFERENCES public.Interval(id);
+
+ALTER TABLE public.CommentInterval
+	ADD CONSTRAINT CommentInterval_User1_FK
+	FOREIGN KEY (user_id)
+	REFERENCES public.User(id);
+
+ALTER TABLE public.Status
+	ADD CONSTRAINT Status_Annotation0_FK
+	FOREIGN KEY (annotation_id)
+	REFERENCES public.Annotation(id);
+
+ALTER TABLE public.Status
+	ADD CONSTRAINT Status_EnumStatus1_FK
+	FOREIGN KEY (enumstatus_id)
+	REFERENCES public.EnumStatus(id);
+
+ALTER TABLE public.Status
+	ADD CONSTRAINT Status_User2_FK
+	FOREIGN KEY (user_id)
+	REFERENCES public.User(id);
+
+ALTER TABLE public.CommentAnnotation
+	ADD CONSTRAINT CommentAnnotation_Annotation0_FK
+	FOREIGN KEY (annotation_id)
+	REFERENCES public.Annotation(id);
+
+ALTER TABLE public.CommentAnnotation
+	ADD CONSTRAINT CommentAnnotation_User1_FK
+	FOREIGN KEY (user_id)
+	REFERENCES public.User(id);
+
+ALTER TABLE public.Annotation_Tag
+	ADD CONSTRAINT Annotation_Tag_Tag0_FK
+	FOREIGN KEY (tag_id)
+	REFERENCES public.Tag(id);
+
+ALTER TABLE public.Annotation_Tag
+	ADD CONSTRAINT Annotation_Tag_Annotation1_FK
+	FOREIGN KEY (annotation_id)
+	REFERENCES public.Annotation(id);
+
+ALTER TABLE public.Interval_Tag
+	ADD CONSTRAINT Interval_Tag_Interval0_FK
+	FOREIGN KEY (interval_id)
+	REFERENCES public.Interval(id);
+
+ALTER TABLE public.Interval_Tag
+	ADD CONSTRAINT Interval_Tag_Tag1_FK
+	FOREIGN KEY (tag_id)
+	REFERENCES public.Tag(id);
+
+
+ALTER TABLE public.Tag OWNER TO heart;
+ALTER TABLE public.Interval OWNER TO heart;
+ALTER TABLE public.Annotation OWNER TO heart;
+ALTER TABLE public.CommentInterval OWNER TO heart;
+ALTER TABLE public.Role OWNER TO heart;
+ALTER TABLE public.User OWNER TO heart;
+ALTER TABLE public.Organization OWNER TO heart;
+ALTER TABLE public.Status OWNER TO heart;
+ALTER TABLE public.EnumStatus OWNER TO heart;
+ALTER TABLE public.CommentAnnotation OWNER TO heart;
+ALTER TABLE public.Notification OWNER TO heart;
+ALTER TABLE public.Annotation_Tag OWNER TO heart;
+ALTER TABLE public.User_Organization OWNER TO heart;
+ALTER TABLE public.Interval_Tag OWNER TO heart;
 
 -----------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------
@@ -162,214 +299,191 @@ ALTER TABLE Interval_Tag OWNER TO heart;
 
 -- ORGANIZATION
 
-INSERT INTO Organization (name, is_active) 
+INSERT INTO public.Organization (name, is_active) 
 	VALUES ('Cardiologs', TRUE);
 
-INSERT INTO Organization (name, is_active) 
+INSERT INTO public.Organization (name, is_active) 
 	VALUES ('Podologs', TRUE);
 
-INSERT INTO Organization (name, is_active) 
+INSERT INTO public.Organization (name, is_active) 
 	VALUES ('Heartnotalogs', TRUE);
 
-INSERT INTO Organization (name, is_active) 
+INSERT INTO public.Organization (name, is_active) 
 	VALUES ('Gynecologs', TRUE);
 
 -- USERROLE
 
-INSERT INTO Role (name, is_active) 
+INSERT INTO public.Role (name, is_active) 
 	VALUES ('Annotateur', TRUE);
 
-INSERT INTO Role (name, is_active) 
+INSERT INTO public.Role (name, is_active) 
 	VALUES ('Gestionnaire', TRUE);
 
-INSERT INTO Role (name, is_active) 
+INSERT INTO public.Role (name, is_active) 
 	VALUES ('Admin', TRUE);
 
 --  User
-INSERT INTO "User" (mail, is_active)  
-	VALUES ('holandertheo@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('holandertheo@gmail.com', TRUE, 3);
 
-INSERT INTO "User" (mail, is_active) 
-	VALUES ('rolex.taing@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id) 
+	VALUES ('rolex.taing@gmail.com', TRUE, 3);
 
-INSERT INTO "User" (mail, is_active) 
-	VALUES ('marvin.leclerc31@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id) 
+	VALUES ('marvin.leclerc31@gmail.com', TRUE, 2);
 
-INSERT INTO "User" (mail, is_active)  
-	VALUES ('socarboni@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('socarboni@gmail.com', TRUE, 1);
 
-INSERT INTO "User" (mail, is_active)  
-	VALUES ('romain.phet@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('romain.phet@gmail.com', TRUE, 1);
 
-INSERT INTO "User" (mail, is_active)  
-	VALUES ('alex.pliez@gmail.com', TRUE);
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('alex.pliez@gmail.com', TRUE, 2);
 
-INSERT INTO "User" (mail, is_active)  
-	VALUES ('saidkhalid1996@gmail.com', TRUE);
-
-
--- USERROLE
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (1, 3);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (2, 3);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (3, 2);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (4, 1);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (5, 1);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (6, 2);
-
-INSERT INTO User_Role(user_id, role_id) 
-	VALUES (7, 1);
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('saidkhalid1996@gmail.com', TRUE, 1);
 
 
 -- ENUMSTATUS
 
-INSERT INTO EnumStatus (name, is_active) 
+INSERT INTO public.EnumStatus (name, is_active) 
 	VALUES ('CREATED', TRUE);
 
-INSERT INTO EnumStatus (name, is_active)  
+INSERT INTO public.EnumStatus (name, is_active)  
 	VALUES ('ASSIGNED', TRUE);
 
-INSERT INTO EnumStatus (name, is_active)  
+INSERT INTO public.EnumStatus (name, is_active)  
 	VALUES ('IN_PROCESS', TRUE);
 
-INSERT INTO EnumStatus (name, is_active) 
+INSERT INTO public.EnumStatus (name, is_active) 
 	VALUES ('COMPLETED', TRUE);
 
-INSERT INTO EnumStatus (name, is_active) 
+INSERT INTO public.EnumStatus (name, is_active) 
 	VALUES ('VALIDATED', TRUE);
 
-INSERT INTO EnumStatus (name, is_active) 
+INSERT INTO public.EnumStatus (name, is_active) 
 	VALUES ('CANCELED', TRUE);
 
 
 -- ORGANIZATION USER
 -- Marvin
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (1, 3);
 -- Marvin
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (2, 3);
 -- Marvin
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (3, 3);
 -- Théo
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (3, 1);
 -- Rolex
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (2, 2);
 -- Sophie	
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (2, 4);
 -- Romain
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (4, 5);
 -- Alex
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (4, 6);
 -- Said
-INSERT INTO User_Organization (organization_id, user_id) 
+INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (4, 7);
 
 
 -- ANNOTATION
-INSERT INTO Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
+INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
 	VALUES (NULL, 'Annotation 1', 1, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)  
+INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)  
 	VALUES (NULL, 'Annotation 2', 2, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
-INSERT INTO Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
+INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
 	VALUES (2, 'Annotation 3',  3, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 -- INTERVAL
 
-INSERT INTO Interval (time_start, time_end, is_active, annotation_id) 
+INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
 	VALUES (3, 4, TRUE, 1);
 
-INSERT INTO Interval (time_start, time_end, is_active, annotation_id)
+INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id)
 	VALUES (7, 9, TRUE, 1);
 
-INSERT INTO Interval (time_start, time_end, is_active, annotation_id) 
+INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
 	VALUES (11, 29, TRUE, 2);
 
 
 -- CommentInterval
 
-INSERT INTO CommentInterval (interval_id, user_id, comment, date) 
+INSERT INTO public.CommentInterval (interval_id, user_id, comment, date) 
 	VALUES (1, 1, 'HOLLY', '2004-10-19 10:23:54');
 
-INSERT INTO CommentInterval (interval_id, user_id, comment, date) 
+INSERT INTO public.CommentInterval (interval_id, user_id, comment, date) 
 	VALUES (2, 1, 'MOLLY', '2004-10-19 10:23:54');
 
-INSERT INTO CommentInterval (interval_id, user_id, comment, date) 
+INSERT INTO public.CommentInterval (interval_id, user_id, comment, date) 
 	VALUES (3, 1, 'gOdsAkE', '2004-10-19 10:23:54');
 
 -- TAG
 
-INSERT INTO Tag (parent_id, name, color, is_active) 
+INSERT INTO public.Tag (parent_id, name, color, is_active) 
 	VALUES (NULL, 'Lungs on fire', 'red', TRUE);
 
-INSERT INTO Tag (parent_id, name, color, is_active) 
+INSERT INTO public.Tag (parent_id, name, color, is_active) 
 	VALUES (NULL, 'Lungs on water', 'blue', TRUE);
 
-INSERT INTO Tag (parent_id, name, color, is_active) 
+INSERT INTO public.Tag (parent_id, name, color, is_active) 
 	VALUES (2, 'Weird lungs', 'green', TRUE);
 
 -- ANNOTATION_TAG
 
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (1, 1);
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (1, 2);
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (1, 3);
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (2, 1);
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (2, 2);
-INSERT INTO Annotation_Tag(annotation_id, tag_id)
+INSERT INTO public.Annotation_Tag(annotation_id, tag_id)
 	VALUES (3, 1);
 
 -- INTERVAL_TAG
 
-INSERT INTO Interval_Tag (interval_id, tag_id) 
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
 	VALUES (1, 1);
 
-INSERT INTO Interval_Tag (interval_id, tag_id) 
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
 	VALUES (1, 2);
 
-INSERT INTO Interval_Tag (interval_id, tag_id) 
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
 	VALUES (1, 3);
 
 -- Status
 
-INSERT INTO Status (user_id, enumstatus_id, annotation_id, date) 
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
 	VALUES (1, 2, 1, '2004-10-19 10:23:54');
 
-INSERT INTO Status (user_id, enumstatus_id, annotation_id, date) 
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
 	VALUES (1, 3, 1, '2004-10-19 10:23:54');
 
-INSERT INTO Status (user_id, enumstatus_id, annotation_id, date) 
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
 	VALUES (1, 1, 1, '2004-10-19 10:23:54');
 
 -- CommentAnnotation
 
-INSERT INTO CommentAnnotation (annotation_id, user_id, comment, date) 
+INSERT INTO public.CommentAnnotation (annotation_id, user_id, comment, date) 
 	VALUES (1, 2, 'The lungs are presenting an incredible amount of water which is coming from an unresolved source', '2004-10-19 10:23:54');
 
-INSERT INTO CommentAnnotation (annotation_id, user_id, comment, date) 
+INSERT INTO public.CommentAnnotation (annotation_id, user_id, comment, date) 
 	VALUES (1, 3, 'Lungs are actually defectuous due to drugs injections and too much inhale of smoke', '2004-10-19 10:23:54');
 
-INSERT INTO CommentAnnotation (annotation_id, user_id, comment, date) 
+INSERT INTO public.CommentAnnotation (annotation_id, user_id, comment, date) 
 	VALUES (1, 1, '80% of the cause is daily smoke and sniffing white rails', '2004-10-19 10:23:54');
