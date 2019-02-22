@@ -68,8 +68,8 @@ func UpdateTagByID(w http.ResponseWriter, r *http.Request) {
 	}
 	var t d.Tag
 	err := json.NewDecoder(r.Body).Decode(&t)
-	if err != nil || (t.Color == nil && t.Name == nil && t.ID == nil && t.ParentID == nil) {
-		http.Error(w, "Bad args", 204)
+	if err != nil || (t.Color == nil || t.Name == nil || t.ID == nil) {
+		http.Error(w, "Bad args", 400)
 		return
 	}
 	db := u.GetConnection()
