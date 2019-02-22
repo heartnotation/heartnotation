@@ -13,7 +13,7 @@ import (
 
 // FindIntervalByID get an interval by ID
 func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -26,7 +26,7 @@ func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 
 // FindIntervalByAnnotationID get an interval by annotation ID
 func FindIntervalByAnnotationID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervalsannotations"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -39,7 +39,7 @@ func FindIntervalByAnnotationID(w http.ResponseWriter, r *http.Request) {
 
 // CreateInterval create an interval
 func CreateInterval(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervals"], w, r) {
 		return
 	}
 	var i d.Interval

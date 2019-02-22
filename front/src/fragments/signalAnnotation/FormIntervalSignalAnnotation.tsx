@@ -13,7 +13,7 @@ import {
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Tag, api, Annotation } from '../../utils';
-import { Interval } from '../../utils/objects';
+import { Interval, IntervalPayload } from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
 
 interface Props extends FormComponentProps, RouteComponentProps {
@@ -89,18 +89,23 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleSubmit = (e: any) => {
-    const interval: Interval = {
+    const intervalPayload: IntervalPayload = {
       annotation_id: this.props.annotation.id,
       time_start: Math.round(this.props.start),
       time_end: Math.round(this.props.end)
     };
     this.setState({ confirmLoading: true });
-    api.sendInterval(interval).then(response => {
-      interval.id = response.id;
-      interval.tags = this.state.selectedTags;
-      api.sendIntervalTags(interval);
-      this.setState({ confirmLoading: false });
-      this.props.confirmCreate();
+    api.sendInterval(intervalPayload).then(response1 => {
+      api
+        .sendIntervalTags({
+          tags_id: this.state.selectedTags,
+          interval_id: response1.id
+        })
+        .then(response2 => {
+          console.log(response2);
+          this.setState({ confirmLoading: false });
+          this.props.confirmCreate();
+        });
     });
   }
 

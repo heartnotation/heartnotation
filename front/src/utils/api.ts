@@ -1,4 +1,14 @@
-import { API_URL, Annotation, Organization, Tag, Role, User, Status } from '.';
+import {
+  API_URL,
+  Annotation,
+  Organization,
+  Tag,
+  Role,
+  User,
+  Status,
+  IntervalPayload,
+  IntervalTagsPayload
+} from '.';
 import {
   Interval,
   StatusInserter,
@@ -87,7 +97,7 @@ export const sendAnnotationComment = (
   );
 };
 
-export const sendInterval = (datas: Interval): Promise<Interval> => {
+export const sendInterval = (datas: IntervalPayload): Promise<Interval> => {
   return post<Interval>(`${urls.intervals}`, datas);
 };
 
@@ -95,7 +105,9 @@ export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
   return post<Interval>(`${urls.intervalsComment}`, datas);
 };
 
-export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
+export const sendIntervalTags = (
+  datas: IntervalTagsPayload
+): Promise<Interval> => {
   return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
