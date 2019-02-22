@@ -55,11 +55,11 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(organizations) != len(a.OrganizationsID) || role.ID != a.RoleID {
-		http.Error(w, "invalid args", 204)
+		http.Error(w, "invalid args", 400)
 		return
 	}
-	user := m.User{Mail: *a.Mail, RoleID: role.ID, Organizations: organizations, IsActive: true}
-	if u.CheckErrorCode(db.Create(&user).Error, w) {
+	user := m.User{Mail: *a.Mail, Role: &role, Organizations: organizations, IsActive: true}
+	if u.CheckErrorCode(db.Preload("Organization").Preload("Role").Create(&user).Error, w) {
 		return
 	}
 	u.Respond(w, user)
