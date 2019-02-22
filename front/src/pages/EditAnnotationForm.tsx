@@ -43,7 +43,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   checkSignal: (id: number) => Promise<any>;
   handleOk: () => void;
   handleCancel: () => void;
-  modalVisibility: boolean;
+  editVisible: boolean;
 }
 
 class EditAnnotationForm extends Component<Props, States> {
@@ -187,7 +187,7 @@ class EditAnnotationForm extends Component<Props, States> {
     const {
       form: { getFieldDecorator },
       annotation,
-      modalVisibility,
+      editVisible,
       handleCancel
     } = this.props;
     const { tags, organizationsSearch, tagsSelected, error } = this.state;
@@ -198,14 +198,15 @@ class EditAnnotationForm extends Component<Props, States> {
 
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
-    const started = annotation.status.sort((s1:Status, s2:Status) => s2.date.getTime() - s1.date.getTime())[0].enum_status.id > 2;
+    const started = annotation.last_status.enum_status.id > 2;
 
     return (
       <Modal
         key={2}
-        visible={modalVisibility}
+        visible={editVisible}
         onOk={this.handleOk}
         onCancel={handleCancel}
+        title='Edit annotation'
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
@@ -232,7 +233,7 @@ class EditAnnotationForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Current status'>
                 {getFieldDecorator('status', {
-                  initialValue: annotation.status.sort((s1:Status, s2:Status) => s2.date.getTime() - s1.date.getTime())[0].enum_status.name
+                  initialValue: annotation.last_status.enum_status.name
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>

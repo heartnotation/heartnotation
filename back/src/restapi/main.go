@@ -26,9 +26,6 @@ func main() {
 	router.HandleFunc("/annotations/comment", auth.ValidateMiddleware(m.CreateCommentOnAnnotation)).Methods("POST")
 	router.HandleFunc("/signal/{id}", auth.ValidateMiddleware(m.CheckSignal)).Methods("GET")
 
-	//Status
-	router.HandleFunc("/status", auth.ValidateMiddleware(m.CreateStatus)).Methods("POST")
-
 	// Organizations
 	router.HandleFunc("/organizations", auth.ValidateMiddleware(m.GetAllOrganizations)).Methods("GET")
 

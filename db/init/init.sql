@@ -398,13 +398,16 @@ INSERT INTO public.User_Organization (organization_id, user_id)
 
 -- ANNOTATION
 INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
-	VALUES (NULL, 'Annotation 1', 1, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+	VALUES (NULL, 'Annotation 1', 1, '1', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)  
-	VALUES (NULL, 'Annotation 2', 2, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+	VALUES (NULL, 'Annotation 2', 2, 'ecg', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
-	VALUES (2, 'Annotation 3',  3, 1, '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+	VALUES (2, 'Annotation 3',  3, 'acc', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
+
+INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
+	VALUES (2, 'Annotation 4',  3, 'eeg', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
 
 -- INTERVAL
 
@@ -472,10 +475,19 @@ INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date)
 	VALUES (1, 2, 1, '2004-10-19 10:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 1, '2004-10-19 10:23:54');
+	VALUES (1, 3, 1, '2010-10-20 10:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 1, '2004-10-19 10:23:54');
+	VALUES (1, 1, 1, '2012-10-25 10:23:54');
+
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 2, '2006-10-19 10:23:54');
+
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 3, 3, '2008-10-19 10:23:54');
+
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 4, '2004-10-25 10:23:54');
 
 -- CommentAnnotation
 
