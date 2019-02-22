@@ -23,7 +23,7 @@ interface PropsButton extends AuthProps {
 }
 
 const ValidateButton = (props: PropsButton) => {
-  const { annotation, handleSubmit } = props;
+  const { user } = props;
   return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='primary'
@@ -31,9 +31,8 @@ const ValidateButton = (props: PropsButton) => {
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 5,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 5,
+          id: props.annotation.id
         });
       }}
     >
@@ -43,7 +42,7 @@ const ValidateButton = (props: PropsButton) => {
 };
 
 const InvalidateButton = (props: PropsButton) => {
-  const { annotation } = props;
+  const { user } = props;
   return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='danger'
@@ -51,9 +50,8 @@ const InvalidateButton = (props: PropsButton) => {
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 3,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 3,
+          id: props.annotation.id
         });
       }}
     >
@@ -63,7 +61,7 @@ const InvalidateButton = (props: PropsButton) => {
 };
 
 const CompleteButton = (props: PropsButton) => {
-  const { annotation, handleSubmit } = props;
+  const { user } = props;
   return props.user.role.name === 'Annotateur' ? (
     <Button
       type='default'
@@ -71,9 +69,8 @@ const CompleteButton = (props: PropsButton) => {
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 4,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 4,
+          id: props.annotation.id
         });
       }}
     >
@@ -133,14 +130,12 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   }
 
   public handleSubmit = (s: StatusInserter) => {
-    api
-      .sendStatus(s)
-      .then(() => {
-        this.props.history.push('/');
-      })
-      .catch(error => {
-        this.setState({ error });
-      });
+    api.sendStatus(s).then(() => {
+      this.props.history.push('/');
+    });
+    // .catch(error => {
+    //   this.setState({ error });
+    // });
   }
 
   private handleToggle = (toggle: boolean) => {
