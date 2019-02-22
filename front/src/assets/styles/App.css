@@ -181,7 +181,7 @@
 
 .ant-drawer-body > div > .comments-container {
   padding: 24px;
-  background-color: #f9fbf2;
+  background-color: #fafafa;
   height: 65vh;
   overflow-y: scroll;
 }
@@ -193,7 +193,7 @@
 .modal-comments-container {
   margin-bottom: 25px;
   padding: 25px;
-  background-color: #f9fbf2;
+  background-color: #fafafa;
   height: 250px;
   overflow-y: scroll;
 }
