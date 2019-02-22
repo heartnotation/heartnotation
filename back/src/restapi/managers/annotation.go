@@ -72,7 +72,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
@@ -94,8 +94,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.Annotation
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.SignalID == "" || a.Name == nil || a.OrganizationID == nil || a.TagsID == nil {
-		http.Error(w, "invalid args", 204)
+	if a.SignalID == "" || a.Name == nil || a.TagsID == nil {
+		http.Error(w, "invalid args", 400)
+		return
 	}
 	contextUser := c.Get(r, "user").(*m.User)
 
@@ -133,7 +134,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	var statusID int
-	if *a.OrganizationID != 0 {
+	if a.OrganizationID != nil && *a.OrganizationID != 0 {
 		statusID = 2
 	} else {
 		statusID = 1
