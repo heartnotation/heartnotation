@@ -6,6 +6,7 @@ import (
 	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -29,11 +30,22 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.User
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.Mail == nil || a.OrganizationsID == nil {
-		http.Error(w, "invalid args", 204)
+	if a.Mail == nil || a.OrganizationsID == nil || a.RoleID == 0 {
+		http.Error(w, "invalid args", 400)
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
+	db := u.GetConnection()
+
+	existingUsers := []m.User{}
+	db.Find(&existingUsers)
+
+	for _, user := range existingUsers {
+		if strings.EqualFold(user.Mail, *a.Mail) {
+			http.Error(w, "Mail address already in use", http.StatusConflict)
+			return
+		}
+	}
+
 	organizations := []m.Organization{}
 	role := m.Role{}
 	if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
