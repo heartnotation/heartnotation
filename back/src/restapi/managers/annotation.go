@@ -2,30 +2,15 @@ package managers
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
-	"strconv"
 	"time"
 
 	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
-
-var templateURLAPI string
-
-func init() {
-	//a := d.Annotation{}
-	url := os.Getenv("API_URL")
-	if url == "" {
-		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
-	}
-	templateURLAPI = url
-}
 
 // GetAllAnnotations list all annotations
 func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
@@ -59,18 +44,10 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	//Display last status
 	for i := range annotations {
-		if annotations[i].Status != nil && len(annotations[i].Status) != 0 {
-			lastStatus := annotations[i].Status[0]
-			for _, status := range annotations[i].Status {
-				if lastStatus.Date.Unix() < status.Date.Unix() {
-					lastStatus = status
-				}
-			}
-			annotations[i].LastStatus = (&lastStatus)
-			annotations[i].OrganizationID = nil
-			annotations[i].Status = nil
-			annotations[i].ParentID = nil
-		}
+		annotations[i].LastStatus = annotations[i].GetLastStatus()
+		annotations[i].OrganizationID = nil
+		annotations[i].Status = nil
+		annotations[i].ParentID = nil
 	}
 
 	u.Respond(w, annotations)
@@ -95,7 +72,7 @@ func DeleteAnnotation(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	if len(v) != 1 || len(v["id"]) != 0 || !u.IsStringInt(v["id"]) {
+	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
 		http.Error(w, "Bad request", 400)
 		return
 	}
@@ -117,8 +94,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.Annotation
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.SignalID == "" || a.Name == nil || a.OrganizationID == nil || a.TagsID == nil {
-		http.Error(w, "invalid args", 204)
+	if a.SignalID == "" || a.Name == nil || a.TagsID == nil {
+		http.Error(w, "invalid args", 400)
+		return
 	}
 	contextUser := c.Get(r, "user").(*m.User)
 
@@ -156,7 +134,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	var statusID int
-	if *a.OrganizationID != 0 {
+	if a.OrganizationID != nil && *a.OrganizationID != 0 {
 		statusID = 2
 	} else {
 		statusID = 1
@@ -218,21 +196,12 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signal, e := formatToJSONFromAPI(annotation.SignalID)
+	signal, e := FormatToJSONFromAPI(annotation.SignalID)
 	if e != nil {
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	//Display last status
-	if annotation.Status != nil && len(annotation.Status) != 0 {
-		lastStatus := annotation.Status[0]
-		for _, status := range annotation.Status {
-			if lastStatus.Date.Unix() < status.Date.Unix() {
-				lastStatus = status
-			}
-		}
-		annotation.LastStatus = (&lastStatus)
-	}
+	annotation.LastStatus = annotation.GetLastStatus()
 	annotation.Signal = signal
 	u.Respond(w, annotation)
 }
@@ -282,46 +251,13 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/*
 // UpdateAnnotation modifies an annotation
 func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
-	var annotation d.Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
-	annotation.EditDate = time.Now()
-	//db.Model(&annotation).Association("OK").Replace()
-// ModifyAnnotation modifies an annotation
-func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	a := dto{}
-	err := json.NewDecoder(r.Body).Decode(&a)
-	if err != nil {
-		http.Error(w, "Fail to parse request body", 400)
-	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
 
-	annotation := Annotation{}
-	db.Where(a.ID).Find(&annotation)
-
-	if annotation.Status.ID > 2 {
-		if annotation.Organization != nil && annotation.Organization.ID != uint(a.OrganizationID) {
-			http.Error(w, "Cannot change organization for started annotations", 400)
-			return
-		}
-		if !compareTags(a, annotation) {
-			http.Error(w, "Cannot change authorized tags for started annotations", 400)
-			return
-		}
-	}
-
-	if len(a.TagsID) <= 0 {
-		http.Error(w, "You must provide some authorized tags", 400)
-		return
-	}
-
-	contextUser := c.Get(r, "user").(*user.User)
+	contextUser := c.Get(r, "user").(*m.User)
 
 	switch contextUser.Role.ID {
 	// Role Annotateur
@@ -334,7 +270,34 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	m := a.toMap(annotation)
+	a := d.Annotation{}
+	err := json.NewDecoder(r.Body).Decode(&a)
+	if err != nil {
+		http.Error(w, "Fail to parse request body", 400)
+	}
+	db := u.GetConnection()
+
+	annotation := m.Annotation{}
+	db.Preload("Status").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
+
+	annotation.LastStatus = annotation.GetLastStatus()
+	if annotation.LastStatus != nil && annotation.LastStatus.ID > 2 {
+		if annotation.Organization != nil && annotation.Organization.ID != *a.OrganizationID {
+			http.Error(w, "Cannot change organization for started annotations", 400)
+			return
+		}
+		if !m.CompareTags(a, annotation) {
+			http.Error(w, "Cannot change authorized tags for started annotations", 400)
+			return
+		}
+	}
+
+	if len(a.TagsID) <= 0 {
+		http.Error(w, "You must provide some authorized tags", 400)
+		return
+	}
+
+	m := m.ToMap(annotation, a)
 
 	transaction := db.Begin()
 	if u.CheckErrorCode(transaction.Model(&annotation).Updates(m).Error, w) {
@@ -348,32 +311,4 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	transaction.Commit()
 	u.Respond(w, annotation)
-}
-*/
-
-func formatToJSONFromAPI(signalID string) ([][]*m.Point, error) {
-	httpResponse, err := http.Get(fmt.Sprintf(templateURLAPI, signalID))
-	if err != nil {
-		return nil, err
-	}
-
-	dataBrut, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, err
-	}
-	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
-	var leads int64
-	if signalID == "ecg" {
-		leads = 2
-	} else if leadNumber == "" {
-		leads = 3
-	} else {
-		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
-	}
-	signalFormated, err := m.FormatData(dataBrut, int(leads))
-	if err != nil {
-		return nil, err
-	}
-
-	return signalFormated, nil
 }
