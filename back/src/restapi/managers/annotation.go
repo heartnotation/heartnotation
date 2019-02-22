@@ -30,7 +30,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
-		err = db.Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).Find(&annotations).Error
+		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).Find(&annotations).Error
 		break
 	// Role Gestionnaire & Admin
 	default:
@@ -149,7 +149,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID}
+	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID, Date: time.Now()}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
@@ -183,7 +183,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
-		err = db.Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).First(&annotation, vars["id"]).Error
+		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).First(&annotation, vars["id"]).Error
 		break
 	// Role Gestionnaire & Admin
 	default:
@@ -231,7 +231,7 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	transaction := db.Begin()
 
-	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID}
+	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: time.Now()}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
