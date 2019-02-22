@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api, Status, Role } from '../utils';
+import { Annotation, Organization, api, Status, Role, User } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -162,7 +162,7 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('first_status', 'created by'),
+      title: () => this.getColumnSearchBox('first_status.user.mail', 'created by'),
       children: [
         {
           title: 'Created by',
@@ -204,7 +204,7 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('last_status', 'last edit by'),
+      title: () => this.getColumnSearchBox('last_status.user.mail', 'last edit by'),
       children: [
         {
           title: 'Last edit by',
@@ -253,7 +253,7 @@ class Dashboard extends Component<Props, State> {
   ];
 
   public getColumnSearchBox = (
-    dataIndex: keyof Annotation,
+    dataIndex: string,
     displayText: string
   ) => (
     <div style={{ paddingTop: 8, textAlign: 'center' }}>
@@ -265,7 +265,7 @@ class Dashboard extends Component<Props, State> {
     </div>
   )
 
-  public handleChange = (dataIndex: keyof Annotation, value: string) => {
+  public handleChange = (dataIndex: string, value: string) => {
     this.state.searches.set(dataIndex, value);
     this.handleSearch();
   }
@@ -306,9 +306,8 @@ class Dashboard extends Component<Props, State> {
         }
 
         const creationUser = searches.get('first_status.user.mail');
-
         if (creationUser) {
-          if (!record.first_status.user.mail.toLowerCase().includes(creationUser.toLowerCase())) {
+          if (!record.first_status.user.mail.toLowerCase().startsWith(creationUser.toLowerCase())) {
             return false;
           }
         }
@@ -327,10 +326,7 @@ class Dashboard extends Component<Props, State> {
         
         const editUser = searches.get('last_status.user.mail');
         if (editUser) {
-          if (
-            record.last_status.user.mail == undefined||
-            !record.last_status.user.mail.toString().startsWith(editUser)
-          ) {
+          if (!record.last_status.user.mail.toLowerCase().startsWith(editUser.toLowerCase())) {
             return false;
           }
         }
