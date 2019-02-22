@@ -62,7 +62,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.Preload("Organization").Preload("Role").Create(&user).Error, w) {
 		return
 	}
-	u.Respond(w, user)
+	u.RespondCreate(w, user)
 }
 
 // FindUserByID user by ID using GET Request
