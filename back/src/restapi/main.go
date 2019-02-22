@@ -42,7 +42,7 @@ func main() {
 	router.HandleFunc("/enumstatus/{id}", auth.ValidateMiddleware(m.FindEnumStatusByID)).Methods("GET")
 
 	// Users
-	router.HandleFunc("/user", auth.ValidateMiddleware(m.CreateUser)).Methods("POST")
+	router.HandleFunc("/users", auth.ValidateMiddleware(m.CreateUser)).Methods("POST")
 	router.HandleFunc("/users", auth.ValidateMiddleware(m.GetAllUsers)).Methods("GET")
 	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(m.FindUserByID)).Methods("GET")
 	router.HandleFunc("/users/{id}", auth.ValidateMiddleware(m.DeleteUser)).Methods("DELETE")
