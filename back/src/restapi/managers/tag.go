@@ -37,7 +37,7 @@ func CreateTag(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(u.GetConnection().Create(&t).Error, w) {
 		return
 	}
-	u.Respond(w, t)
+	u.RespondCreate(w, t)
 }
 
 // RemoveTagByID remove a tag by his id
