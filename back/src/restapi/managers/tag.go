@@ -16,7 +16,7 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tags := []m.Tag{}
-	if u.CheckErrorCode(u.GetConnection().Find(&tags).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Where("is_active = ?", true).Find(&tags).Error, w) {
 		return
 	}
 	u.Respond(w, tags)
@@ -55,7 +55,10 @@ func RemoveTagByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.First(&t, v["id"]).Error, w) {
 		return
 	}
-	db.Model(&t).Update("is_active", false)
+	if u.CheckErrorCode(db.Model(&t).Update("is_active", false).Error, w) {
+		return
+	}
+	u.Respond(w, &t)
 }
 
 // UpdateTagByID update a tag by his id
@@ -86,4 +89,5 @@ func UpdateTagByID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.Save(&tag).Error, w) {
 		return
 	}
+	u.Respond(w, &tag)
 }
