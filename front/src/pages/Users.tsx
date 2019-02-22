@@ -51,8 +51,8 @@ class Users extends Component<Props, State> {
   }
 
   public async getDatas(): Promise<User[]> {
-    const annotations = await this.props.getAllUsers();
-    return annotations;
+    const users = await this.props.getAllUsers();
+    return users;
   }
 
   public columns: ConditionnalColumn[] = [
@@ -236,14 +236,18 @@ class Users extends Component<Props, State> {
           return false;
         }
       }
-      const organizations = searches.get('organizations');
-      if (organizations) {
+      const organization = searches.get('organizations');
+      if (organization) {
+        let found = false;
         for (const o of record.organizations) {
-          if (o.name.toLowerCase().startsWith(organizations.toLowerCase())) {
-            return true;
+          if (o.name.toLowerCase().startsWith(organization.toLowerCase())) {
+            found = true;
+            break;
           }
         }
-        return false;
+        if(!found) {
+          return false;
+        }
       }
       return true;
     });

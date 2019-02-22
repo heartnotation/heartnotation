@@ -119,7 +119,7 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(err => {
+        .catch(_ => {
           this.setState({ logged: false, user: undefined });
         });
     }

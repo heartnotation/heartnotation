@@ -16,7 +16,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	u "restapi/user"
+	u "restapi/models"
 	"restapi/utils"
 )
 
@@ -52,7 +52,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userFound := u.User{}
-	err = utils.GetConnection().Set("gorm:auto_preload", true).Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&userFound).Error
+	err = utils.GetConnection().Preload("Role").Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&userFound).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -144,7 +144,7 @@ func getUserFromClaims(claims jwt.Claims) (*u.User, error) {
 
 	var u u.User
 
-	if err := db.Set("gorm:auto_preload", true).Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&u).Error; err != nil {
+	if err := db.Preload("Role").Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&u).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil

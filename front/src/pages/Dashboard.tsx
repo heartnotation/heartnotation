@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api } from '../utils';
+import { Annotation, Organization, api, Status, Role } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -41,12 +41,6 @@ class Dashboard extends Component<Props, State> {
 
   public async getDatas(): Promise<Annotation[]> {
     const annotations = await this.props.getAnnotations();
-    annotations.forEach((a: Annotation) => {
-      a.creation_date = new Date(a.creation_date);
-      if (a.edit_date) {
-        a.edit_date = new Date(a.edit_date);
-      }
-    });
     return annotations;
   }
 
@@ -190,18 +184,16 @@ class Dashboard extends Component<Props, State> {
     },
     {
       title: 'Status',
-      dataIndex: 'status.name',
-      filters: this.state.initialAnnotations
-        .map((a: Annotation) => a.status.name)
-        .filter((s, i, array) => array.indexOf(s) === i)
-        .map(s => ({ text: s, value: s })),
-      onFilter: (value: string, record: Annotation) =>
-        record.status.name.indexOf(value) === 0,
-      sorter: (a: Annotation, b: Annotation) =>
-        a.status.name.localeCompare(b.status.name, 'en', {
+      dataIndex: 'last_status',
+      sorter: (a: Annotation, b: Annotation) => {
+        return a.last_status.enum_status.name.localeCompare(b.last_status.enum_status.name, 'en', {
           sensitivity: 'base',
           ignorePunctuation: true
-        }),
+        });
+      },
+      render: (_, record: Annotation) => {
+        return record.last_status.enum_status.name;
+      },
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
@@ -287,11 +279,11 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        const statusName = searches.get('status.name');
-        if (statusName) {
+        const statusName = searches.get('last_status');
+        if (statusName && record.status) {
           if (
-            !record.status.name
-              .toLowerCase()
+            !record.last_status
+              .enum_status.name.toLowerCase()
               .startsWith(statusName.toLowerCase())
           ) {
             return false;
