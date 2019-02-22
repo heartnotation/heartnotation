@@ -72,7 +72,7 @@ func FindUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 	user := m.User{}
 	vars := mux.Vars(r)
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Where("is_active = ?", true).First(&user, vars["id"]).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Preload("Organizations").Preload("Role").Where("is_active = ?", true).First(&user, vars["id"]).Error, w) {
 		return
 	}
 	u.Respond(w, user)
