@@ -4,6 +4,7 @@ export interface Annotation {
   organization: Organization;
   status?: Status[];
   last_status: Status;
+  first_status: Status;
   parent: Annotation;
   signal?: Point[][];
   signal_id: string;
