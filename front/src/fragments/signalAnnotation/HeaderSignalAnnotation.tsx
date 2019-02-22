@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
-import { Annotation, api } from '../../utils';
+import { Annotation, StatusInserter, Status, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
 import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
@@ -18,20 +18,20 @@ interface Props extends RouteComponentProps {
 interface PropsButton {
   conditionnal_id: number;
   annotation: Annotation;
-  handleSubmit: (a: Annotation) => void;
+  handleSubmit: (s: StatusInserter) => void;
 }
 
 const ValidateButton = (props: PropsButton) => {
-  const { annotation, handleSubmit } = props;
   return (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       onClick={() => {
-        handleSubmit({
-          ...annotation,
-          status: { ...annotation.status, id: 5 }
+        props.handleSubmit({
+          enum_status_id: 5,
+          user_id: 1,
+          annotation_id: props.annotation.id
         });
       }}
     >
@@ -41,7 +41,6 @@ const ValidateButton = (props: PropsButton) => {
 };
 
 const InvalidateButton = (props: PropsButton) => {
-  const { annotation } = props;
   return (
     <Button
       type='danger'
@@ -49,8 +48,9 @@ const InvalidateButton = (props: PropsButton) => {
       size='large'
       onClick={() => {
         props.handleSubmit({
-          ...annotation,
-          status: { ...annotation.status, id: 3 }
+          enum_status_id: 3,
+          user_id: 1,
+          annotation_id: props.annotation.id
         });
       }}
     >
@@ -60,16 +60,16 @@ const InvalidateButton = (props: PropsButton) => {
 };
 
 const CompleteButton = (props: PropsButton) => {
-  const { annotation, handleSubmit } = props;
   return (
     <Button
       type='default'
       icon='check-circle'
       size='large'
       onClick={() => {
-        handleSubmit({
-          ...annotation,
-          status: { ...annotation.status, id: 4 }
+        props.handleSubmit({
+          enum_status_id: 4,
+          user_id: 1,
+          annotation_id: props.annotation.id
         });
       }}
     >
@@ -80,7 +80,6 @@ const CompleteButton = (props: PropsButton) => {
 
 const ConditionalButton = (props: PropsButton) => {
   const { conditionnal_id } = props;
-  console.log(conditionnal_id);
   if (conditionnal_id === 0) {
     return <CompleteButton {...props} />;
   } else if (conditionnal_id === 1) {
@@ -104,30 +103,34 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     let step = -1;
-    console.log(props.annotation);
-    switch (props.annotation.status.name) {
-      case 'ASSIGNED':
-      case 'IN_PROCESS':
-        step = 0;
-        break;
-      case 'COMPLETED':
-        step = 1;
-        break;
-      case 'VALIDATED':
-        step = 2;
-        break;
-      default:
-        break;
+    if (props.annotation.status) {
+      props.annotation.status.sort(
+        (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
+      );
+      switch (props.annotation.status[0].enum_status.name) {
+        case 'ASSIGNED':
+        case 'IN_PROCESS':
+          step = 0;
+          break;
+        case 'COMPLETED':
+          step = 1;
+          break;
+        case 'VALIDATED':
+          step = 2;
+          break;
+        default:
+          break;
+      }
+      this.state = {
+        stepProcess: step,
+        mode: 'Navigation'
+      };
     }
-    this.state = {
-      stepProcess: step,
-      mode: 'Navigation'
-    };
   }
 
-  public handleSubmit = (annotation: Annotation) => {
+  public handleSubmit = (s: StatusInserter) => {
     api
-      .changeAnnotation(annotation)
+      .sendStatus(s)
       .then(() => {
         this.props.history.push('/');
       })

@@ -1,4 +1,4 @@
-package signal
+package models
 
 import (
 	"bytes"
@@ -30,7 +30,7 @@ func FormatData(data []byte, leads int) ([][]*Point, error) {
 	var value int16
 	for sample = 0; sample < leadSize; sample++ {
 		for lead := 0; lead < leads; lead++ {
-			if err := binary.Read(buffer, binary.BigEndian, &value); err != nil {
+			if err := binary.Read(buffer, binary.LittleEndian, &value); err != nil {
 				return nil, err
 			}
 			formatedDatas[lead][sample] = &Point{X: (float64(sample) / 250), Y: value}

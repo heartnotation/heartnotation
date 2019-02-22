@@ -345,23 +345,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
-  public handleClickValidate = async (
-    e: React.FormEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
-    const { annotation } = this.state;
-    if (annotation) {
-      try {
-        await this.props.changeAnnotation({
-          ...annotation,
-          status: { ...annotation.status, id: 4 }
-        });
-        this.props.history.push('/');
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
 
   public confirmDelete = (selectors: string[]) => {
     for (const selector of selectors) {
