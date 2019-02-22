@@ -16,6 +16,7 @@ export interface State {
   annotation?: Annotation;
   editVisible: boolean;
   creationVisible: boolean;
+  keepCreationData: boolean;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
@@ -32,7 +33,8 @@ class Dashboard extends Component<Props, State> {
     initialAnnotations: [],
     currentAnnotations: [],
     editVisible: false,
-    creationVisible: false
+    creationVisible: false,
+    keepCreationData: true
   };
 
   public async componentDidMount() {
@@ -343,12 +345,16 @@ class Dashboard extends Component<Props, State> {
     this.createCloseModal();
     const data = await this.getDatas();
     this.setState({
+      keepCreationData: false,
       initialAnnotations: data,
       currentAnnotations: data.slice()
     });
   }
   public createHandleCancel = () => {
     this.createCloseModal();
+    this.setState({
+      keepCreationData: true
+    });
   }
   public createCloseModal() {
     this.setState({
@@ -361,7 +367,7 @@ class Dashboard extends Component<Props, State> {
       currentAnnotations,
       annotation,
       editVisible,
-      creationVisible
+      keepCreationData
     } = this.state;
     return [
       <Table<Annotation>
@@ -386,7 +392,7 @@ class Dashboard extends Component<Props, State> {
         <AddButton
           key={2}
           onClick={() => {
-            this.setState({ creationVisible: true });
+            this.setState({ creationVisible: true, keepCreationData: true });
           }}
         />
       ),
@@ -405,7 +411,7 @@ class Dashboard extends Component<Props, State> {
         />
       ),
 
-      creationVisible && (
+      keepCreationData && (
         <CreateAnnotationForm
           key={4}
           getTags={api.getTags}
