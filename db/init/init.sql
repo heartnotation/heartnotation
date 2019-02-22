@@ -481,49 +481,31 @@ INSERT INTO public.Interval_Tag (interval_id, tag_id)
 
 -- Status
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 1, '2004-10-19 10:23:54');
+	VALUES (1, 1, 1, '2006-10-18 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 2, '2006-10-18 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 3, '2006-10-18 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 4, '2006-10-19 10:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 1, '2010-10-20 10:23:54');
+	VALUES (1, 2, 1, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 2, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 3, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 4, '2006-10-19 11:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 1, '2012-10-25 10:23:54');
-
+	VALUES (1, 3, 1, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 2, '2006-10-19 10:23:54');
-
+	VALUES (1, 3, 2, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 3, '2008-10-19 10:23:54');
-
+	VALUES (2, 3, 3, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 4, '2004-10-25 10:23:54');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 1, '2004-10-19 10:20:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 1, '2004-10-19 10:21:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 1, '2004-10-19 10:22:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (2, 1, 2, '2004-10-19 10:20:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (2, 2, 2, '2004-10-19 10:21:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (2, 3, 2, '2004-10-19 10:22:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 3, '2004-10-19 10:20:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 3, '2004-10-19 10:21:00');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (2, 3, 3, '2004-10-19 10:22:00');
+	VALUES (2, 3, 4, '2006-10-19 12:23:54');
 
 -- CommentAnnotation
 
