@@ -162,13 +162,13 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('creation_user', 'created by'),
+      title: () => this.getColumnSearchBox('first_status', 'created by'),
       children: [
         {
           title: 'Created by',
-          dataIndex: 'creation_user', 
+          dataIndex: 'first_status.user.mail', 
           sorter: (a: Annotation, b: Annotation) =>
-            a.creation_user.localeCompare(b.name, 'en', {
+            a.first_status.user.mail.localeCompare(b.first_status.user.mail, 'en', {
               sensitivity: 'base',
               ignorePunctuation: true
             })
@@ -204,20 +204,13 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('edit_user', 'last edit by'),
+      title: () => this.getColumnSearchBox('last_status', 'last edit by'),
       children: [
         {
           title: 'Last edit by',
-          dataIndex: 'edit_user', // a voir pour mettre la vraie donnée
+          dataIndex: 'last_status.user.mail',
           sorter: (a: Annotation, b: Annotation) => {
-            if(a.edit_user == undefined){
-              return 0
-            }
-            if(b.edit_user == undefined){
-              return 0
-            }
-
-            return a.edit_user.localeCompare(b.edit_user, 'en', {
+            return a.last_status.user.mail.localeCompare(b.last_status.user.mail, 'en', {
               sensitivity: 'base',
               ignorePunctuation: true
             })
@@ -312,10 +305,10 @@ class Dashboard extends Component<Props, State> {
           }
         }
 
-        const creationUser = searches.get('creation_user');
+        const creationUser = searches.get('first_status.user.mail');
 
         if (creationUser) {
-          if (!record.creation_user.toLowerCase().includes(creationUser.toLowerCase())) {
+          if (!record.first_status.user.mail.toLowerCase().includes(creationUser.toLowerCase())) {
             return false;
           }
         }
@@ -332,11 +325,11 @@ class Dashboard extends Component<Props, State> {
           }
         }
         
-        const editUser = searches.get('edit_user');
+        const editUser = searches.get('last_status.user.mail');
         if (editUser) {
           if (
-            record.edit_user == undefined||
-            !record.edit_user.toString().startsWith(editUser)
+            record.last_status.user.mail == undefined||
+            !record.last_status.user.mail.toString().startsWith(editUser)
           ) {
             return false;
           }
