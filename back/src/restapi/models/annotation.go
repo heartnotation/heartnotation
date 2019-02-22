@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	d "restapi/dtos"
@@ -84,7 +83,7 @@ func CompareTags(d d.Annotation, a Annotation) bool {
 	return true
 }
 
-// GetLastStatus return last status of annotation or nil if none
+// GetLastAndFirstStatus return last status and first status, in that order, of annotation or nil if none
 func (a Annotation) GetLastAndFirstStatus() (*Status, *Status) {
 	if a.Status != nil && len(a.Status) != 0 {
 		lastStatus := a.Status[0]
@@ -92,12 +91,8 @@ func (a Annotation) GetLastAndFirstStatus() (*Status, *Status) {
 		for _, status := range a.Status {
 			if lastStatus.Date.Unix() < status.Date.Unix() {
 				lastStatus = status
-				fmt.Println("last")
-				fmt.Println(lastStatus)
 			} else if lastStatus.Date.Unix() > status.Date.Unix() {
 				firstStatus = status
-				fmt.Println("first")
-				fmt.Println(firstStatus)
 			}
 		}
 		return &lastStatus, &firstStatus
