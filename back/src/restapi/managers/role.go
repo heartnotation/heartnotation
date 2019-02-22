@@ -12,7 +12,7 @@ func GetAllRoles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	roles := []m.Role{}
-	if u.CheckErrorCode(u.GetConnection().Preload("Users").Where("is_active = ?", true).Find(&roles).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Where("is_active = ?", true).Find(&roles).Error, w) {
 		return
 	}
 	u.Respond(w, roles)
