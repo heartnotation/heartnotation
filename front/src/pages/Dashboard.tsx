@@ -6,13 +6,17 @@ import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
 import EditAnnotationForm from './EditAnnotationForm';
+import { createCipheriv } from 'crypto';
+import CreateAnnotationForm from './CreateAnnotationForm';
 
 export interface State {
   searches: Map<string, string>;
   initialAnnotations: Annotation[];
   currentAnnotations: Annotation[];
   annotation?: Annotation;
-  modalVisibility: boolean;
+  editVisible: boolean;
+  creationVisible: boolean;
+  keepCreationData: boolean;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
@@ -28,7 +32,9 @@ class Dashboard extends Component<Props, State> {
     searches: new Map<string, string>(),
     initialAnnotations: [],
     currentAnnotations: [],
-    modalVisibility: false
+    editVisible: false,
+    creationVisible: false,
+    keepCreationData: true
   };
 
   public async componentDidMount() {
@@ -207,7 +213,7 @@ class Dashboard extends Component<Props, State> {
           twoToneColor='#6669c9'
           onClick={(e: MouseEvent) => {
             e.stopPropagation();
-            this.setState({ modalVisibility: true, annotation });
+            this.setState({ editVisible: true, annotation });
           }}
         />
       ),
@@ -307,28 +313,54 @@ class Dashboard extends Component<Props, State> {
     });
   }
 
-  public handleCancel = () => {
-    this.closeModal();
+  // Edit Annotation Form
+  public editHandleCancel = () => {
+    this.editCloseModal();
   }
-
-  public handleOk = async () => {
-    this.closeModal();
+  public editHandleOk = async () => {
+    this.editCloseModal();
     const data = await this.getDatas();
     this.setState({
       initialAnnotations: data,
       currentAnnotations: data.slice()
     });
   }
-
-  public closeModal() {
+  public editCloseModal() {
     this.setState({
-      modalVisibility: false,
+      editVisible: false,
       annotation: undefined
     });
   }
 
+  // Create Annotation Form
+  public createHandleOk = async () => {
+    this.createCloseModal();
+    const data = await this.getDatas();
+    this.setState({
+      keepCreationData: false,
+      initialAnnotations: data,
+      currentAnnotations: data.slice()
+    });
+  }
+  public createHandleCancel = () => {
+    this.createCloseModal();
+    this.setState({
+      keepCreationData: true
+    });
+  }
+  public createCloseModal() {
+    this.setState({
+      creationVisible: false
+    });
+  }
+
   public render() {
-    const { currentAnnotations, annotation, modalVisibility } = this.state;
+    const {
+      currentAnnotations,
+      annotation,
+      editVisible,
+      keepCreationData
+    } = this.state;
     return [
       <Table<Annotation>
         key={1}
@@ -348,26 +380,40 @@ class Dashboard extends Component<Props, State> {
           onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
+      this.props.user.role.name !== 'Annotateur' && (
+        <AddButton
+          key={2}
+          onClick={() => {
+            this.setState({ creationVisible: true, keepCreationData: true });
+          }}
+        />
+      ),
       annotation && (
         <EditAnnotationForm
-          key={2}
+          key={3}
           getAnnotations={api.getAnnotations}
           getOrganizations={api.getOrganizations}
           changeAnnotation={api.changeAnnotation}
           getTags={api.getTags}
           annotation={annotation}
           checkSignal={api.checkSignal}
-          handleOk={this.handleOk}
-          handleCancel={this.handleCancel}
-          modalVisibility={modalVisibility}
+          handleOk={this.editHandleOk}
+          handleCancel={this.editHandleCancel}
+          editVisible={editVisible}
         />
       ),
-      this.props.user.role.name !== 'Annotateur' && (
-        <AddButton
-          key={3}
-          onClick={() => {
-            this.props.history.push('/new/annotations');
-          }}
+
+      keepCreationData && (
+        <CreateAnnotationForm
+          key={4}
+          getTags={api.getTags}
+          getOrganizations={api.getOrganizations}
+          getAnnotations={api.getAnnotations}
+          checkSignal={api.checkSignal}
+          sendAnnotation={api.sendAnnotation}
+          creationVisible={this.state.creationVisible}
+          handleOk={this.createHandleOk}
+          handleCancel={this.createHandleCancel}
         />
       )
     ];

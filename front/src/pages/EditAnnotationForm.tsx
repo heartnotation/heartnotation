@@ -43,7 +43,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   checkSignal: (id: number) => Promise<any>;
   handleOk: () => void;
   handleCancel: () => void;
-  modalVisibility: boolean;
+  editVisible: boolean;
 }
 
 class EditAnnotationForm extends Component<Props, States> {
@@ -187,7 +187,7 @@ class EditAnnotationForm extends Component<Props, States> {
     const {
       form: { getFieldDecorator },
       annotation,
-      modalVisibility,
+      editVisible,
       handleCancel
     } = this.props;
     const { tags, organizationsSearch, tagsSelected, error } = this.state;
@@ -203,9 +203,10 @@ class EditAnnotationForm extends Component<Props, States> {
     return (
       <Modal
         key={2}
-        visible={modalVisibility}
+        visible={editVisible}
         onOk={this.handleOk}
         onCancel={handleCancel}
+        title='Edit annotation'
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={20}>
