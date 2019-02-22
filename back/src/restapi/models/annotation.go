@@ -9,7 +9,9 @@ type Annotation struct {
 	ID                int                 `json:"id"`
 	Name              string              `json:"name"`
 	CreationDate      time.Time           `json:"creation_date"`
+	CreationUser      string              `json:"creation_user"`
 	EditDate          time.Time           `json:"edit_date"`
+	EditUser          string              `json:"edit_user"`
 	IsActive          bool                `json:"is_active"`
 	IsEditable        bool                `json:"is_editable"`
 	SignalID          string              `json:"signal_id"`
