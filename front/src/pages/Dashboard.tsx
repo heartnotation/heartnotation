@@ -162,6 +162,21 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
+      title: () => this.getColumnSearchBox('creation_user', 'created by'),
+      children: [
+        {
+          title: 'Created by',
+          dataIndex: 'creation_user', 
+          sorter: (a: Annotation, b: Annotation) =>
+            a.creation_user.localeCompare(b.name, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            })
+        }
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
+    },
+    {
       title: () => this.getColumnSearchBox('edit_date', 'last edit date'),
       children: [
         {
@@ -183,6 +198,29 @@ class Dashboard extends Component<Props, State> {
               timeB = b.edit_date.getTime();
             }
             return timeA - timeB;
+          }
+        }
+      ],
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
+    },
+    {
+      title: () => this.getColumnSearchBox('edit_user', 'last edit by'),
+      children: [
+        {
+          title: 'Last edit by',
+          dataIndex: 'edit_user', // a voir pour mettre la vraie donnée
+          sorter: (a: Annotation, b: Annotation) => {
+            if(a.edit_user == undefined){
+              return 0
+            }
+            if(b.edit_user == undefined){
+              return 0
+            }
+
+            return a.edit_user.localeCompare(b.edit_user, 'en', {
+              sensitivity: 'base',
+              ignorePunctuation: true
+            })
           }
         }
       ],
@@ -273,6 +311,14 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
+
+        const creationUser = searches.get('creation_user');
+
+        if (creationUser) {
+          if (!record.creation_user.toLowerCase().includes(creationUser.toLowerCase())) {
+            return false;
+          }
+        }
         const editDate = searches.get('edit_date');
         if (editDate) {
           if (!record.edit_date && editDate !== '-') {
@@ -285,8 +331,18 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        const statusName = searches.get('last_status');
-        if (statusName && record.status) {
+        
+        const editUser = searches.get('edit_user');
+        if (editUser) {
+          if (
+            record.edit_user == undefined||
+            !record.edit_user.toString().startsWith(editUser)
+          ) {
+            return false;
+          }
+        }
+        const statusName = searches.get('status.name');
+        if (statusName) {
           if (
             !record.last_status
               .enum_status.name.toLowerCase()

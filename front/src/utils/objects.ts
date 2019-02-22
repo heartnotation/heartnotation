@@ -8,7 +8,9 @@ export interface Annotation {
   signal?: Point[][];
   signal_id: string;
   creation_date: Date;
+  creation_user: string; 
   edit_date?: Date;
+  edit_user?: string;
   is_active: boolean;
   is_editable: boolean;
   tags: Tag[];
