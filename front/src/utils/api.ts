@@ -55,7 +55,7 @@ export const getAnnotations = (): Promise<Annotation[]> => {
 };
 
 export const getAnnotationById = (id: number): Promise<Annotation> => {
-  return get<Annotation>(`${urls.annotation}/${id}`).then(annotation => {
+  return get<Annotation>(`${urls.annotations}/${id}`).then(annotation => {
     annotation.creation_date = new Date(annotation.creation_date);
     if (annotation.edit_date) {
       annotation.edit_date = new Date(annotation.edit_date);
@@ -72,15 +72,15 @@ export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
 };
 
 export const sendInterval = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.interval}`, datas);
+  return post<Interval>(`${urls.intervals}`, datas);
 };
 
 export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalComment}`, datas);
+  return post<Interval>(`${urls.intervalsComment}`, datas);
 };
 
 export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalTags}`, datas);
+  return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
@@ -139,7 +139,7 @@ export const deleteUser = (datas: User): Promise<User> => {
 export const getCommentsOnAnnotationById = (
   id: number
 ): Promise<AnnotationComments> => {
-  return get<AnnotationComments>(`${urls.annotationComments}/${id}`);
+  return get<AnnotationComments>(`${urls.annotationsComments}/${id}`);
 };
 
 export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
@@ -147,16 +147,15 @@ export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
 };
 
 const urls = {
-  annotation: 'annotation',
   annotations: 'annotations',
-  annotationComments: 'annotation/comments',
+  annotationsComments: 'annotations/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',
   status: 'status',
   roles: 'roles',
   users: 'users',
-  interval: 'interval',
-  intervalComment: 'interval/comment',
-  intervalTags: 'interval/tags'
+  intervals: 'intervals',
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags'
 };
