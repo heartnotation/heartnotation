@@ -373,6 +373,144 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Status",
+      "item": [
+        {
+          "name": "Get all status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8000/enumstatus",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["enumstatus"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get one status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8000/enumstatus/2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["enumstatus", "2"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "Get all tags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8000/tags",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create tag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"name\": \"Babe, we need to talk...\",\n\t\"color\": \"#f45c9d\",\n\t\"parent_id\": 2\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/tags",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete tag",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "http://localhost:8000/tags/5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags", "5"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change tag",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"id\": 1,\n\t\"name\": \"Closed eyes\",\n\t\"color\": \"#f692d3\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/tags",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["tags"]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "event": [
