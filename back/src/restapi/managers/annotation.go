@@ -2,30 +2,15 @@ package managers
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
-	"strconv"
 	"time"
 
 	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
-
-var templateURLAPI string
-
-func init() {
-	//a := d.Annotation{}
-	url := os.Getenv("API_URL")
-	if url == "" {
-		panic("API_URL environment variable not found, please set it like : \"http://hostname/route/\\%s\" where \\%s will be an integer")
-	}
-	templateURLAPI = url
-}
 
 // GetAllAnnotations list all annotations
 func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
@@ -218,7 +203,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signal, e := formatToJSONFromAPI(annotation.SignalID)
+	signal, e := FormatToJSONFromAPI(annotation.SignalID)
 	if e != nil {
 		http.Error(w, e.Error(), 500)
 		return
@@ -350,30 +335,3 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotation)
 }
 */
-
-func formatToJSONFromAPI(signalID string) ([][]*m.Point, error) {
-	httpResponse, err := http.Get(fmt.Sprintf(templateURLAPI, signalID))
-	if err != nil {
-		return nil, err
-	}
-
-	dataBrut, err := ioutil.ReadAll(httpResponse.Body)
-	if err != nil {
-		return nil, err
-	}
-	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
-	var leads int64
-	if signalID == "ecg" {
-		leads = 2
-	} else if leadNumber == "" {
-		leads = 3
-	} else {
-		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
-	}
-	signalFormated, err := m.FormatData(dataBrut, int(leads))
-	if err != nil {
-		return nil, err
-	}
-
-	return signalFormated, nil
-}
