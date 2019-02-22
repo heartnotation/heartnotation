@@ -242,7 +242,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     const zoom: any = d3
       .zoom()
-      .scaleExtent([1, 50]) // Zoom x1 to x50
+      .scaleExtent([1, 10000]) // Zoom x1 to x10000
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
       .on('zoom', zoomed)
@@ -345,23 +345,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
-  public handleClickValidate = async (
-    e: React.FormEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
-    const { annotation } = this.state;
-    if (annotation) {
-      try {
-        await this.props.changeAnnotation({
-          ...annotation,
-          status: { ...annotation.status, id: 4 }
-        });
-        this.props.history.push('/');
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
 
   public confirmDelete = (selectors: string[]) => {
     for (const selector of selectors) {

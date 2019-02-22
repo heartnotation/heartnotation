@@ -7,7 +7,8 @@ import {
   Tag,
   Point,
   Role,
-  User
+  User,
+  StatusInserter
 } from './objects';
 export const API_URL = process.env.REACT_APP_API
   ? process.env.REACT_APP_API
@@ -22,5 +23,6 @@ export type Tag = Tag;
 export type Point = Point;
 export type Role = Role;
 export type User = User;
+export type StatusInserter = StatusInserter;
 
 export const auth = au;

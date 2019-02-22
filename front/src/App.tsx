@@ -38,21 +38,6 @@ const r = {
       title: 'Create Tags',
       iconName: 'tag',
       roles: ['Admin']
-    },
-    {
-      path: '/new/annotations',
-      component: () => (
-        <AnnotationForm
-          getTags={api.getTags}
-          getOrganizations={api.getOrganizations}
-          getAnnotations={api.getAnnotations}
-          checkSignal={api.checkSignal}
-          sendAnnotation={api.sendAnnotation}
-        />
-      ),
-      title: 'Create annotation',
-      iconName: 'plus',
-      roles: ['Gestionnaire', 'Admin']
     }
   ],
   routes: [
@@ -90,7 +75,9 @@ const r = {
     },
     {
       path: '/about',
-      component: () => <h2>About</h2>,
+      component: () => (
+        <h2>Version : {process.env.REACT_APP_VERSION || 'unstable'}</h2>
+      ),
       title: 'About',
       iconName: 'question',
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
@@ -117,7 +104,7 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(err => {
+        .catch(_ => {
           this.setState({ logged: false, user: undefined });
         });
     }
@@ -143,11 +130,11 @@ class App extends Component<
         <Authenticated user={user}>
           <AppRouter
             defaultRoute={r.defaultRoute}
-            routes={r.routes.filter(value =>	           
+            routes={r.routes.filter(value =>
               value.roles.includes(user.role.name)
             )}
-            hiddenRoutes={r.hiddenRoutes.filter(value =>	
-              value.roles.includes(user.role.name)	
+            hiddenRoutes={r.hiddenRoutes.filter(value =>
+              value.roles.includes(user.role.name)
             )}
           />
         </Authenticated>

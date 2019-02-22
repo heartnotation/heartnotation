@@ -91,8 +91,8 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
   public handleSubmit = (e: any) => {
     const interval: Interval = {
       annotation_id: this.props.annotation.id,
-      start: Math.round(this.props.start),
-      end: Math.round(this.props.end)
+      time_start: Math.round(this.props.start),
+      time_end: Math.round(this.props.end)
     };
     this.setState({ confirmLoading: true });
     api.sendInterval(interval).then(response => {

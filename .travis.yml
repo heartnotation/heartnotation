@@ -2,6 +2,7 @@ env:
   global:
     - REPO="heartnotation"
     - TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
+    - TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%m%d%H%M')-$(git log --format=%h -1)}
 
 branches:
   only:
@@ -76,7 +77,7 @@ jobs:
       before_script:
         - export APP=$REPO/web-app
       script:
-        - docker build --build-arg api=$SERVER_URL --build-arg client_id=$CLIENT_ID -t $APP:$TAG ./front
+        - docker build --build-arg api=$SERVER_URL --build-arg client_id=$CLIENT_ID --build-arg version=$TRAVIS_TAG -t $APP:$TAG ./front
       deploy:
         provider: script
         script: bash .travis/deploy.sh
@@ -100,6 +101,8 @@ jobs:
       name: Release source code to GitHub
       if: branch = master AND tag IS blank
       language: generic
+      before_deploy:
+        - git tag $TRAVIS_TAG
       deploy:
         provider: releases
         api_key:

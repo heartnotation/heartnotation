@@ -1,6 +1,6 @@
+import { API_URL, Annotation, Organization, Tag, Role, User, Status } from '.';
+import { Interval, AnnotationComments, StatusInserter } from './objects';
 import axios, { AxiosResponse } from 'axios';
-import { API_URL, Annotation, Organization, Tag, Role, User } from '.';
-import { Interval } from './objects';
 import { authenticate } from './auth';
 
 const request = <T>(
@@ -40,11 +40,31 @@ const put = <T>(url: string, values: any): Promise<T> => {
 };
 
 export const getAnnotations = (): Promise<Annotation[]> => {
-  return get<Annotation[]>(urls.annotations);
+  return get<Annotation[]>(urls.annotations).then(annotations => {
+    annotations.forEach((a: Annotation) => {
+      a.creation_date = new Date(a.creation_date);
+      if (a.edit_date) {
+        a.edit_date = new Date(a.edit_date);
+      }
+      if (a.status) {
+        a.status.forEach((s: Status) => (s.date = new Date(s.date)));
+      }
+    });
+    return annotations;
+  });
 };
 
 export const getAnnotationById = (id: number): Promise<Annotation> => {
-  return get<Annotation>(`${urls.annotations}/${id}`);
+  return get<Annotation>(`${urls.annotations}/${id}`).then(annotation => {
+    annotation.creation_date = new Date(annotation.creation_date);
+    if (annotation.edit_date) {
+      annotation.edit_date = new Date(annotation.edit_date);
+    }
+    if (annotation.status) {
+      annotation.status.forEach((s: Status) => (s.date = new Date(s.date)));
+    }
+    return annotation;
+  });
 };
 
 export const sendAnnotation = (datas: Annotation): Promise<Annotation> => {
@@ -70,7 +90,6 @@ export const sendUser = (datas: User): Promise<User> => {
 export const changeAnnotation = (datas: Annotation): Promise<Annotation> => {
   const d: any = {
     ...datas,
-    status_id: datas.status.id,
     organization_id: datas.organization ? datas.organization.id : undefined,
     parent_id: datas.parent ? datas.parent.id : undefined,
     tags: datas.tags.map(t => t.id),
@@ -117,14 +136,26 @@ export const deleteUser = (datas: User): Promise<User> => {
   return del(`${urls.users}/${datas.id}`);
 };
 
+export const getCommentsOnAnnotationById = (
+  id: number
+): Promise<AnnotationComments> => {
+  return get<AnnotationComments>(`${urls.annotationsComments}/${id}`);
+};
+
+export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
+  return post<StatusInserter>(`${urls.status}`, s);
+};
+
 const urls = {
   annotations: 'annotations',
+  annotationsComments: 'annotations/comments',
   organizations: 'organizations',
   tags: 'tags',
   signal: 'signal',
+  status: 'status',
   roles: 'roles',
   users: 'users',
   intervals: 'intervals',
-  intervalsTags: 'intervals/tags',
-  intervalsComment: 'intervals/comment'
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags'
 };

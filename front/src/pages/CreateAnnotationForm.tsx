@@ -7,6 +7,7 @@ import {
   AutoComplete,
   Row,
   Col,
+  Modal,
   Alert
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
@@ -19,10 +20,6 @@ const { Option } = Select;
 const formItemLayout = {
   labelCol: { span: 10 },
   wrapperCol: { span: 14 }
-};
-
-const formTailLayout = {
-  wrapperCol: { span: 14, offset: 10 }
 };
 
 interface States {
@@ -43,6 +40,9 @@ interface Props extends FormComponentProps, RouteComponentProps {
   getAnnotations: () => Promise<Annotation[]>;
   checkSignal: (id: number) => Promise<any>;
   sendAnnotation: (datas: Annotation) => Promise<Annotation>;
+  creationVisible: boolean;
+  handleOk: () => void;
+  handleCancel: () => void;
 }
 
 class CreateAnnotationForm extends Component<Props, States> {
@@ -84,18 +84,14 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateId = (_: any, value: any, callback: any) => {
-    if (!isNaN(parseInt(value, 10))) {
-      this.props
-        .checkSignal(value)
-        .then(() => {
-          callback();
-        })
-        .catch(() => {
-          callback(`Signal n°${value} not found`);
-        });
-    } else {
-      callback('You should write numbers');
-    }
+    this.props
+      .checkSignal(value)
+      .then(() => {
+        callback();
+      })
+      .catch(() => {
+        callback(`Signal n°${value} not found`);
+      });
   }
 
   public handleSearchOrganization = (value: string) => {
@@ -187,12 +183,11 @@ class CreateAnnotationForm extends Component<Props, States> {
     this.setState({ tagsSelected: tag });
   }
 
-  public handleSubmit = (e: React.FormEvent<any>) => {
+  public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
       if (!err) {
-        values.signal_id = parseInt(values.signal_id, 10);
         values.parent_id = values.parent_id
           ? parseInt(values.parent_id, 10)
           : null;
@@ -205,16 +200,15 @@ class CreateAnnotationForm extends Component<Props, States> {
         } else {
           values.organization_id = null;
         }
-        this.setState({ loading: true, error: '' });
+        // this.setState({ loading: true, error: '' });
         this.props
           .sendAnnotation(values)
           .then(() => {
-            this.props.history.push('/');
+            this.props.handleOk();
           })
           .catch(() =>
             this.setState({
-              error: 'Problem while sending datas, please retry later...',
-              loading: false
+              error: 'Problem while sending datas, please retry later...'
             })
           );
       }
@@ -239,104 +233,107 @@ class CreateAnnotationForm extends Component<Props, States> {
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     return (
-      <Row type='flex' justify='center' align='top'>
-        <Col span={8}>
-          <Form layout='horizontal' onSubmit={this.handleSubmit}>
-            <Form.Item {...formItemLayout} label='Annotation title'>
-              {getFieldDecorator('name', {
-                rules: [
-                  {
-                    whitespace: true,
-                    message: msgEmpty
-                  },
-                  {
-                    required: true,
-                    message: msgRequired
-                  }
-                ]
-              })(<Input />)}
-            </Form.Item>
-            <Form.Item {...formItemLayout} label='Signal ID'>
-              {getFieldDecorator('signal_id', {
-                rules: [
-                  {
-                    whitespace: true,
-                    message: msgEmpty
-                  },
-                  {
-                    required: true,
-                    message: msgRequired
-                  },
-                  { validator: this.validateId }
-                ]
-              })(<Input />)}
-            </Form.Item>
-            <Form.Item {...formItemLayout} label='Organization'>
-              {getFieldDecorator('organization_id', {
-                initialValue: null,
-                rules: [
-                  {
-                    whitespace: true,
-                    message: msgEmpty
-                  },
-                  { validator: this.validateOrganization }
-                ]
-              })(
-                <AutoComplete
-                  dataSource={organizationsSearch}
-                  onSearch={this.handleSearchOrganization}
-                />
-              )}
-            </Form.Item>
-            <Form.Item
-              {...formItemLayout}
-              label='Original annotation'
-              hasFeedback={true}
-              validateStatus={annotationValidateStatus}
-            >
-              {getFieldDecorator('parent_id', {
-                initialValue: null,
-                rules: [
-                  {
-                    whitespace: true,
-                    message: msgEmpty
-                  },
-                  { validator: this.validateAnnotation }
-                ]
-              })(<Input onChange={this.handleChangeAnnotation} />)}
-            </Form.Item>
-            <Form.Item {...formItemLayout} label='Tags autorisés'>
-              {getFieldDecorator('tags', {
-                rules: [
-                  {
-                    required: true,
-                    message: msgRequired
-                  },
-                  { validator: this.validateTag }
-                ]
-              })(
-                <Select<Tag[]>
-                  mode='multiple'
-                  onChange={this.handleChangeTag}
-                  filterOption={this.filterSearchTag}
-                >
-                  {filteredTags.map((tag: Tag) => (
-                    <Option key='key' value={tag.id}>
-                      {tag.name}
-                    </Option>
-                  ))}
-                </Select>
-              )}
-            </Form.Item>
-            <Form.Item {...formTailLayout}>
-              <Button type='primary' htmlType='submit' disabled={loading}>
-                Create
-              </Button>
-            </Form.Item>
-            {error && <Alert message={error} type='error' showIcon={true} />}
-          </Form>
-        </Col>
-      </Row>
+      <Modal
+        key={2}
+        visible={this.props.creationVisible}
+        onOk={this.handleOk}
+        onCancel={this.props.handleCancel}
+        title='Create annotation'
+      >
+        <Row type='flex' justify='center' align='top'>
+          <Col>
+            <Form layout='horizontal'>
+              <Form.Item {...formItemLayout} label='Annotation title'>
+                {getFieldDecorator('name', {
+                  rules: [
+                    {
+                      whitespace: true,
+                      message: msgEmpty
+                    },
+                    {
+                      required: true,
+                      message: msgRequired
+                    }
+                  ]
+                })(<Input />)}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Signal ID'>
+                {getFieldDecorator('signal_id', {
+                  rules: [
+                    {
+                      whitespace: true,
+                      message: msgEmpty
+                    },
+                    {
+                      required: true,
+                      message: msgRequired
+                    },
+                    { validator: this.validateId }
+                  ]
+                })(<Input />)}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Organization'>
+                {getFieldDecorator('organization_id', {
+                  initialValue: null,
+                  rules: [
+                    {
+                      whitespace: true,
+                      message: msgEmpty
+                    },
+                    { validator: this.validateOrganization }
+                  ]
+                })(
+                  <AutoComplete
+                    dataSource={organizationsSearch}
+                    onSearch={this.handleSearchOrganization}
+                  />
+                )}
+              </Form.Item>
+              <Form.Item
+                {...formItemLayout}
+                label='Original annotation'
+                hasFeedback={true}
+                validateStatus={annotationValidateStatus}
+              >
+                {getFieldDecorator('parent_id', {
+                  initialValue: null,
+                  rules: [
+                    {
+                      whitespace: true,
+                      message: msgEmpty
+                    },
+                    { validator: this.validateAnnotation }
+                  ]
+                })(<Input onChange={this.handleChangeAnnotation} />)}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Tags autorisés'>
+                {getFieldDecorator('tags', {
+                  rules: [
+                    {
+                      required: true,
+                      message: msgRequired
+                    },
+                    { validator: this.validateTag }
+                  ]
+                })(
+                  <Select<Tag[]>
+                    mode='multiple'
+                    onChange={this.handleChangeTag}
+                    filterOption={this.filterSearchTag}
+                  >
+                    {filteredTags.map((tag: Tag) => (
+                      <Option key='key' value={tag.id}>
+                        {tag.name}
+                      </Option>
+                    ))}
+                  </Select>
+                )}
+              </Form.Item>
+              {error && <Alert message={error} type='error' showIcon={true} />}
+            </Form>
+          </Col>
+        </Row>
+      </Modal>
     );
   }
 }
