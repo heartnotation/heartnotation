@@ -21,6 +21,7 @@ type Annotation struct {
 	Organization      *Organization       `json:"organization,omitempty" gorm:"foreignkey:OrganizationID"`
 	Commentannotation []AnnotationComment `json:"comments,omitempty" gorm:"foreignkey:AnnotationID"`
 	Status            []Status            `json:"status,omitempty" gorm:"foreignkey:AnnotationID"`
+	FirstStatus       *Status             `json:"first_status,omitempty"`
 	LastStatus        *Status             `json:"last_status,omitempty"`
 	ParentID          *int                `json:"parent_id,omitempty" gorm:"foreignkey:Parent"`
 	Parent            *Annotation         `json:"parent,omitempty"`
@@ -82,16 +83,19 @@ func CompareTags(d d.Annotation, a Annotation) bool {
 	return true
 }
 
-// GetLastStatus return last status of annotation or nil if none
-func (a Annotation) GetLastStatus() *Status {
+// GetLastAndFirstStatus return last status and first status, in that order, of annotation or nil if none
+func (a Annotation) GetLastAndFirstStatus() (*Status, *Status) {
 	if a.Status != nil && len(a.Status) != 0 {
 		lastStatus := a.Status[0]
+		firstStatus := a.Status[0]
 		for _, status := range a.Status {
 			if lastStatus.Date.Unix() < status.Date.Unix() {
 				lastStatus = status
+			} else if lastStatus.Date.Unix() > status.Date.Unix() {
+				firstStatus = status
 			}
 		}
-		return &lastStatus
+		return &lastStatus, &firstStatus
 	}
-	return nil
+	return nil, nil
 }

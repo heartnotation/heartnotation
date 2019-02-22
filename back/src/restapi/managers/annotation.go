@@ -25,7 +25,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	annotations := []m.Annotation{}
 
-	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus")
+	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User")
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
@@ -44,7 +44,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	//Display last status
 	for i := range annotations {
-		annotations[i].LastStatus = annotations[i].GetLastStatus()
+		annotations[i].LastStatus, annotations[i].FirstStatus = annotations[i].GetLastAndFirstStatus()
 		annotations[i].OrganizationID = nil
 		annotations[i].Status = nil
 		annotations[i].ParentID = nil
@@ -201,7 +201,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	annotation.LastStatus = annotation.GetLastStatus()
+	annotation.LastStatus, annotation.FirstStatus = annotation.GetLastAndFirstStatus()
 	annotation.Signal = signal
 	u.Respond(w, annotation)
 }
@@ -280,7 +280,7 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	annotation := m.Annotation{}
 	db.Preload("Status").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
 
-	annotation.LastStatus = annotation.GetLastStatus()
+	annotation.LastStatus, annotation.FirstStatus = annotation.GetLastAndFirstStatus()
 	if annotation.LastStatus != nil && annotation.LastStatus.ID > 2 {
 		if annotation.Organization != nil && annotation.Organization.ID != *a.OrganizationID {
 			http.Error(w, "Cannot change organization for started annotations", 400)
