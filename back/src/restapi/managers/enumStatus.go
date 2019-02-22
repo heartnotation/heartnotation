@@ -14,7 +14,7 @@ func GetAllEnumStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	enumStatus := []m.EnumStatus{}
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&enumStatus).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Where("is_active = ?", true).Find(&enumStatus).Error, w) {
 		return
 	}
 	u.Respond(w, enumStatus)
@@ -27,7 +27,7 @@ func FindEnumStatusByID(w http.ResponseWriter, r *http.Request) {
 	}
 	enumStatus := m.EnumStatus{}
 	vars := mux.Vars(r)
-	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).First(&enumStatus, vars["id"]).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Where("is_active = ?", true).First(&enumStatus, vars["id"]).Error, w) {
 		return
 	}
 	u.Respond(w, enumStatus)
