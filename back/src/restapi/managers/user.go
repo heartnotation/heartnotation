@@ -107,21 +107,18 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	role := m.Role{}
 	json.NewDecoder(r.Body).Decode(&a)
 	if a.ID == nil {
-		http.Error(w, "bad argues", 204)
+		http.Error(w, "bad argues", 400)
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
-	if u.CheckErrorCode(db.First(&user, *a.ID).Error, w) {
+	db := u.GetConnection()
+	if u.CheckErrorCode(db.Preload("Role").Preload("Organizations").First(&user, *a.ID).Error, w) {
 		return
 	}
-	if u.CheckErrorCode(db.Find(&role, a.RoleID).Error, w) {
+	if err := db.Where(a.RoleID).First(&role).Error; err != nil {
+		http.Error(w, "This role does not exist", 400)
 		return
 	}
-	if role.ID != a.RoleID {
-		http.Error(w, "bad argues", 204)
-		return
-	}
-	db.Model(&user).Association("Role").Replace(role.ID)
+	db.Model(&user).Association("Role").Replace(&role)
 	if a.OrganizationsID != nil {
 		if u.CheckErrorCode(db.Find(&organizations, a.OrganizationsID).Error, w) {
 			return
@@ -135,7 +132,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if a.Mail != nil {
 		user.Mail = *a.Mail
 	}
-	if u.CheckErrorCode(db.Save(user).Error, w) {
+	if u.CheckErrorCode(db.Preload("Role").Preload("Organizations").Save(&user).Error, w) {
 		return
 	}
 	u.Respond(w, user)
