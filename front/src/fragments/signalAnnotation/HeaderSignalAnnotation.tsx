@@ -180,7 +180,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
           </Steps>
         </Col>
         <Col offset={1} span={3}>
-          <ChatDrawerAnnotation />
+          <ChatDrawerAnnotation annotation_id={this.props.annotation.id} />
         </Col>
         <Col span={4}>
           <Row type='flex' align='middle' justify='end'>

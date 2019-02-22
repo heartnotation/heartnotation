@@ -489,6 +489,7 @@ INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date)
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
 	VALUES (1, 1, 4, '2004-10-25 10:23:54');
 
+	
 -- CommentAnnotation
 
 INSERT INTO public.CommentAnnotation (annotation_id, user_id, comment, date) 
