@@ -3,15 +3,18 @@ package managers
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 
+	m "restapi/models"
 	u "restapi/utils"
 
 	"github.com/gorilla/mux"
 )
 
-//var templateURLAPI string
+var templateURLAPI string
 
 func init() {
 	url := os.Getenv("API_URL")
@@ -46,4 +49,32 @@ func SendCheckSignal(id string) error {
 		return errors.New(res.Status)
 	}
 	return nil
+}
+
+// FormatToJSONFromAPI request the signal API and format the response in order to be displayable
+func FormatToJSONFromAPI(signalID string) ([][]*m.Point, error) {
+	httpResponse, err := http.Get(fmt.Sprintf(templateURLAPI, signalID))
+	if err != nil {
+		return nil, err
+	}
+
+	dataBrut, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return nil, err
+	}
+	leadNumber := httpResponse.Header.Get("LEAD_NUMBER")
+	var leads int64
+	if signalID == "ecg" {
+		leads = 2
+	} else if leadNumber == "" {
+		leads = 3
+	} else {
+		leads, _ = strconv.ParseInt(leadNumber, 10, 64)
+	}
+	signalFormated, err := m.FormatData(dataBrut, int(leads))
+	if err != nil {
+		return nil, err
+	}
+
+	return signalFormated, nil
 }

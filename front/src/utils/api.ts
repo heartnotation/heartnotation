@@ -88,15 +88,15 @@ export const sendAnnotationComment = (
 };
 
 export const sendInterval = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.interval}`, datas);
+  return post<Interval>(`${urls.intervals}`, datas);
 };
 
 export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalComment}`, datas);
+  return post<Interval>(`${urls.intervalsComment}`, datas);
 };
 
 export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalTags}`, datas);
+  return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
@@ -176,7 +176,7 @@ const urls = {
   status: 'status',
   roles: 'roles',
   users: 'users',
-  interval: 'interval',
-  intervalComment: 'interval/comment',
-  intervalTags: 'interval/tags'
+  intervals: 'intervals',
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags'
 };
