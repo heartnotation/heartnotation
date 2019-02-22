@@ -57,10 +57,20 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 404)
 		return
 	}
+	//Display last status
 	for i := range annotations {
-		arr := annotations
-		arr[i].OrganizationID = nil
-		arr[i].ParentID = nil
+		if annotations[i].Status != nil && len(annotations[i].Status) != 0 {
+			lastStatus := annotations[i].Status[0]
+			for _, status := range annotations[i].Status {
+				if lastStatus.Date.Unix() < status.Date.Unix() {
+					lastStatus = status
+				}
+			}
+			annotations[i].LastStatus = (&lastStatus)
+			annotations[i].OrganizationID = nil
+			annotations[i].Status = nil
+			annotations[i].ParentID = nil
+		}
 	}
 
 	u.Respond(w, annotations)
@@ -212,6 +222,16 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		http.Error(w, e.Error(), 500)
 		return
+	}
+	//Display last status
+	if annotation.Status != nil && len(annotation.Status) != 0 {
+		lastStatus := annotation.Status[0]
+		for _, status := range annotation.Status {
+			if lastStatus.Date.Unix() < status.Date.Unix() {
+				lastStatus = status
+			}
+		}
+		annotation.LastStatus = (&lastStatus)
 	}
 	annotation.Signal = signal
 	u.Respond(w, annotation)
