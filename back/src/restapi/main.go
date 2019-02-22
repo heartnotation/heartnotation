@@ -19,6 +19,7 @@ func main() {
 	// Annotations
 	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(m.FindAnnotationByID)).Methods("GET") //Revoir le format de l'URL /annotations/{id}*/
 	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.GetAllAnnotations)).Methods("GET")
+	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.UpdateAnnotation)).Methods("PUT")
 	router.HandleFunc("/annotations/status", auth.ValidateMiddleware(m.UpdateAnnotationStatus)).Methods("PUT")
 	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.CreateAnnotation)).Methods("POST")
 	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(m.DeleteAnnotation)).Methods("DELETE")

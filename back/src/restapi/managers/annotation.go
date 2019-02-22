@@ -44,18 +44,10 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	//Display last status
 	for i := range annotations {
-		if annotations[i].Status != nil && len(annotations[i].Status) != 0 {
-			lastStatus := annotations[i].Status[0]
-			for _, status := range annotations[i].Status {
-				if lastStatus.Date.Unix() < status.Date.Unix() {
-					lastStatus = status
-				}
-			}
-			annotations[i].LastStatus = (&lastStatus)
-			annotations[i].OrganizationID = nil
-			annotations[i].Status = nil
-			annotations[i].ParentID = nil
-		}
+		annotations[i].LastStatus = annotations[i].GetLastStatus()
+		annotations[i].OrganizationID = nil
+		annotations[i].Status = nil
+		annotations[i].ParentID = nil
 	}
 
 	u.Respond(w, annotations)
@@ -208,16 +200,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, e.Error(), 500)
 		return
 	}
-	//Display last status
-	if annotation.Status != nil && len(annotation.Status) != 0 {
-		lastStatus := annotation.Status[0]
-		for _, status := range annotation.Status {
-			if lastStatus.Date.Unix() < status.Date.Unix() {
-				lastStatus = status
-			}
-		}
-		annotation.LastStatus = (&lastStatus)
-	}
+	annotation.LastStatus = annotation.GetLastStatus()
 	annotation.Signal = signal
 	u.Respond(w, annotation)
 }
@@ -267,46 +250,13 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 }
 
-/*
 // UpdateAnnotation modifies an annotation
 func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("PUT", u.CheckRoutes["annotations"], w, r) {
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
-	var annotation d.Annotation
-	json.NewDecoder(r.Body).Decode(&annotation)
-	annotation.EditDate = time.Now()
-	//db.Model(&annotation).Association("OK").Replace()
-// ModifyAnnotation modifies an annotation
-func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
-	a := dto{}
-	err := json.NewDecoder(r.Body).Decode(&a)
-	if err != nil {
-		http.Error(w, "Fail to parse request body", 400)
-	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
 
-	annotation := Annotation{}
-	db.Where(a.ID).Find(&annotation)
-
-	if annotation.Status.ID > 2 {
-		if annotation.Organization != nil && annotation.Organization.ID != uint(a.OrganizationID) {
-			http.Error(w, "Cannot change organization for started annotations", 400)
-			return
-		}
-		if !compareTags(a, annotation) {
-			http.Error(w, "Cannot change authorized tags for started annotations", 400)
-			return
-		}
-	}
-
-	if len(a.TagsID) <= 0 {
-		http.Error(w, "You must provide some authorized tags", 400)
-		return
-	}
-
-	contextUser := c.Get(r, "user").(*user.User)
+	contextUser := c.Get(r, "user").(*m.User)
 
 	switch contextUser.Role.ID {
 	// Role Annotateur
@@ -319,7 +269,34 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 		break
 	}
 
-	m := a.toMap(annotation)
+	a := d.Annotation{}
+	err := json.NewDecoder(r.Body).Decode(&a)
+	if err != nil {
+		http.Error(w, "Fail to parse request body", 400)
+	}
+	db := u.GetConnection()
+
+	annotation := m.Annotation{}
+	db.Preload("Status").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
+
+	annotation.LastStatus = annotation.GetLastStatus()
+	if annotation.LastStatus != nil && annotation.LastStatus.ID > 2 {
+		if annotation.Organization != nil && annotation.Organization.ID != *a.OrganizationID {
+			http.Error(w, "Cannot change organization for started annotations", 400)
+			return
+		}
+		if !m.CompareTags(a, annotation) {
+			http.Error(w, "Cannot change authorized tags for started annotations", 400)
+			return
+		}
+	}
+
+	if len(a.TagsID) <= 0 {
+		http.Error(w, "You must provide some authorized tags", 400)
+		return
+	}
+
+	m := m.ToMap(annotation, a)
 
 	transaction := db.Begin()
 	if u.CheckErrorCode(transaction.Model(&annotation).Updates(m).Error, w) {
@@ -334,4 +311,3 @@ func ModifyAnnotation(w http.ResponseWriter, r *http.Request) {
 	transaction.Commit()
 	u.Respond(w, annotation)
 }
-*/

@@ -116,7 +116,7 @@ CREATE TABLE public.Annotation(
 	edit_date         DATE   ,
 	is_active         BOOL  NOT NULL ,
 	is_editable       BOOL  NOT NULL ,
-	organization_id   INT  NOT NULL ,
+	organization_id   INT,
 	parent_id     INT    ,
 	CONSTRAINT Annotation_PK PRIMARY KEY (id)
 )WITHOUT OIDS;
