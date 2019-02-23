@@ -12,6 +12,7 @@ import { Authenticated, authenticate } from './utils/auth';
 import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
+import Organizations from './pages/Organizations';
 
 const r = {
   defaultRoute: {
@@ -71,6 +72,20 @@ const r = {
       component: Tags,
       title: 'Tags',
       iconName: 'tags',
+      roles: ['Gestionnaire', 'Admin']
+    },
+    {
+      path: '/organizations',
+      exact: true,
+      component: () => (
+        <Organizations
+          getOrganizations={api.getOrganizations}
+          changeOrganization={api.changeOrganization}
+          deleteOrganization={api.deleteOrganization}
+        />
+      ),
+      title: 'Organizations',
+      iconName: 'bank',
       roles: ['Gestionnaire', 'Admin']
     },
     {
