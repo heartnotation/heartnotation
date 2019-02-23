@@ -82,6 +82,7 @@ const r = {
           getOrganizations={api.getOrganizations}
           changeOrganization={api.changeOrganization}
           deleteOrganization={api.deleteOrganization}
+          createOrganization={api.createOrganization}
         />
       ),
       title: 'Organizations',

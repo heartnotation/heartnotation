@@ -154,6 +154,10 @@ export const changeOrganization = (o: Organization): Promise<Organization> => {
   return put<Organization>(`${urls.organizations}`, o);
 };
 
+export const createOrganization = (o: Organization): Promise<Organization> => {
+  return post<Organization>(`${urls.organizations}`, o);
+};
+
 const urls = {
   annotations: 'annotations',
   annotationsComments: 'annotations/comments',

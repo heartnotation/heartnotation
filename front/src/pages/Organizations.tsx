@@ -2,17 +2,23 @@ import React from 'react';
 import { Table, Icon, Row, Col } from 'antd';
 import { Organization } from '../utils';
 import { ColumnProps } from 'antd/lib/table';
+import AddButton from '../fragments/fixedButton/AddButton';
+import OrganizationForm from '../fragments/organization/OrganizationForm';
+import { getOrganizations } from '../utils/api';
 
 interface Props {
   getOrganizations: () => Promise<Organization[]>;
   deleteOrganization: (o: Organization) => Promise<Organization>;
   changeOrganization: (o: Organization) => Promise<Organization>;
+  createOrganization: (o: Organization) => Promise<Organization>;
 }
 
 interface State {
   initialOrganizations: Organization[];
   filteredOrganizations: Organization[];
   selectedOrganization?: Organization;
+  createVisible: boolean;
+  modifyVisible: boolean;
 }
 
 class Organizations extends React.Component<Props, State> {
@@ -20,7 +26,9 @@ class Organizations extends React.Component<Props, State> {
     super(props);
     this.state = {
       initialOrganizations: [],
-      filteredOrganizations: []
+      filteredOrganizations: [],
+      createVisible: false,
+      modifyVisible: false
     };
   }
 
@@ -63,7 +71,10 @@ class Organizations extends React.Component<Props, State> {
               twoToneColor='#6669c9'
               style={{ fontSize: '1.3em' }}
               onClick={() => {
-                this.setState({ selectedOrganization: organization });
+                this.setState({
+                  selectedOrganization: organization,
+                  modifyVisible: true
+                });
               }}
             />
           </Col>
@@ -96,9 +107,65 @@ class Organizations extends React.Component<Props, State> {
       filteredOrganizations: orgas.slice()
     });
   }
+  private handleCreate = async (o: Organization) => {
+    const { createOrganization } = this.props;
+    await createOrganization(o);
+    const orgas = await getOrganizations();
+    this.setState({
+      initialOrganizations: orgas,
+      filteredOrganizations: orgas.slice(),
+      createVisible: false
+    });
+  }
+  private handleModify = async (o: Organization) => {
+    const { changeOrganization } = this.props;
+    await changeOrganization(o);
+    const orgas = await getOrganizations();
+    this.setState({
+      initialOrganizations: orgas,
+      filteredOrganizations: orgas.slice(),
+      modifyVisible: false
+    });
+  }
+  private handleCancel = () => {
+    this.setState({
+      modifyVisible: false,
+      createVisible: false,
+      selectedOrganization: undefined
+    });
+  }
   public render = () => {
-    const { filteredOrganizations } = this.state;
-    return <Table columns={this.columns} dataSource={filteredOrganizations} />;
+    const {
+      filteredOrganizations,
+      selectedOrganization,
+      modifyVisible,
+      createVisible
+    } = this.state;
+    return [
+      <Table
+        key={1}
+        rowKey='id'
+        columns={this.columns}
+        dataSource={filteredOrganizations}
+      />,
+      <AddButton
+        key={2}
+        onClick={() => this.setState({ createVisible: true })}
+      />,
+      <OrganizationForm
+        key={3}
+        visible={modifyVisible}
+        defaultValue={selectedOrganization}
+        onSubmit={this.handleModify}
+        onCancel={this.handleCancel}
+      />,
+      <OrganizationForm
+        key={4}
+        visible={createVisible}
+        onSubmit={this.handleCreate}
+        onCancel={this.handleCancel}
+      />
+    ];
   }
 }
 
