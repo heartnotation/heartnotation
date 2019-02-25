@@ -38,10 +38,3 @@
   font-weight: 600;
   color: #2c2c2c !important;
 }
-
-.login-background {
-  height: 70vh;
-  background: inherit;
-  overflow: hidden;
-  filter: blur(3px);
-}
