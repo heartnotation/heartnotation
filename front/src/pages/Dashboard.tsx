@@ -37,6 +37,8 @@ interface ConditionnalColumn extends ColumnProps<Annotation> {
 }
 
 const CANCEL_ID: number = 6;
+const VALIDATED_ID: number = 5;
+const IN_PROCESS_ID: number = 3;
 const GESTIONNAIRE_ID: number = 2;
 class Dashboard extends Component<Props, State> {
   public state: State = {
@@ -284,7 +286,9 @@ class Dashboard extends Component<Props, State> {
         const { user } = this.props;
         if (
           annotation.last_status.enum_status.id !== CANCEL_ID &&
-          user.role.id === GESTIONNAIRE_ID
+          user.role.id === GESTIONNAIRE_ID &&
+          annotation.last_status.enum_status.id !== VALIDATED_ID &&
+          annotation.last_status.enum_status.id !== IN_PROCESS_ID
         ) {
           return (
             <>
