@@ -18,7 +18,7 @@ interface State {
   loading: boolean;
   moving: boolean;
   error?: string;
-  refreshquatrecentquatrelebro: boolean;
+  refresh: boolean;
   popperVisible: boolean;
   xIntervalStart?: number;
   xIntervalEnd?: number;
@@ -38,7 +38,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     this.state = {
       loading: true,
       moving: true,
-      refreshquatrecentquatrelebro: false,
+      refresh: false,
       popperVisible: false,
       graphElements: [],
       intervalSelectors: []
@@ -67,7 +67,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       annotation = await getAnnotation(parseInt(id, 10));
     } catch (e) {
       if (e.status === 404) {
-        this.setState({ refreshquatrecentquatrelebro: true });
+        this.setState({ refresh: true });
       }
       return;
     }
@@ -378,13 +378,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public render = () => {
-    const {
-      loading,
-      annotation,
-      error,
-      refreshquatrecentquatrelebro
-    } = this.state;
-    if (refreshquatrecentquatrelebro) {
+    const { loading, annotation, error, refresh } = this.state;
+    if (refresh) {
       return <NotFound />;
     }
     if (loading) {
