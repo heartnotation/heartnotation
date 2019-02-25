@@ -2,7 +2,6 @@ package managers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	d "restapi/dtos"
 	m "restapi/models"
@@ -74,20 +73,16 @@ func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
 
 // AddTagsOnInterval create a tag on an interval
 func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
-	log.Println("coucou")
 	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
 		return
 	}
-	log.Println("la")
 	var i d.Interval
 	err := json.NewDecoder(r.Body).Decode(&i)
-	log.Println(i.Tags)
-	log.Println(i.ID)
+
 	if err != nil || i.Tags == nil || len(i.Tags) == 0 || i.ID == nil {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-	log.Println("b")
 	tags := []m.Tag{}
 	db := u.GetConnection()
 	if u.CheckErrorCode(db.Find(&tags, i.Tags).Error, w) {
@@ -97,9 +92,7 @@ func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-	log.Println("c")
-	log.Println(*i.ID)
-	log.Println(i.Tags)
+
 	interval := m.Interval{}
 	if u.CheckErrorCode(db.Find(&interval, *i.ID).Error, w) {
 		return
