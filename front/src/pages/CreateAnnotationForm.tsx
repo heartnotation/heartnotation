@@ -163,7 +163,7 @@ class CreateAnnotationForm extends Component<Props, States> {
     }
     const { annotations } = this.state;
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
-      callback('This annotations doesn\'t exist');
+      callback('This annotations doesn\'t exist or is not in finished state');
     }
     callback();
   }
