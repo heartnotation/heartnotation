@@ -247,7 +247,7 @@ class CreateAnnotationForm extends Component<Props, States> {
     console.log("OK 2")
   }
 
-  public validateParentSucces= (callback: any) => {
+  public validateParentSucces = (callback: any) => {
     var test = this.props.form.getFieldValue("parent_id")
     this.props.form.setFieldsValue({
       parent_id: test
