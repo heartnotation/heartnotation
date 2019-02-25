@@ -27,6 +27,8 @@ interface ConditionnalColumn extends ColumnProps<Annotation> {
   roles: string[];
 }
 
+const CANCEL_ID:number = 6;
+const GESTIONNAIRE_ID:number = 2;
 class Dashboard extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
@@ -49,17 +51,22 @@ class Dashboard extends Component<Props, State> {
     });
   }
 
-  private modalConfirm = () => {
+  private modalConfirm = (a: Annotation) => {
     Modal.confirm({
       title: 'Do you want to cancel this annotation ?',
-      content: 'Some descriptions',
+      content: a.name + ' du signal ' + a.signal_id,
       centered: true,
       okText: 'Yes',
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        console.log('OK');
-        this.refreshDatas();
+        api
+          .changeStatus({
+            id: a.id,
+            status: CANCEL_ID
+          })
+          .then(_ => this.refreshDatas())
+          .catch(e => console.log(e));
       }
     });
   }
@@ -265,8 +272,33 @@ class Dashboard extends Component<Props, State> {
       title: 'Edit',
       dataIndex: 'edit',
       render: (_, annotation: Annotation) => {
-        return (
-          <>
+        const {user} = this.props;
+        if (annotation.last_status.enum_status.id !== CANCEL_ID && user.role.id === GESTIONNAIRE_ID) {
+          return (
+            <>
+              <Icon
+                className='anticon-edit-dashboard'
+                type='edit'
+                theme='twoTone'
+                twoToneColor='#6669c9'
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation();
+                  this.setState({ editVisible: true, annotation });
+                }}
+              />
+
+              <Icon
+                type='close'
+                style={{ color: 'red' }}
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation();
+                  this.modalConfirm(annotation);
+                }}
+              />
+            </>
+          );
+        } else {
+          return (
             <Icon
               className='anticon-edit-dashboard'
               type='edit'
@@ -277,16 +309,8 @@ class Dashboard extends Component<Props, State> {
                 this.setState({ editVisible: true, annotation });
               }}
             />
-            <Icon
-              type='close'
-              style={{ color: 'red' }}
-              onClick={(e: MouseEvent) => {
-                e.stopPropagation();
-                this.modalConfirm();
-              }}
-            />
-          </>
-        );
+          );
+        }
       },
       roles: ['Gestionnaire', 'Admin']
     }

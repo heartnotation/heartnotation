@@ -113,3 +113,8 @@ export interface IntervalTagsPayload {
   interval_id: number;
   tags: number[];
 }
+
+export interface AnnotationStatus {
+  id: number; // annotation id
+  status: number; // status id
+}

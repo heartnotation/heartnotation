@@ -15,7 +15,8 @@ import {
   AnnotationCommentPayload,
   AnnotationComment,
   IntervalCommentPayload,
-  IntervalComment
+  IntervalComment,
+  AnnotationStatus
 } from './objects';
 import axios, { AxiosResponse } from 'axios';
 import { authenticate } from './auth';
@@ -137,6 +138,12 @@ export const changeAnnotation = (datas: Annotation): Promise<Annotation> => {
   return put<Annotation>(`${urls.annotations}`, d);
 };
 
+export const changeStatus = (
+  annotationStatus: AnnotationStatus
+): Promise<Annotation> => {
+  return put<Annotation>(`${urls.annotationsStatus}`, annotationStatus);
+};
+
 export const getOrganizations = (): Promise<Organization[]> => {
   return get<Organization[]>(urls.organizations);
 };
@@ -202,6 +209,7 @@ export const createOrganization = (o: Organization): Promise<Organization> => {
 
 const urls = {
   annotations: 'annotations',
+  annotationsStatus: 'annotations/status',
   annotationsComments: 'annotations/comments',
   organizations: 'organizations',
   tags: 'tags',
