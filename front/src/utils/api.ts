@@ -188,6 +188,18 @@ export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
   return post<StatusInserter>(`${urls.status}`, s);
 };
 
+export const deleteOrganization = (o: Organization): Promise<Organization> => {
+  return del<Organization>(`${urls.organizations}/${o.id}`);
+};
+
+export const changeOrganization = (o: Organization): Promise<Organization> => {
+  return put<Organization>(`${urls.organizations}`, o);
+};
+
+export const createOrganization = (o: Organization): Promise<Organization> => {
+  return post<Organization>(`${urls.organizations}`, o);
+};
+
 const urls = {
   annotations: 'annotations',
   annotationsComments: 'annotations/comments',
