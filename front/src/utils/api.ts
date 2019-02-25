@@ -213,6 +213,5 @@ const urls = {
   intervalsComment: 'intervals/comment',
   intervalsTags: 'intervals/tags',
   annotationsStatus: 'annotations/status',
-  intervalsComments: 'intervals/comments',
-  intervalsTags: 'intervals/tags'
+  intervalsComments: 'intervals/comments'
 };
