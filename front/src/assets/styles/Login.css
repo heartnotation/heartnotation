@@ -15,13 +15,6 @@
   max-height: 100%;
 }
 
-.login-background {
-  height: 70vh;
-  background: inherit;
-  overflow: hidden;
-  filter: blur(3px);
-}
-
 .login-center {
   position: absolute;
   top: 15vh;
