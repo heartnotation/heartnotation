@@ -1,9 +1,14 @@
 package managers
 
 import (
+	"encoding/json"
 	"net/http"
+	d "restapi/dtos"
 	m "restapi/models"
 	u "restapi/utils"
+
+	c "github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 // GetAllOrganizations list all organizations
@@ -16,4 +21,109 @@ func GetAllOrganizations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, organizations)
+}
+
+// CreateOrganization handles POST request to create a new Organization
+func CreateOrganization(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["organizations"], w, r) {
+		return
+	}
+	contextUser := c.Get(r, "user").(*m.User)
+
+	//Only admins can create organizations
+	if contextUser.Role.ID != 3 {
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
+
+	payload := d.Organization{}
+	json.NewDecoder(r.Body).Decode(&payload)
+
+	db := u.GetConnection()
+
+	existingOrga := []m.Organization{}
+	newOrga := m.Organization{Name: payload.Name, IsActive: true}
+	db.Where(&newOrga).Find(&existingOrga)
+
+	if len(existingOrga) > 0 {
+		http.Error(w, "An existing organization already have this name", http.StatusConflict)
+		return
+	}
+
+	if u.CheckErrorCode(db.Create(&newOrga).Error, w) {
+		return
+	}
+	u.Respond(w, &newOrga)
+}
+
+// ChangeOrganization handles PUT request to modify an Organization
+func ChangeOrganization(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("PUT", u.CheckRoutes["organizations"], w, r) {
+		return
+	}
+	contextUser := c.Get(r, "user").(*m.User)
+
+	//Only admins can modify organizations
+	if contextUser.Role.ID != 3 {
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
+
+	payload := d.Organization{}
+	json.NewDecoder(r.Body).Decode(&payload)
+
+	if payload.ID == 0 {
+		http.Error(w, "No ID provided", http.StatusBadRequest)
+		return
+	}
+
+	db := u.GetConnection()
+	existingOrga := []m.Organization{}
+	changedOrga := m.Organization{ID: payload.ID, Name: payload.Name, IsActive: true}
+
+	if u.CheckErrorCode(db.Find(&existingOrga, "name = ? AND id != ?", payload.Name, payload.ID).Error, w) {
+		return
+	}
+	if len(existingOrga) > 0 {
+		http.Error(w, "An existing organization already have this name", http.StatusConflict)
+		return
+	}
+
+	if u.CheckErrorCode(db.Save(&changedOrga).Error, w) {
+		return
+	}
+	u.Respond(w, &changedOrga)
+}
+
+//DeleteOrganization handles DELETE requests to deactivate organizations
+func DeleteOrganization(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["organizations"], w, r) {
+		return
+	}
+	contextUser := c.Get(r, "user").(*m.User)
+
+	//Only admins can modify organizations
+	if contextUser.Role.ID != 3 {
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
+
+	v := mux.Vars(r)
+
+	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+
+	db := u.GetConnection()
+	orga := m.Organization{}
+
+	if u.CheckErrorCode(db.First(&orga, v["id"]).Error, w) {
+		return
+	}
+
+	if u.CheckErrorCode(db.Model(&orga).Where("id = ?", &orga.ID).Update("is_active", false).Error, w) {
+		return
+	}
+	u.Respond(w, &orga)
 }
