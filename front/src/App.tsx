@@ -47,7 +47,7 @@ const r = {
     {
       path: '/',
       exact: true,
-      component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+      component: () => <Dashboard getAnnotations={api.getAnnotations} changeStatus={api.changeStatus}/>,
       title: 'Dashboard',
       iconName: 'dashboard',
       roles: ['Annotateur', 'Gestionnaire', 'Admin']

@@ -1,7 +1,7 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api, Status, Role, User } from '../utils';
+import { Annotation, Organization, api, Status, Role, User, AnnotationStatus } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -21,6 +21,7 @@ export interface State {
 
 interface Props extends RouteComponentProps, AuthProps {
   getAnnotations: () => Promise<Annotation[]>;
+  changeStatus : (annotationStatus: AnnotationStatus) => Promise<Annotation>;
 }
 
 interface ConditionnalColumn extends ColumnProps<Annotation> {
@@ -60,8 +61,7 @@ class Dashboard extends Component<Props, State> {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        api
-          .changeStatus({
+        this.props.changeStatus({
             id: a.id,
             status: CANCEL_ID
           })
