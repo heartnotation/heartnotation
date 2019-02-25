@@ -8,6 +8,7 @@ import (
 	u "restapi/utils"
 
 	c "github.com/gorilla/context"
+	"github.com/gorilla/mux"
 )
 
 // GetAllOrganizations list all organizations
@@ -92,4 +93,37 @@ func ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, &changedOrga)
+}
+
+//DeleteOrganization handles DELETE requests to deactivate organizations
+func DeleteOrganization(w http.ResponseWriter, r *http.Request) {
+	if u.CheckMethodPath("DELETE", u.CheckRoutes["organizations"], w, r) {
+		return
+	}
+	contextUser := c.Get(r, "user").(*m.User)
+
+	//Only admins can modify organizations
+	if contextUser.Role.ID != 3 {
+		http.Error(w, "This action is not permitted on the actual user", 403)
+		return
+	}
+
+	v := mux.Vars(r)
+
+	if len(v) != 1 || len(v["id"]) == 0 || !u.IsStringInt(v["id"]) {
+		http.Error(w, "Bad request", 400)
+		return
+	}
+
+	db := u.GetConnection()
+	orga := m.Organization{}
+
+	if u.CheckErrorCode(db.First(&orga, v["id"]).Error, w) {
+		return
+	}
+
+	if u.CheckErrorCode(db.Model(&orga).Where("id = ?", &orga.ID).Update("is_active", false).Error, w) {
+		return
+	}
+	u.Respond(w, &orga)
 }
