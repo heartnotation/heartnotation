@@ -80,12 +80,35 @@ export interface AnnotationComment {
   user: User;
 }
 
+export interface IntervalCommentPayload {
+  interval_id: number;
+  comment: string;
+}
+
+export interface IntervalComment {
+  id: number;
+  comment: string;
+  date: Date;
+  user: User;
+}
+
 export interface Interval {
-  id?: number;
+  id: number;
   annotation_id: number;
-  user_id?: number;
-  comment?: string;
+  user: User;
+  comments: IntervalComment[];
   time_start: number;
   time_end: number;
-  tags?: number[];
+  tags: Tag[];
+}
+
+export interface IntervalPayload {
+  annotation_id: number;
+  time_start: number;
+  time_end: number;
+}
+
+export interface IntervalTagsPayload {
+  interval_id: number;
+  tags: number[];
 }

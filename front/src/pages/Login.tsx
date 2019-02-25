@@ -3,7 +3,6 @@ import GoogleLogin from 'react-google-login';
 import { auth, User } from '../utils';
 import logo from '../assets/images/logo-name.png';
 import '../assets/styles/Login.css';
-import { Layout } from 'antd';
 
 interface Props {
   onSuccess: (user: User) => void;
@@ -14,8 +13,6 @@ const clientId = process.env.REACT_APP_CLIENT_ID;
 export default (props: Props) => {
   const { onSuccess } = props;
   const [error, setError] = useState('');
-
-  const { Header, Footer, Content } = Layout;
 
   const handleSucces = (response: any) => {
     auth

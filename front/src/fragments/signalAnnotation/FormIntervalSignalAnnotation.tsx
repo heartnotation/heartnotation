@@ -8,12 +8,18 @@ import {
   Button,
   List,
   Comment,
-  Avatar
+  Avatar,
+  message
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Tag, api, Annotation } from '../../utils';
-import { Interval } from '../../utils/objects';
+import {
+  Interval,
+  IntervalPayload,
+  IntervalCommentPayload,
+  IntervalComment
+} from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
 
 interface Props extends FormComponentProps, RouteComponentProps {
@@ -29,15 +35,17 @@ interface DataComment {
   author: string;
   content: any;
   avatar: any;
+  datetime: any;
 }
 
 interface State {
   tags: Tag[];
   confirmLoading: boolean;
   comments: DataComment[];
-  textAreaContent: string;
+  textAreaComment: string;
   selectedTags: number[];
   error: string;
+  currentInterval?: Interval;
 }
 
 const CommentList = (props: { comments: DataComment[] }) => (
@@ -60,48 +68,81 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       tags: [],
       confirmLoading: false,
       comments: [],
-      textAreaContent: '',
+      textAreaComment: '',
       selectedTags: [],
       error: ''
     };
   }
 
   public handleCommentSubmit = () => {
-    this.setState({
-      comments: [
-        {
-          author: 'Yann Yolo',
-          avatar: (
-            <Avatar src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1' />
-          ),
-          content: <p>{this.state.textAreaContent}</p>
-        },
-        ...this.state.comments
-      ],
-      textAreaContent: ''
-    });
+    if(!this.state.textAreaComment) {
+      return;
+    }
+    if (this.state.currentInterval === undefined) {
+      message.error(
+        'Comment submission failed because interval is not correctly identified',
+        5
+      );
+      return;
+    }
+    const intervalCommentPayload: IntervalCommentPayload = {
+      interval_id: this.state.currentInterval.id,
+      comment: this.state.textAreaComment
+    };
+    api
+      .sendIntervalComment(intervalCommentPayload)
+      .then((response: IntervalComment) => {
+        this.setState({
+          comments: [
+            {
+              author: response.user.mail,
+              avatar: (
+                <Avatar
+                  style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+                  size='large'
+                >
+                  {response.user.mail[0].toUpperCase()}
+                </Avatar>
+              ),
+              content: <p>{response.comment}</p>,
+              datetime: response.date.toLocaleString()
+            },
+            ...this.state.comments
+          ],
+          textAreaComment: ''
+        });
+      });
   }
 
   public handleChangeWriteComment = (e: any) => {
     this.setState({
-      textAreaContent: e.target.value
+      textAreaComment: e.target.value
     });
   }
 
   public handleSubmit = (e: any) => {
-    const interval: Interval = {
+    const intervalPayload: IntervalPayload = {
       annotation_id: this.props.annotation.id,
       time_start: Math.round(this.props.start),
       time_end: Math.round(this.props.end)
     };
     this.setState({ confirmLoading: true });
-    api.sendInterval(interval).then(response => {
-      interval.id = response.id;
-      interval.tags = this.state.selectedTags;
-      api.sendIntervalTags(interval);
-      this.setState({ confirmLoading: false });
-      this.props.confirmCreate();
-    });
+    if (this.state.currentInterval === undefined) {
+      message.error(
+        'Tag submission failed because interval is not correctly identified',
+        5
+      );
+      return;
+    }
+    api
+      .sendIntervalTags({
+        tags: this.state.selectedTags,
+        interval_id: this.state.currentInterval.id
+      })
+      .then(_ => {
+        this.setState({ confirmLoading: false });
+        this.props.confirmCreate();
+      });
   }
 
   public handleDelete = () => {
@@ -113,6 +154,14 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public componentDidMount = () => {
+    const intervalPayload: IntervalPayload = {
+      annotation_id: this.props.annotation.id,
+      time_start: Math.round(this.props.start),
+      time_end: Math.round(this.props.end)
+    };
+    api.sendInterval(intervalPayload).then(response => {
+      this.setState({ currentInterval: response });
+    });
     api.getTags().then(res => this.setState({ tags: res }));
   }
 
@@ -180,7 +229,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                     <TextArea
                       rows={4}
                       onChange={this.handleChangeWriteComment}
-                      value={this.state.textAreaContent}
+                      value={this.state.textAreaComment}
                     />
                   </Form.Item>
                   <Form.Item>

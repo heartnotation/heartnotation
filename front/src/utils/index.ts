@@ -8,7 +8,10 @@ import {
   Point,
   Role,
   User,
-  StatusInserter
+  StatusInserter,
+  Interval,
+  IntervalPayload,
+  IntervalTagsPayload
 } from './objects';
 export const API_URL = process.env.REACT_APP_API
   ? process.env.REACT_APP_API
@@ -24,5 +27,8 @@ export type Point = Point;
 export type Role = Role;
 export type User = User;
 export type StatusInserter = StatusInserter;
+export type IntervalPayload = IntervalPayload;
+export type Interval = Interval;
+export type IntervalTagsPayload = IntervalTagsPayload;
 
 export const auth = au;
