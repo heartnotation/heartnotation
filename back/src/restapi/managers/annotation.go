@@ -25,7 +25,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	annotations := []m.Annotation{}
 
-	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User")
+	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags")
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
@@ -278,10 +278,10 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 
 	annotation := m.Annotation{}
-	db.Preload("Status").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
+	db.Preload("Status").Preload("Status.EnumStatus").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
 
 	annotation.LastStatus, annotation.FirstStatus = annotation.GetLastAndFirstStatus()
-	if annotation.LastStatus != nil && annotation.LastStatus.ID > 2 {
+	if annotation.LastStatus != nil && annotation.LastStatus.EnumStatus.ID > 2 {
 		if annotation.Organization != nil && annotation.Organization.ID != *a.OrganizationID {
 			http.Error(w, "Cannot change organization for started annotations", 400)
 			return
