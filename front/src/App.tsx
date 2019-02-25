@@ -118,7 +118,6 @@ class App extends Component<
 
   public render = () => {
     const { logged, token, user } = this.state;
-    console.log(window.location.pathname.split('/'));
 
     if (token && !logged) {
       return (
