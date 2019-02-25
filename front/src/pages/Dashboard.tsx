@@ -1,7 +1,15 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api, Status, Role, User, AnnotationStatus } from '../utils';
+import {
+  Annotation,
+  Organization,
+  api,
+  Status,
+  Role,
+  User,
+  AnnotationStatus
+} from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -21,15 +29,15 @@ export interface State {
 
 interface Props extends RouteComponentProps, AuthProps {
   getAnnotations: () => Promise<Annotation[]>;
-  changeStatus : (annotationStatus: AnnotationStatus) => Promise<Annotation>;
+  changeStatus: (annotationStatus: AnnotationStatus) => Promise<Annotation>;
 }
 
 interface ConditionnalColumn extends ColumnProps<Annotation> {
   roles: string[];
 }
 
-const CANCEL_ID:number = 6;
-const GESTIONNAIRE_ID:number = 2;
+const CANCEL_ID: number = 6;
+const GESTIONNAIRE_ID: number = 2;
 class Dashboard extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
@@ -61,7 +69,8 @@ class Dashboard extends Component<Props, State> {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        this.props.changeStatus({
+        this.props
+          .changeStatus({
             id: a.id,
             status: CANCEL_ID
           })
@@ -272,8 +281,11 @@ class Dashboard extends Component<Props, State> {
       title: 'Edit',
       dataIndex: 'edit',
       render: (_, annotation: Annotation) => {
-        const {user} = this.props;
-        if (annotation.last_status.enum_status.id !== CANCEL_ID && user.role.id === GESTIONNAIRE_ID) {
+        const { user } = this.props;
+        if (
+          annotation.last_status.enum_status.id !== CANCEL_ID &&
+          user.role.id === GESTIONNAIRE_ID
+        ) {
           return (
             <>
               <Icon

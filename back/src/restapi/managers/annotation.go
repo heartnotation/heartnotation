@@ -231,7 +231,8 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	transaction := db.Begin()
 
-	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: time.Now()}
+	date := time.Now()
+	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: date}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
@@ -243,6 +244,16 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	annotationEditDate := m.Annotation{}
+	if u.CheckErrorCode(db.First(&annotationEditDate, annotationStatus.ID).Error, w) {
+		transaction.Rollback()
+		return
+	}
+	annotationEditDate.EditDate = date
+	if u.CheckErrorCode(db.Save(&annotationEditDate).Error, w) {
+		transaction.Rollback()
+		return
+	}
 	transaction.Commit()
 	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
 		return

@@ -20,7 +20,12 @@ const r = {
   defaultRoute: {
     path: '/',
     exact: true,
-    component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+    component: () => (
+      <Dashboard
+        getAnnotations={api.getAnnotations}
+        changeStatus={api.changeStatus}
+      />
+    ),
     title: 'Dashboard'
   },
   hiddenRoutes: [
@@ -47,7 +52,12 @@ const r = {
     {
       path: '/',
       exact: true,
-      component: () => <Dashboard getAnnotations={api.getAnnotations} changeStatus={api.changeStatus}/>,
+      component: () => (
+        <Dashboard
+          getAnnotations={api.getAnnotations}
+          changeStatus={api.changeStatus}
+        />
+      ),
       title: 'Dashboard',
       iconName: 'dashboard',
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
