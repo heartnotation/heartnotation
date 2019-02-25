@@ -55,7 +55,7 @@ export const getAnnotations = (): Promise<Annotation[]> => {
 };
 
 export const getAnnotationById = (id: number): Promise<Annotation> => {
-  return get<Annotation>(`${urls.annotation}/${id}`).then(annotation => {
+  return get<Annotation>(`${urls.annotations}/${id}`).then(annotation => {
     annotation.creation_date = new Date(annotation.creation_date);
     if (annotation.edit_date) {
       annotation.edit_date = new Date(annotation.edit_date);
