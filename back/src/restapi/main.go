@@ -50,11 +50,11 @@ func main() {
 
 	// Interval
 	router.HandleFunc("/intervals/tags", auth.ValidateMiddleware(m.AddTagsOnInterval)).Methods("POST")
-	router.HandleFunc("/intervals/comment", auth.ValidateMiddleware(m.CreateCommentOnInterval)).Methods("POST")
+	router.HandleFunc("/intervals/comments", auth.ValidateMiddleware(m.CreateCommentOnInterval)).Methods("POST")
 	router.HandleFunc("/intervals", auth.ValidateMiddleware(m.CreateInterval)).Methods("POST")
 	router.HandleFunc("/intervals/{id}", auth.ValidateMiddleware(m.RemoveIntervalByID)).Methods("DELETE")
 	router.HandleFunc("/intervals/{id}", auth.ValidateMiddleware(m.FindIntervalByID)).Methods("GET")
-	router.HandleFunc("/intervals/annotation/{id}", auth.ValidateMiddleware(m.FindIntervalByAnnotationID)).Methods("GET")
+	router.HandleFunc("/intervals/annotations/{id}", auth.ValidateMiddleware(m.FindIntervalByAnnotationID)).Methods("GET")
 
 	// Auth
 	router.HandleFunc("/auth/callback", auth.HandleGoogleCallback).Methods("POST")
