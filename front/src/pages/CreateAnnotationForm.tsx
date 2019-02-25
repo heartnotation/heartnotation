@@ -179,11 +179,6 @@ class CreateAnnotationForm extends Component<Props, States> {
     }
 
     const { annotations, annotationsFinished, potantialParents } = this.state;
-    console.log(annotations);
-    console.log("annotationsFinished");
-    console.log(annotationsFinished);
-    console.log("potantialParents");
-    console.log(potantialParents);
 
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
       this.validateAnnotationError('This annotations doesn\'t exist',callback);
