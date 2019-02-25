@@ -2,7 +2,17 @@ import React, { Component } from 'react';
 import { Drawer, Button } from 'antd';
 import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
 
-class ChatDrawerAnnotation extends Component {
+interface State {
+  visible: boolean;
+}
+interface Props {
+  annotation_id: number;
+}
+class ChatDrawerAnnotation extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+  }
+
   public state = { visible: false };
 
   public showDrawer = () => {
@@ -37,7 +47,7 @@ class ChatDrawerAnnotation extends Component {
           onClose={this.onClose}
           visible={this.state.visible}
         >
-          <CommentChatAnnotation />
+          <CommentChatAnnotation annotation_id={this.props.annotation_id} />
         </Drawer>
       </div>
     );

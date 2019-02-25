@@ -70,14 +70,15 @@ export interface User {
 }
 
 export interface AnnotationCommentPayload {
-  content: string;
+  annotation_id: number;
+  comment: string;
 }
 
-export interface AnnotationComments {
-  id?: number;
-  comment?: string;
+export interface AnnotationComment {
+  id: number;
+  comment: string;
   date: Date;
-  user?: User;
+  user: User;
 }
 
 export interface Interval {
