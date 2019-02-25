@@ -107,24 +107,12 @@ class Organizations extends React.Component<Props, State> {
       filteredOrganizations: orgas.slice()
     });
   }
-  private handleCreate = async (o: Organization) => {
-    const { createOrganization } = this.props;
-    await createOrganization(o);
+  private handleSubmit = async () => {
     const orgas = await getOrganizations();
     this.setState({
       initialOrganizations: orgas,
       filteredOrganizations: orgas.slice(),
       createVisible: false
-    });
-  }
-  private handleModify = async (o: Organization) => {
-    const { changeOrganization } = this.props;
-    await changeOrganization(o);
-    const orgas = await getOrganizations();
-    this.setState({
-      initialOrganizations: orgas,
-      filteredOrganizations: orgas.slice(),
-      modifyVisible: false
     });
   }
   private handleCancel = () => {
@@ -141,6 +129,7 @@ class Organizations extends React.Component<Props, State> {
       modifyVisible,
       createVisible
     } = this.state;
+    const { changeOrganization, createOrganization } = this.props;
     return [
       <Table
         key={1}
@@ -152,19 +141,25 @@ class Organizations extends React.Component<Props, State> {
         key={2}
         onClick={() => this.setState({ createVisible: true })}
       />,
-      <OrganizationForm
-        key={3}
-        visible={modifyVisible}
-        defaultValue={selectedOrganization}
-        onSubmit={this.handleModify}
-        onCancel={this.handleCancel}
-      />,
-      <OrganizationForm
-        key={4}
-        visible={createVisible}
-        onSubmit={this.handleCreate}
-        onCancel={this.handleCancel}
-      />
+      modifyVisible && (
+        <OrganizationForm
+          key={3}
+          visible={modifyVisible}
+          defaultValue={selectedOrganization}
+          onSubmit={changeOrganization}
+          onOk={this.handleSubmit}
+          onCancel={this.handleCancel}
+        />
+      ),
+      createVisible && (
+        <OrganizationForm
+          key={4}
+          visible={createVisible}
+          onSubmit={createOrganization}
+          onOk={this.handleSubmit}
+          onCancel={this.handleCancel}
+        />
+      )
     ];
   }
 }
