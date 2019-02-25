@@ -25,12 +25,12 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	}
 	annotations := []m.Annotation{}
 
-	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User")
+	db := u.GetConnection().Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags")
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
-		err = db.Where("organization_id in (?) AND status != ? AND is_active = ?", currentUserOganizations, 1, true).Find(&annotations).Error
+		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).Find(&annotations).Error
 		break
 	// Role Gestionnaire & Admin
 	default:
@@ -149,7 +149,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID}
+	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID, Date: time.Now()}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
@@ -183,7 +183,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	// Role Annotateur
 	case 1:
 		// Request only annotation concerned by currentUser organizations and wher status != CREATED
-		err = db.Where("organization_id in (?) AND status_id != ? AND is_active = ?", currentUserOganizations, 1, true).First(&annotation, vars["id"]).Error
+		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).First(&annotation, vars["id"]).Error
 		break
 	// Role Gestionnaire & Admin
 	default:
@@ -222,6 +222,11 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if contextUser.RoleID != 1 && annotationStatus.EnumStatus >= 4 {
+		http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
+		return
+	}
+
 	db := u.GetConnection()
 
 	enumStatus := m.EnumStatus{}
@@ -231,7 +236,7 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	transaction := db.Begin()
 
-	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID}
+	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: time.Now()}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
@@ -262,7 +267,6 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
-		// Request only annotation concerned by currentUser organizations and wher status != CREATED
 		http.Error(w, "This action is not permitted on the actual user", 403)
 		break
 	// Role Gestionnaire & Admin
@@ -278,10 +282,10 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	db := u.GetConnection()
 
 	annotation := m.Annotation{}
-	db.Preload("Status").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
+	db.Preload("Status").Preload("Status.EnumStatus").Preload("Organization").Preload("Tags").Where(*a.ID).Find(&annotation)
 
 	annotation.LastStatus, annotation.FirstStatus = annotation.GetLastAndFirstStatus()
-	if annotation.LastStatus != nil && annotation.LastStatus.ID > 2 {
+	if annotation.LastStatus != nil && annotation.LastStatus.EnumStatus.ID > 2 {
 		if annotation.Organization != nil && annotation.Organization.ID != *a.OrganizationID {
 			http.Error(w, "Cannot change organization for started annotations", 400)
 			return
