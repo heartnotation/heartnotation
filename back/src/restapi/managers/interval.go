@@ -12,7 +12,7 @@ import (
 
 // FindIntervalByID get an interval by ID
 func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervals"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -25,7 +25,7 @@ func FindIntervalByID(w http.ResponseWriter, r *http.Request) {
 
 // FindIntervalByAnnotationID get an interval by annotation ID
 func FindIntervalByAnnotationID(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("GET", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("GET", u.CheckRoutes["intervalsannotations"], w, r) {
 		return
 	}
 	interval := []m.Interval{}
@@ -38,7 +38,7 @@ func FindIntervalByAnnotationID(w http.ResponseWriter, r *http.Request) {
 
 // CreateInterval create an interval
 func CreateInterval(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervals"], w, r) {
 		return
 	}
 	var i d.Interval
@@ -73,13 +73,12 @@ func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
 
 // AddTagsOnInterval create a tag on an interval
 func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["interval"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervalstags"], w, r) {
 		return
 	}
-	var i d.Interval
+	var i d.IntervalTagsPayload
 	err := json.NewDecoder(r.Body).Decode(&i)
-
-	if err != nil || i.Tags == nil || len(i.Tags) == 0 || i.ID == nil {
+	if err != nil || i.Tags == nil || len(i.Tags) == 0 || i.IntervalID == nil {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
@@ -92,9 +91,8 @@ func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request (client)", 204)
 		return
 	}
-
 	interval := m.Interval{}
-	if u.CheckErrorCode(db.Find(&interval, *i.ID).Error, w) {
+	if u.CheckErrorCode(db.Find(&interval, *i.IntervalID).Error, w) {
 		return
 	}
 	db.Model(&interval).Association("Tags").Replace(tags)

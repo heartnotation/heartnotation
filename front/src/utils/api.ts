@@ -1,9 +1,21 @@
-import { API_URL, Annotation, Organization, Tag, Role, User, Status } from '.';
+import {
+  API_URL,
+  Annotation,
+  Organization,
+  Tag,
+  Role,
+  User,
+  Status,
+  IntervalPayload,
+  IntervalTagsPayload
+} from '.';
 import {
   Interval,
   StatusInserter,
   AnnotationCommentPayload,
-  AnnotationComment
+  AnnotationComment,
+  IntervalCommentPayload,
+  IntervalComment
 } from './objects';
 import axios, { AxiosResponse } from 'axios';
 import { authenticate } from './auth';
@@ -87,15 +99,24 @@ export const sendAnnotationComment = (
   );
 };
 
-export const sendInterval = (datas: Interval): Promise<Interval> => {
+export const sendInterval = (datas: IntervalPayload): Promise<Interval> => {
   return post<Interval>(`${urls.intervals}`, datas);
 };
 
-export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalsComment}`, datas);
+export const sendIntervalComment = (
+  datas: IntervalCommentPayload
+): Promise<IntervalComment> => {
+  return post<IntervalComment>(`${urls.intervalsComments}`, datas).then(
+    (response: IntervalComment) => {
+      response.date = new Date(response.date);
+      return response;
+    }
+  );
 };
 
-export const sendIntervalTags = (datas: Interval): Promise<Interval> => {
+export const sendIntervalTags = (
+  datas: IntervalTagsPayload
+): Promise<Interval> => {
   return post<Interval>(`${urls.intervalsTags}`, datas);
 };
 
@@ -167,6 +188,18 @@ export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
   return put<StatusInserter>(`${urls.annotationsStatus}`, s);
 };
 
+export const deleteOrganization = (o: Organization): Promise<Organization> => {
+  return del<Organization>(`${urls.organizations}/${o.id}`);
+};
+
+export const changeOrganization = (o: Organization): Promise<Organization> => {
+  return put<Organization>(`${urls.organizations}`, o);
+};
+
+export const createOrganization = (o: Organization): Promise<Organization> => {
+  return post<Organization>(`${urls.organizations}`, o);
+};
+
 const urls = {
   annotations: 'annotations',
   annotationsComments: 'annotations/comments',
@@ -179,5 +212,7 @@ const urls = {
   intervals: 'intervals',
   intervalsComment: 'intervals/comment',
   intervalsTags: 'intervals/tags',
-  annotationsStatus: 'annotations/status'
+  annotationsStatus: 'annotations/status',
+  intervalsComments: 'intervals/comments',
+  intervalsTags: 'intervals/tags'
 };
