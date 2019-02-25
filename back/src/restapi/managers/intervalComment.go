@@ -7,22 +7,33 @@ import (
 	m "restapi/models"
 	u "restapi/utils"
 	"time"
+
+	c "github.com/gorilla/context"
 )
 
-// CreateCommentOnInterval create comment on an annotation
+// CreateCommentOnInterval create comment on an interval
 func CreateCommentOnInterval(w http.ResponseWriter, r *http.Request) {
-	if u.CheckMethodPath("POST", u.CheckRoutes["intervalcomment"], w, r) {
+	if u.CheckMethodPath("POST", u.CheckRoutes["intervalscomments"], w, r) {
 		return
 	}
-	var c d.IntervalComment
-	err := json.NewDecoder(r.Body).Decode(&c)
-	if err != nil || c.Comment == nil || c.IntervalID == nil || c.UserID == nil {
+	var icp d.IntervalCommentPayload
+	err := json.NewDecoder(r.Body).Decode(&icp)
+
+	contextUser := c.Get(r, "user").(*m.User)
+
+	if err != nil || icp.Comment == nil || icp.IntervalID == nil {
 		http.Error(w, "Bad args", 204)
 		return
 	}
-	db := u.GetConnection().Set("gorm:auto_preload", true)
-	intervalcomment := m.IntervalComment{Comment: *c.Comment, IntervalID: *c.IntervalID, UserID: *c.UserID, Date: time.Now()}
+
+	db := u.GetConnection()
+	intervalcomment := m.IntervalComment{Comment: *icp.Comment, IntervalID: *icp.IntervalID, UserID: contextUser.ID, Date: time.Now()}
+	// Insert interval comment in database
 	if u.CheckErrorCode(db.Create(&intervalcomment).Error, w) {
+		return
+	}
+	// Populate response with the user object
+	if u.CheckErrorCode(db.First(&intervalcomment.User, intervalcomment.UserID).Error, w) {
 		return
 	}
 	u.Respond(w, intervalcomment)

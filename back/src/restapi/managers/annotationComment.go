@@ -17,7 +17,7 @@ func CreateCommentOnAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("POST", u.CheckRoutes["annotationscomment"], w, r) {
 		return
 	}
-	var i d.AnnotationComments
+	var i d.AnnotationComment
 	err := json.NewDecoder(r.Body).Decode(&i)
 
 	contextUser := c.Get(r, "user").(*m.User)

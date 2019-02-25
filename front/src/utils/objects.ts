@@ -110,5 +110,5 @@ export interface IntervalPayload {
 
 export interface IntervalTagsPayload {
   interval_id: number;
-  tags_id: number[];
+  tags: number[];
 }

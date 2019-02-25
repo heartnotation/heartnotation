@@ -13,7 +13,9 @@ import {
   Interval,
   StatusInserter,
   AnnotationCommentPayload,
-  AnnotationComment
+  AnnotationComment,
+  IntervalCommentPayload,
+  IntervalComment
 } from './objects';
 import axios, { AxiosResponse } from 'axios';
 import { authenticate } from './auth';
@@ -101,8 +103,15 @@ export const sendInterval = (datas: IntervalPayload): Promise<Interval> => {
   return post<Interval>(`${urls.intervals}`, datas);
 };
 
-export const sendIntervalComment = (datas: Interval): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalsComment}`, datas);
+export const sendIntervalComment = (
+  datas: IntervalCommentPayload
+): Promise<IntervalComment> => {
+  return post<IntervalComment>(`${urls.intervalsComments}`, datas).then(
+    (response: IntervalComment) => {
+      response.date = new Date(response.date);
+      return response;
+    }
+  );
 };
 
 export const sendIntervalTags = (
@@ -189,6 +198,6 @@ const urls = {
   roles: 'roles',
   users: 'users',
   intervals: 'intervals',
-  intervalsComment: 'intervals/comment',
+  intervalsComments: 'intervals/comments',
   intervalsTags: 'intervals/tags'
 };
