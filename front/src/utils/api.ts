@@ -106,7 +106,7 @@ export const sendInterval = (datas: IntervalPayload): Promise<Interval> => {
 export const sendIntervalComment = (
   datas: IntervalCommentPayload
 ): Promise<IntervalComment> => {
-  return post<IntervalComment>(`${urls.intervalsComments}`, datas).then(
+  return post<IntervalComment>(`${urls.intervalsComment}`, datas).then(
     (response: IntervalComment) => {
       response.date = new Date(response.date);
       return response;
@@ -200,6 +200,12 @@ export const createOrganization = (o: Organization): Promise<Organization> => {
   return post<Organization>(`${urls.organizations}`, o);
 };
 
+export const getIntervalsByAnnotation = (
+  a: Annotation
+): Promise<Interval[]> => {
+  return get<Interval[]>(`${urls.intervalsAnnotation}/${a.id}`);
+};
+
 const urls = {
   annotations: 'annotations',
   annotationsComments: 'annotations/comments',
@@ -210,6 +216,7 @@ const urls = {
   roles: 'roles',
   users: 'users',
   intervals: 'intervals',
-  intervalsComments: 'intervals/comments',
-  intervalsTags: 'intervals/tags'
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags',
+  intervalsAnnotation: 'intervals/annotations'
 };

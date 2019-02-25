@@ -53,6 +53,7 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  color: string;
 }
 
 export interface Role {
