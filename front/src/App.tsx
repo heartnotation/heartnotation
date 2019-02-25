@@ -13,6 +13,8 @@ import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
 import Organizations from './pages/Organizations';
+import NotFound from './pages/errors/NotFound';
+import Forbidden from './pages/errors/Forbidden';
 
 const r = {
   defaultRoute: {
@@ -129,6 +131,7 @@ class App extends Component<
   private handleSuccess = (user: User) => {
     this.setState({ user, logged: true });
   }
+
   public render = () => {
     const { logged, token, user } = this.state;
 
@@ -142,6 +145,29 @@ class App extends Component<
       );
     }
     if (user) {
+      const checkIntUrl = window.location.pathname.split('/');
+      if (checkIntUrl.length === 3 && checkIntUrl[1] === 'annotations') {
+        if (isNaN(Number(checkIntUrl[2]))) {
+          return <NotFound />;
+        } else if (!r.hiddenRoutes[0].roles.includes(user.role.name)) {
+          return <Forbidden />;
+        }
+      } else {
+        const f = r.routes.find(p => window.location.pathname === p.path);
+        if (f === undefined) {
+          const fhidden = r.hiddenRoutes.find(
+            p => window.location.pathname === p.path
+          );
+          if (fhidden === undefined) {
+            return <NotFound />;
+          } else if (!fhidden.roles.includes(user.role.name)) {
+            return <Forbidden />;
+          }
+        } else if (!f.roles.includes(user.role.name)) {
+          return <Forbidden />;
+        }
+      }
+
       return (
         <Authenticated user={user}>
           <AppRouter
