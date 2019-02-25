@@ -23,7 +23,8 @@ func main() {
 	router.HandleFunc("/annotations/status", auth.ValidateMiddleware(m.UpdateAnnotationStatus)).Methods("PUT")
 	router.HandleFunc("/annotations", auth.ValidateMiddleware(m.CreateAnnotation)).Methods("POST")
 	router.HandleFunc("/annotations/{id}", auth.ValidateMiddleware(m.DeleteAnnotation)).Methods("DELETE")
-	router.HandleFunc("/annotations/comment", auth.ValidateMiddleware(m.CreateCommentOnAnnotation)).Methods("POST")
+	router.HandleFunc("/annotations/comments", auth.ValidateMiddleware(m.CreateCommentOnAnnotation)).Methods("POST")
+	router.HandleFunc("/annotations/comments/{id}", auth.ValidateMiddleware(m.FindCommentsByAnnotationID)).Methods("GET")
 	router.HandleFunc("/signal/{id}", auth.ValidateMiddleware(m.CheckSignal)).Methods("GET")
 
 	// Organizations

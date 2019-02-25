@@ -9,55 +9,12 @@ import {
   Avatar,
   Layout
 } from 'antd';
-import { AnnotationCommentPayload } from '../../utils/objects';
-/*
-const data = [
-  {
-    author: 'Podologs Member',
-    avatar:
-      'http://www.podiatrestmichel.com/wp-content/uploads/2017/02/pied-dathlete.jpg',
-    content: <p>Tkt mm pa on é la team de iep, on vous marche dessus frere</p>,
-    datetime: (
-      <Tooltip
-        title={moment()
-          .subtract(1, 'days')
-          .format('YYYY-MM-DD HH:mm:ss')}
-      >
-        <span>
-          {moment()
-            .subtract(1, 'days')
-            .fromNow()}
-        </span>
-      </Tooltip>
-    )
-  },
-  {
-    author: 'Cloche Pied',
-    avatar:
-      'http://www.minutefacile.com/wp-content/uploads/2018/05/01CC010404675196-c1-photo-pied-jpg.jpg',
-    content: (
-      <p>
-        This annotation is our first one, this is a dope application developed
-        by Podologs. I appreciate how easy it is to use every tools. Would
-        definitely recommend to other podologists.
-      </p>
-    ),
-    datetime: (
-      <Tooltip
-        title={moment()
-          .subtract(4, 'days')
-          .format('YYYY-MM-DD HH:mm:ss')}
-      >
-        <span>
-          {moment()
-            .subtract(4, 'days')
-            .fromNow()}
-        </span>
-      </Tooltip>
-    )
-  }
-];
-*/
+import {
+  AnnotationCommentPayload,
+  AnnotationComment
+} from '../../utils/objects';
+import { api } from '../../utils';
+
 const { Header, Footer, Content } = Layout;
 
 const TextArea = Input.TextArea;
@@ -72,13 +29,6 @@ const CommentList = (props: { comments: DataComment[] }) => (
     renderItem={(p: any) => <Comment {...p} />}
   />
 );
-/*
-const Editor = (
-  onChange: (e: any) => void,
-  onSubmit: any,
-  submitting: boolean,
-  value: string
-) */
 
 const Editor = (props: {
   onChange: (e: any) => void;
@@ -101,71 +51,109 @@ interface DataComment {
   author: string;
   content: any;
   avatar: any;
+  datetime: any;
 }
 interface State {
   comments: DataComment[];
-  payload: AnnotationCommentPayload;
+  currentComment: string;
 }
-
-class CommentChatAnnotation extends Component<any, State> {
-  constructor(props: any) {
+interface Props {
+  annotation_id: number;
+}
+class CommentChatAnnotation extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = {
       comments: [],
-      payload: { content: '' }
+      currentComment: ''
     };
+  }
+
+  public componentDidMount = () => {
+    api
+      .getCommentsOnAnnotationById(this.props.annotation_id)
+      .then((response: AnnotationComment[]) => {
+        const commentList: DataComment[] = [];
+        response.forEach(element => {
+          commentList.push({
+            author: element.user.mail,
+            avatar: (
+              <Avatar
+                style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+                size='large'
+              >
+                {element.user.mail[0].toUpperCase()}
+              </Avatar>
+            ),
+            content: <p>{element.comment}</p>,
+            datetime: element.date.toLocaleString()
+          });
+        });
+        this.setState({ comments: commentList });
+      });
   }
 
   public handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!this.state.payload.content) {
+    if (!this.state.currentComment) {
       return;
     }
-    const { payload } = this.state;
-    console.log(payload);
-    this.setState({
-      payload: { content: '' },
-      comments: [
-        {
-          author: 'Yann Yolo',
-          avatar: (
-            <Avatar src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1' />
-          ),
-          content: <p>{this.state.payload.content}</p>
-        },
-        ...this.state.comments
-      ]
-    });
+    const commentPayload: AnnotationCommentPayload = {
+      annotation_id: this.props.annotation_id,
+      comment: this.state.currentComment
+    };
+    api
+      .sendAnnotationComment(commentPayload)
+      .then((response: AnnotationComment) => {
+        this.setState({
+          currentComment: '',
+          comments: [
+            {
+              author: response.user.mail,
+              avatar: (
+                <Avatar
+                  style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+                  size='large'
+                >
+                  {response.user.mail[0].toUpperCase()}
+                </Avatar>
+              ),
+              content: <p>{response.comment}</p>,
+              datetime: response.date.toLocaleString()
+            },
+            ...this.state.comments
+          ]
+        });
+      });
   }
 
   public handleChange = (e: any) => {
     this.setState({
-      payload: { content: e.target.value }
+      currentComment: e.target.value
     });
   }
 
   public render() {
-    const { comments, payload } = this.state;
-    console.log(comments);
     return (
       <div>
         <div className='comments-container'>
-          {comments.length > 0 && <CommentList comments={comments} />}
+          {this.state.comments.length > 0 && (
+            <CommentList comments={this.state.comments} />
+          )}
         </div>
         <div>
           <Comment
             avatar={
               <Avatar
+                style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
                 size='large'
-                src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1'
-                alt='Podologs'
               />
             }
             content={
               <Editor
                 onChange={this.handleChange}
                 onSubmit={this.handleSubmit}
-                value={payload.content}
+                value={this.state.currentComment}
               />
             }
           />
