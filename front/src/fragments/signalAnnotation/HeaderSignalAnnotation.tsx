@@ -130,12 +130,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   }
 
   public handleSubmit = (s: StatusInserter) => {
-    api.sendStatus(s).then(() => {
-      this.props.history.push('/');
-    });
-    // .catch(error => {
-    //   this.setState({ error });
-    // });
+    api
+      .sendStatus(s)
+      .then(() => {
+        this.props.history.push('/');
+      })
+      .catch(error => {
+        this.setState({ error });
+      });
   }
 
   private handleToggle = (toggle: boolean) => {
@@ -148,7 +150,6 @@ class HeaderSignalAnnotation extends Component<Props, State> {
     const { Step } = Steps;
     const { annotation, user } = this.props;
     const { stepProcess, error, mode } = this.state;
-    console.log(stepProcess);
     return [
       <Row
         key={1}
