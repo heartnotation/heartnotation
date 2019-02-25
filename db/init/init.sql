@@ -63,7 +63,7 @@ CREATE TABLE public.Notification(
 	id        SERIAL NOT NULL ,
 	title     VARCHAR (50) NOT NULL ,
 	content   VARCHAR (500) NOT NULL ,
-	date      DATE  NOT NULL ,
+	date      TIMESTAMP  NOT NULL ,
 	user_id   INT  NOT NULL  ,
 	CONSTRAINT Notification_PK PRIMARY KEY (id)
 )WITHOUT OIDS;
@@ -112,8 +112,8 @@ CREATE TABLE public.Annotation(
 	id                SERIAL NOT NULL ,
 	name              VARCHAR (50) NOT NULL ,
 	signal_id         VARCHAR (30)  NOT NULL ,
-	creation_date     DATE  NOT NULL ,
-	edit_date         DATE   ,
+	creation_date     TIMESTAMP  NOT NULL ,
+	edit_date         TIMESTAMP   ,
 	is_active         BOOL  NOT NULL ,
 	is_editable       BOOL  NOT NULL ,
 	organization_id   INT,
@@ -128,7 +128,7 @@ CREATE TABLE public.Annotation(
 CREATE TABLE public.CommentInterval(
 	id            SERIAL NOT NULL ,
 	comment       VARCHAR (500) NOT NULL ,
-	date          DATE  NOT NULL ,
+	date          TIMESTAMP  NOT NULL ,
 	interval_id   INT  NOT NULL ,
 	user_id       INT  NOT NULL  ,
 	CONSTRAINT CommentInterval_PK PRIMARY KEY (id)
@@ -140,7 +140,7 @@ CREATE TABLE public.CommentInterval(
 ------------------------------------------------------------
 CREATE TABLE public.Status(
 	id              SERIAL NOT NULL ,
-	date            DATE  NOT NULL ,
+	date            TIMESTAMP  NOT NULL ,
 	annotation_id   INT  NOT NULL ,
 	enumstatus_id   INT  NOT NULL ,
 	user_id         INT  NOT NULL  ,
@@ -154,7 +154,7 @@ CREATE TABLE public.Status(
 CREATE TABLE public.CommentAnnotation(
 	id              SERIAL NOT NULL ,
 	comment         VARCHAR (500) NOT NULL ,
-	date            DATE  NOT NULL ,
+	date            TIMESTAMP  NOT NULL ,
 	annotation_id   INT  NOT NULL ,
 	user_id         INT  NOT NULL  ,
 	CONSTRAINT CommentAnnotation_PK PRIMARY KEY (id)
@@ -344,6 +344,14 @@ INSERT INTO public.User (mail, is_active, role_id)
 INSERT INTO public.User (mail, is_active, role_id)  
 	VALUES ('saidkhalid1996@gmail.com', TRUE, 1);
 
+INSERT INTO public.User (mail, is_active, role_id)    
+	VALUES ('heartnotation@gmail.com', TRUE, 3);
+
+INSERT INTO public.User (mail, is_active, role_id)  
+	VALUES ('gestion.heart@gmail.com', TRUE, 2);
+
+INSERT INTO public.User (mail, is_active, role_id) 
+	VALUES ('annotateur.heart@gmail.com', TRUE, 1);
 
 -- ENUMSTATUS
 
@@ -394,7 +402,9 @@ INSERT INTO public.User_Organization (organization_id, user_id)
 -- Said
 INSERT INTO public.User_Organization (organization_id, user_id) 
 	VALUES (4, 7);
-
+-- Annotateur
+INSERT INTO public.User_Organization (organization_id, user_id) 
+	VALUES (1, 10);
 
 -- ANNOTATION
 INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable) 
@@ -470,24 +480,32 @@ INSERT INTO public.Interval_Tag (interval_id, tag_id)
 	VALUES (1, 3);
 
 -- Status
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 1, '2006-10-19 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 2, '2006-10-19 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 3, '2006-10-19 10:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 1, 4, '2006-10-19 10:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 1, '2004-10-19 10:23:54');
+	VALUES (1, 2, 1, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 2, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 3, '2006-10-19 11:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 2, 4, '2006-10-19 11:23:54');
 
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 1, '2010-10-20 10:23:54');
-
+	VALUES (1, 3, 1, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 1, '2012-10-25 10:23:54');
-
+	VALUES (1, 3, 2, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 2, 2, '2006-10-19 10:23:54');
-
+	VALUES (2, 3, 3, '2006-10-19 12:23:54');
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 3, 3, '2008-10-19 10:23:54');
-
-INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
-	VALUES (1, 1, 4, '2004-10-25 10:23:54');
+	VALUES (2, 3, 4, '2006-10-19 12:23:54');
 
 	
 -- CommentAnnotation

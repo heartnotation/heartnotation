@@ -6,6 +6,7 @@ import loadingGif from '../assets/images/loading.gif';
 import { Annotation, Point } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
+import NotFound from './errors/NotFound';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -17,6 +18,7 @@ interface State {
   loading: boolean;
   moving: boolean;
   error?: string;
+  refresh: boolean;
   popperVisible: boolean;
   xIntervalStart?: number;
   xIntervalEnd?: number;
@@ -36,6 +38,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     this.state = {
       loading: true,
       moving: true,
+      refresh: false,
       popperVisible: false,
       graphElements: [],
       intervalSelectors: []
@@ -59,7 +62,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
     } = this.props;
 
     const colors = ['blue', 'green', 'red'];
-    const annotation = await getAnnotation(parseInt(id, 10));
+    let annotation;
+    try {
+      annotation = await getAnnotation(parseInt(id, 10));
+    } catch (e) {
+      if (e.status === 404) {
+        this.setState({ refresh: true });
+      }
+      return;
+    }
     let leads: Point[][];
     let idGraphElement: number = 0;
 
@@ -345,7 +356,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     focus.select('.line').attr('clip-path', 'url(#clip)');
   }
 
-
   public confirmDelete = (selectors: string[]) => {
     for (const selector of selectors) {
       d3.select(selector).remove(); // Remove in graph
@@ -368,8 +378,10 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public render = () => {
-    const { loading, annotation, error } = this.state;
-
+    const { loading, annotation, error, refresh } = this.state;
+    if (refresh) {
+      return <NotFound />;
+    }
     if (loading) {
       return (
         <img
@@ -391,19 +403,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
             onToggle={this.onChange}
           />
           <div className='signal-main-container'>
-            <div className='signal-legend-container'>
-              <Tag color='magenta'>magenta</Tag>
-              <Tag color='red'>red</Tag>
-              <Tag color='volcano'>volcano</Tag>
-              <Tag color='orange'>orange</Tag>
-              <Tag color='gold'>gold</Tag>
-              <Tag color='lime'>lime</Tag>
-              <Tag color='green'>green</Tag>
-              <Tag color='cyan'>cyan</Tag>
-              <Tag color='blue'>blue</Tag>
-              <Tag color='geekblue'>geekblue</Tag>
-              <Tag color='purple'>purple</Tag>
-            </div>
             <div className='signal-graph-container' id='signal' />
           </div>
           {this.state.popperVisible &&
