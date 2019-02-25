@@ -14,6 +14,7 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Tag, Annotation } from '../utils';
+import { finished } from 'stream';
 
 const { Option } = Select;
 
@@ -29,6 +30,8 @@ interface States {
   tagsSearch: string[];
   tagsSelected: Tag[];
   annotations: Annotation[];
+  annotationsFinished: Annotation[];
+  potantialParents: Annotation[];
   annotationValidateStatus: '' | 'success' | 'error';
   loading: boolean;
   error: string;
@@ -55,6 +58,8 @@ class CreateAnnotationForm extends Component<Props, States> {
       tagsSearch: [],
       tagsSelected: [],
       annotations: [],
+      annotationsFinished: [],
+      potantialParents: [],
       annotationValidateStatus: '',
       loading: false,
       error: ''
@@ -68,8 +73,10 @@ class CreateAnnotationForm extends Component<Props, States> {
         this.setState({
           tags: responses[0],
           organizations: responses[1],
-          annotations: responses[2]
+          annotations: responses[2],
+          annotationsFinished : responses[2].filter((a:Annotation)=>a.last_status.enum_status.id>4)
         });
+
       }
     );
   }
@@ -86,12 +93,29 @@ class CreateAnnotationForm extends Component<Props, States> {
   public validateId = (_: any, value: any, callback: any) => {
     this.props
       .checkSignal(value)
-      .then(() => {
+      .then(() => {   
+        this.setState({
+        potantialParents: this.state.annotationsFinished.filter((a:Annotation)=>a.signal_id == value)
+        });
         callback();
       })
       .catch(() => {
         callback(`Signal n°${value} not found`);
       });
+  }
+
+  public handleSignal = (value: string) => {
+    const { organizations } = this.state;
+    const organizationsSearch = this.filterNoCaseSensitive(
+      value,
+      organizations.map((o: Organization) => o.name)
+    );
+    this.setState({
+      organizationsSearch:
+        organizationsSearch.length !== organizations.length
+          ? organizationsSearch
+          : []
+    });
   }
 
   public handleSearchOrganization = (value: string) => {
@@ -143,28 +167,37 @@ class CreateAnnotationForm extends Component<Props, States> {
     callback();
   }
 
-  public handleChangeAnnotation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { annotations } = this.state;
-    if (e.target.value === '') {
-      this.setState({ annotationValidateStatus: '' });
-    } else if (
-      this.isStringNumber(e.target.value) &&
-      annotations.map(a => a.id).includes(parseInt(e.target.value, 10))
-    ) {
-      this.setState({ annotationValidateStatus: 'success' });
-    } else {
-      this.setState({ annotationValidateStatus: 'error' });
-    }
+  public validateAnnotationError = (text: String, callback: any) => {
+    callback(text);
+    this.setState({annotationValidateStatus:'error'})
   }
 
   public validateAnnotation = (_: any, value: any, callback: any) => {
     if (value && !this.isStringNumber(value)) {
-      callback('You should write a number');
+      this.validateAnnotationError('You should write a number',callback);
+      return;
     }
-    const { annotations } = this.state;
+
+    const { annotations, annotationsFinished, potantialParents } = this.state;
+    console.log(annotations);
+    console.log("annotationsFinished");
+    console.log(annotationsFinished);
+    console.log("potantialParents");
+    console.log(potantialParents);
+
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
-      callback('This annotations doesn\'t exist or is not in finished state');
+      this.validateAnnotationError('This annotations doesn\'t exist',callback);
+      return;
     }
+    if (!annotationsFinished.map(a => a.id).includes(parseInt(value, 10))){
+      this.validateAnnotationError('This annotations isn\'t in a finished state (Cancelled of Validated)',callback);
+      return;
+    }
+    if(!potantialParents.map(a => a.id).includes(parseInt(value, 10))){
+        this.validateAnnotationError('This parent has not the same signal ID',callback);
+        return;
+    }
+    this.setState({annotationValidateStatus:'success'})
     callback();
   }
 
@@ -304,8 +337,8 @@ class CreateAnnotationForm extends Component<Props, States> {
                     },
                     { validator: this.validateAnnotation }
                   ]
-                })(<Input onChange={this.handleChangeAnnotation} />)}
-              </Form.Item>
+                })(<Input />)}
+                </Form.Item>
               <Form.Item {...formItemLayout} label='Tags autorisés'>
                 {getFieldDecorator('tags', {
                   rules: [
