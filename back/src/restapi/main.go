@@ -28,6 +28,7 @@ func main() {
 
 	// Organizations
 	router.HandleFunc("/organizations", auth.ValidateMiddleware(m.GetAllOrganizations)).Methods("GET")
+	router.HandleFunc("/organizations", auth.ValidateMiddleware(m.CreateOrganization)).Methods("POST")
 
 	// Tags
 	router.HandleFunc("/tags", auth.ValidateMiddleware(m.GetAllTags)).Methods("GET")
