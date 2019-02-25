@@ -43,8 +43,8 @@
   filter: blur(3px);
 }
 
-h2,
-p {
+.login-container h2,
+.login-container p {
   color: #fff;
 }
 
