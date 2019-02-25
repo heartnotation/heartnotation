@@ -222,6 +222,11 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if contextUser.RoleID != 1 && annotationStatus.EnumStatus >= 4 {
+		http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
+		return
+	}
+
 	db := u.GetConnection()
 
 	enumStatus := m.EnumStatus{}
