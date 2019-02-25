@@ -32,6 +32,10 @@ interface States {
   annotations: Annotation[];
   annotationsFinished: Annotation[];
   potantialParents: Annotation[];
+  parentCallback: any;
+  parentValue: String;
+  signalCallback: any;
+  signalValue: String;
   annotationValidateStatus: '' | 'success' | 'error';
   loading: boolean;
   error: string;
@@ -60,6 +64,10 @@ class CreateAnnotationForm extends Component<Props, States> {
       annotations: [],
       annotationsFinished: [],
       potantialParents: [],
+      parentCallback: undefined,
+      parentValue: "",
+      signalCallback: undefined,
+      signalValue: "",
       annotationValidateStatus: '',
       loading: false,
       error: ''
@@ -90,13 +98,34 @@ class CreateAnnotationForm extends Component<Props, States> {
     return !isNaN(Number(s));
   }
 
+
+  public validateIdInt = (_: any, value: any, callback: any) => {
+    this.setState({
+      signalValue: value
+    });
+
+    var potantialParentsInt = this.state.annotationsFinished.filter((a:Annotation)=>a.signal_id == value)
+    this.setState({
+      potantialParents: potantialParentsInt
+    });
+    
+
+    this.validateId(_, value, callback)
+  
+    if(this.state.signalCallback == undefined){
+      this.setState({
+        signalCallback: callback
+      });
+     }
+    if(this.state.parentCallback != undefined){
+      this.validateParent(_, this.state.parentValue, this.state.parentCallback, potantialParentsInt)
+   }
+  }
+
   public validateId = (_: any, value: any, callback: any) => {
     this.props
       .checkSignal(value)
       .then(() => {   
-        this.setState({
-        potantialParents: this.state.annotationsFinished.filter((a:Annotation)=>a.signal_id == value)
-        });
         callback();
       })
       .catch(() => {
@@ -167,33 +196,56 @@ class CreateAnnotationForm extends Component<Props, States> {
     callback();
   }
 
-  public validateAnnotationError = (text: String, callback: any) => {
-    callback(text);
-    this.setState({annotationValidateStatus:'error'})
+
+
+  public validateParentInt = (_: any, value: any, callback: any) => {
+    this.setState({
+      parentValue: value
+    });
+    this.validateParent(_, value, callback, this.state.potantialParents)
+
+    if(this.state.parentCallback == undefined){
+      this.setState({
+        parentCallback: callback
+      });
+     }
+    if(this.state.signalCallback != undefined){
+      this.validateId(_, this.state.signalValue, this.state.signalCallback)
+   }
   }
 
-  public validateAnnotation = (_: any, value: any, callback: any) => {
-    if (value && !this.isStringNumber(value)) {
-      this.validateAnnotationError('You should write a number',callback);
+  public validateParent = (_: any, value: any, callback: any, potantialParents: Annotation[]) => {//Must take potantialParent whether form temp var, or from state, because of asynchronous changes on variables states
+    if (value == "") {
+      this.setState({annotationValidateStatus:'success'})
       return;
     }
 
-    const { annotations, annotationsFinished, potantialParents } = this.state;
+    if (value && !this.isStringNumber(value)) {
+      this.validateParentError('You should write a number',callback);
+      return;
+    }
+
+    const { annotations, annotationsFinished} = this.state;
 
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
-      this.validateAnnotationError('This annotations doesn\'t exist',callback);
+      this.validateParentError('This annotations doesn\'t exist',callback);
       return;
     }
     if (!annotationsFinished.map(a => a.id).includes(parseInt(value, 10))){
-      this.validateAnnotationError('This annotations isn\'t in a finished state (Cancelled of Validated)',callback);
+      this.validateParentError('This annotations isn\'t in a finished state (Cancelled of Validated)',callback);
       return;
     }
     if(!potantialParents.map(a => a.id).includes(parseInt(value, 10))){
-        this.validateAnnotationError('This parent has not the same signal ID',callback);
+        this.validateParentError('This parent has not the same signal ID',callback);
         return;
     }
     this.setState({annotationValidateStatus:'success'})
     callback();
+  }
+
+  public validateParentError = (text: String, callback: any) => {
+    callback(text);
+    this.setState({annotationValidateStatus:'error'})
   }
 
   public filterSearchTag = (
@@ -296,7 +348,7 @@ class CreateAnnotationForm extends Component<Props, States> {
                       required: true,
                       message: msgRequired
                     },
-                    { validator: this.validateId }
+                    { validator: this.validateIdInt}
                   ]
                 })(<Input />)}
               </Form.Item>
@@ -330,7 +382,7 @@ class CreateAnnotationForm extends Component<Props, States> {
                       whitespace: true,
                       message: msgEmpty
                     },
-                    { validator: this.validateAnnotation }
+                    { validator: this.validateParentInt}
                   ]
                 })(<Input />)}
                 </Form.Item>
