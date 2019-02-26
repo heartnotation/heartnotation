@@ -9,8 +9,7 @@ import {
   List,
   Comment,
   Avatar,
-  message,
-  TreeSelect
+  message
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -22,7 +21,6 @@ import {
   IntervalComment
 } from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
-import { treemapBinary, select } from 'd3';
 
 interface Props extends FormComponentProps, RouteComponentProps {
   start: number;
@@ -166,12 +164,6 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     });
     this.setState({ tags: this.props.annotation.tags });
     console.log(this.props.annotation);
-    /*
-    const selectTagsWithParents = this.props.annotation.tags.filter(
-      (t: Tag) => t.parent_id
-    );
-    console.log(selectTagsWithParents);
-    */
   }
 
   public componentDidUpdate = () => {
