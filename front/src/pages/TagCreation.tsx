@@ -42,7 +42,6 @@ class TagCreation extends Component<Props, States> {
 
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        console.log('clicked');
         this.setState({ loading: true });
         this.props.sendTag(values).then(() => {
           this.props.handleOk();
@@ -56,6 +55,7 @@ class TagCreation extends Component<Props, States> {
     const { loading } = this.state;
     const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
+    const wrongColorFormat = 'Empty or wrong color format';
 
     return (
       <Modal
@@ -102,19 +102,11 @@ class TagCreation extends Component<Props, States> {
                   rules: [
                     {
                       required: true,
-                      message: msgRequired
+                      message: wrongColorFormat,
+                      pattern: new RegExp('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
                     }
                   ]
-                })(
-                  <Input />
-                  //   <Select<Tag[]>>
-                  //     {colors.map((color: string) => (
-                  //       <Option key='key' value={color}>
-                  //         {color}
-                  //       </Option>
-                  //     ))}
-                  //   </Select>
-                )}
+                })(<Input />)}
               </Form.Item>
             </Form>
           </Col>
