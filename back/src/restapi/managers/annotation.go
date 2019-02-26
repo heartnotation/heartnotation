@@ -259,7 +259,7 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		if (*a.LastStatus.EnumstatusID == 2 && annotationStatus.EnumStatus != 1) || *a.LastStatus.EnumstatusID == 3 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
+		if (*a.LastStatus.EnumstatusID == 2 && !(annotationStatus.EnumStatus == 1 || annotationStatus.EnumStatus == 6)) || *a.LastStatus.EnumstatusID == 3 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
 			http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
 			return
 		}
@@ -272,7 +272,8 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	transaction := db.Begin()
 
-	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: time.Now()}
+	date := time.Now()
+	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: date}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
@@ -284,6 +285,16 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	annotationEditDate := m.Annotation{}
+	if u.CheckErrorCode(db.First(&annotationEditDate, annotationStatus.ID).Error, w) {
+		transaction.Rollback()
+		return
+	}
+	annotationEditDate.EditDate = date
+	if u.CheckErrorCode(db.Save(&annotationEditDate).Error, w) {
+		transaction.Rollback()
+		return
+	}
 	transaction.Commit()
 	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
 		return

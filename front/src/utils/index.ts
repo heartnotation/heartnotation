@@ -11,7 +11,8 @@ import {
   StatusInserter,
   Interval,
   IntervalPayload,
-  IntervalTagsPayload
+  IntervalTagsPayload,
+  AnnotationStatus
 } from './objects';
 export const API_URL = process.env.REACT_APP_API
   ? process.env.REACT_APP_API
@@ -30,5 +31,6 @@ export type StatusInserter = StatusInserter;
 export type IntervalPayload = IntervalPayload;
 export type Interval = Interval;
 export type IntervalTagsPayload = IntervalTagsPayload;
+export type AnnotationStatus = AnnotationStatus;
 
 export const auth = au;
