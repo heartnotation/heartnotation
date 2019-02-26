@@ -445,13 +445,13 @@ INSERT INTO public.CommentInterval (interval_id, user_id, comment, date)
 -- TAG
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on fire', 'red', TRUE);
+	VALUES (NULL, 'Lungs on fire', '#ff0000', TRUE);
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on water', 'blue', TRUE);
+	VALUES (NULL, 'Lungs on water', '#0000ff', TRUE);
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (2, 'Weird lungs', 'green', TRUE);
+	VALUES (2, 'Weird lungs', '#00ff00', TRUE);
 
 -- ANNOTATION_TAG
 

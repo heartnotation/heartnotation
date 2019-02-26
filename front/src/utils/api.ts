@@ -207,6 +207,12 @@ export const createOrganization = (o: Organization): Promise<Organization> => {
   return post<Organization>(`${urls.organizations}`, o);
 };
 
+export const getIntervalsByAnnotation = (
+  a: Annotation
+): Promise<Interval[]> => {
+  return get<Interval[]>(`${urls.intervalsAnnotation}/${a.id}`);
+};
+
 const urls = {
   annotations: 'annotations',
   annotationsStatus: 'annotations/status',
@@ -218,7 +224,7 @@ const urls = {
   roles: 'roles',
   users: 'users',
   intervals: 'intervals',
-  intervalsComment: 'intervals/comment',
   intervalsTags: 'intervals/tags',
+  intervalsAnnotation: 'intervals/annotations',
   intervalsComments: 'intervals/comments'
 };

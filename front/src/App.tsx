@@ -35,6 +35,7 @@ const r = {
         <SignalAnnotation
           getAnnotation={api.getAnnotationById}
           changeAnnotation={api.changeAnnotation}
+          getIntervals={api.getIntervalsByAnnotation}
         />
       ),
       title: 'Signal annotation',
