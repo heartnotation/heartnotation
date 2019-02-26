@@ -29,7 +29,7 @@ func GetAllAnnotations(w http.ResponseWriter, r *http.Request) {
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
-		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		// Request only annotation concerned by currentUser organizations and where status != CREATED
 		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).Find(&annotations).Error
 		break
 	// Role Gestionnaire & Admin
@@ -126,12 +126,32 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if a.ParentID != nil {
-		parent := &m.Annotation{ID: *a.ParentID}
-		err = db.Find(&parent).Error
+		parent := &m.Annotation{}
+		err = db.Preload("Status").Preload("Status.EnumStatus").Find(&parent, *a.ParentID).Error
 		if err != nil {
 			u.CheckErrorCode(err, w)
 			return
 		}
+
+		if parent.SignalID != a.SignalID {
+			http.Error(w, "Incorrect field: SignalID must be the same as the parent", 400)
+			return
+		}
+		var lastStatus m.Status
+		if parent.Status != nil && len(parent.Status) != 0 {
+			lastStatus = parent.Status[0]
+			for _, status := range parent.Status {
+				if lastStatus.Date.Unix() < status.Date.Unix() {
+					lastStatus = status
+				}
+			}
+		}
+
+		if *lastStatus.EnumstatusID < 5 {
+			http.Error(w, "Incorrect field: Parent must be in finished state", 400)
+			return
+		}
+
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
@@ -182,7 +202,7 @@ func FindAnnotationByID(w http.ResponseWriter, r *http.Request) {
 	switch contextUser.Role.ID {
 	// Role Annotateur
 	case 1:
-		// Request only annotation concerned by currentUser organizations and wher status != CREATED
+		// Request only annotation concerned by currentUser organizations and where status != CREATED
 		err = db.Where("organization_id in (?) AND is_active = ?", currentUserOganizations, true).First(&annotation, vars["id"]).Error
 		break
 	// Role Gestionnaire & Admin
