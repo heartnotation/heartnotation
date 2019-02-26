@@ -52,11 +52,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
     };
   }
 
-  public onChange = (checked: boolean) => {
-    if (checked === true) {
+  public onToogleTool = (tool: 'Navigation' | 'Annotation' | 'Edit') => {
+    if (tool === 'Annotation') {
       d3.select('.zoom').style('display', 'none');
+      d3.select('#brush-createinterval').style('display', 'block');
+    } else if(tool === 'Edit') {
+      d3.select('.zoom').style('display', 'none');
+      d3.select('#brush-createinterval').style('display', 'none');
     } else {
       d3.select('.zoom').style('display', 'block');
+      d3.select('#brush-createinterval').style('display', 'block');
     }
   }
 
@@ -404,7 +409,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
             'transform',
             'translate(' + margin.left + ', ' + margin.top + ')'
           )
-          .attr('clip-path', 'url(#clip)');
+          .attr('clip-path', 'url(#clip)')
+          .on('click', () => console.log('yolo'));
 
         svgPreview
           .select('#interval-preview-container')
@@ -633,7 +639,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         <div>
           <HeaderSignalAnnotation
             annotation={annotation}
-            onToggle={this.onChange}
+            onToggle={this.onToogleTool}
           />
           <div className='signal-main-container'>
             <div className='signal-graph-container' id='signal' />

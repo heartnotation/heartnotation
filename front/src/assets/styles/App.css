@@ -177,7 +177,7 @@
   background: rgba(75, 75, 75, 0.5);
 }
 
-.ant-btn {
+.modal-signal-footer > .ant-btn {
   margin: 8px;
 }
 
