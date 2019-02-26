@@ -163,7 +163,6 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       this.setState({ currentInterval: response });
     });
     this.setState({ tags: this.props.annotation.tags });
-    console.log(this.props.annotation);
   }
 
   public componentDidUpdate = () => {
