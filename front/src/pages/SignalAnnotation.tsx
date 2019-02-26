@@ -65,6 +65,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
     }
   }
 
+  public onClickInterval = (intervalId: string) => {
+    console.log(intervalId);
+    console.log(this.state.graphElements.find((g:GraphElement) => g.selector === intervalId));
+  }
+
   private getIntervalsData = (
     { time_start, time_end }: { time_start: number; time_end: number },
     yMax: number,
@@ -122,7 +127,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('clip-path', 'url(#clip)')
       .style('fill', color)
       .style('stroke', 'grey')
-      .style('opacity', '0.2');
+      .style('opacity', '0.2')
+      .on('click', () => this.onClickInterval(`#${className}-${id}`));
   }
 
   private getColors = (
@@ -410,7 +416,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
             'translate(' + margin.left + ', ' + margin.top + ')'
           )
           .attr('clip-path', 'url(#clip)')
-          .on('click', () => console.log('yolo'));
+          .on('click', () => this.onClickInterval('#' + 'interval-area-' + idGraphElement));
 
         svgPreview
           .select('#interval-preview-container')
