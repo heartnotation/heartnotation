@@ -220,6 +220,5 @@ const urls = {
   intervals: 'intervals',
   intervalsComment: 'intervals/comment',
   intervalsTags: 'intervals/tags',
-  annotationsStatus: 'annotations/status',
   intervalsComments: 'intervals/comments'
 };
