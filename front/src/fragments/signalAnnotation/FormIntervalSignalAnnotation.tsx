@@ -9,7 +9,8 @@ import {
   List,
   Comment,
   Avatar,
-  message
+  message,
+  TreeSelect
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
@@ -21,6 +22,7 @@ import {
   IntervalComment
 } from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
+import { treemapBinary, select } from 'd3';
 
 interface Props extends FormComponentProps, RouteComponentProps {
   start: number;
@@ -75,7 +77,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleCommentSubmit = () => {
-    if(!this.state.textAreaComment) {
+    if (!this.state.textAreaComment) {
       return;
     }
     if (this.state.currentInterval === undefined) {
@@ -162,7 +164,12 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     api.sendInterval(intervalPayload).then(response => {
       this.setState({ currentInterval: response });
     });
-    api.getTags().then(res => this.setState({ tags: res }));
+    this.setState({ tags: this.props.annotation.tags });
+    console.log(this.props.annotation);
+    const selectTagsWithParents = this.props.annotation.tags.filter(
+      (t: Tag) => t.parent_id
+    );
+    console.log(selectTagsWithParents);
   }
 
   public render() {
@@ -170,10 +177,24 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     const Option = Select.Option;
     const { tags } = this.state;
     const tagValues = tags.map((val: Tag) => (
-      <Option key={val.name} value={val.id}>
+      <Option key={val.name} value={val.id} style={{ color: val.color }}>
         {val.name}
       </Option>
     ));
+
+    const SHOW_PARENT = TreeSelect.SHOW_PARENT;
+
+    const tProps = {
+      tagValues,
+      value: this.state.selectedTags,
+      onChange: this.handleChangeSelectTags,
+      treeCheckable: true,
+      showCheckedStrategy: SHOW_PARENT,
+      searchPlaceholder: 'Please select',
+      style: {
+        width: 300
+      }
+    };
 
     return (
       <div className='popup-comment-tag-container'>
