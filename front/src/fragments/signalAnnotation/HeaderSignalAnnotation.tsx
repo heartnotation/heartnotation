@@ -136,7 +136,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         this.props.history.push('/');
       })
       .catch(error => {
-        this.setState({ error });
+        this.setState({ error: 'Error during using button of header' });
       });
   }
 
