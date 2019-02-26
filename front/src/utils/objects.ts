@@ -38,9 +38,8 @@ export interface Status {
 }
 
 export interface StatusInserter {
-  enum_status_id: number;
-  user_id: number;
-  annotation_id: number;
+  status: number;
+  id: number;
 }
 
 export interface EnumStatus {

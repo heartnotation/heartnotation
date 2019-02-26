@@ -507,6 +507,20 @@ INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date)
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
 	VALUES (2, 3, 4, '2006-10-19 12:23:54');
 
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (1, 4, 2, '2006-10-19 13:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (2, 4, 3, '2006-10-19 13:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (2, 4, 4, '2006-10-19 13:23:54');
+
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (2, 5, 3, '2006-10-19 14:23:54');
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (2, 5, 4, '2006-10-19 14:23:54');
+	
+INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
+	VALUES (2, 6, 4, '2006-10-19 15:23:54');
 	
 -- CommentAnnotation
 
