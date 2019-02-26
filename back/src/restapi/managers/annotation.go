@@ -233,7 +233,7 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	a.LastStatus, _ = a.GetLastAndFirstStatus()
 
-	if contextUser.RoleID == 1 && *a.LastStatus.EnumstatusID == 3 {
+	if contextUser.RoleID == 1 {
 		if *a.LastStatus.EnumstatusID == 1 || *a.LastStatus.EnumstatusID == 4 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
 			http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
 			return
