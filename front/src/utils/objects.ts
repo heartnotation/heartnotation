@@ -51,6 +51,7 @@ export interface EnumStatus {
 export interface Tag {
   id: number;
   name: string;
+  color: string;
   is_active: boolean;
   color: string;
   children: Tag[];

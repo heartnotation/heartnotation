@@ -162,7 +162,25 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     api.sendInterval(intervalPayload).then(response => {
       this.setState({ currentInterval: response });
     });
-    api.getTags().then(res => this.setState({ tags: res }));
+    this.setState({ tags: this.props.annotation.tags });
+  }
+
+  public componentDidUpdate = () => {
+    this.state.selectedTags.forEach((x: number) => {
+      const t = document.getElementById(String(x));
+      if (
+        t !== null &&
+        t.parentNode !== null &&
+        t.parentNode.parentNode !== null
+      ) {
+        const grandparents: HTMLElement = t.parentNode
+          .parentNode as HTMLElement;
+        grandparents.style.color = '#ffffff';
+        grandparents.style.borderColor = '#ffffff';
+        grandparents.style.borderWidth = '1px';
+        grandparents.style.backgroundColor = String(t.dataset.color);
+      }
+    });
   }
 
   public render() {
@@ -170,8 +188,10 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     const Option = Select.Option;
     const { tags } = this.state;
     const tagValues = tags.map((val: Tag) => (
-      <Option key={val.name} value={val.id}>
-        {val.name}
+      <Option key={val.name} value={val.id} style={{ color: val.color }}>
+        <span id={String(val.id)} data-color={val.color}>
+          {val.name}
+        </span>
       </Option>
     ));
 
