@@ -16,7 +16,7 @@ func GetAllTags(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tags := []m.Tag{}
-	if u.CheckErrorCode(u.GetConnection().Where("is_active = ?", true).Find(&tags).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Find(&tags).Error, w) {
 		return
 	}
 	u.Respond(w, tags)
@@ -34,7 +34,7 @@ func CreateTag(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t := m.Tag{ParentID: i.ParentID, Name: *i.Name, Color: *i.Color, IsActive: true}
-	if u.CheckErrorCode(u.GetConnection().Create(&t).Error, w) {
+	if u.CheckErrorCode(u.GetConnection().Set("gorm:auto_preload", true).Create(&t).Error, w) {
 		return
 	}
 	u.RespondCreate(w, t)
