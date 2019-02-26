@@ -72,7 +72,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     }
     let leads: Point[][];
-    let idGraphElement: number = 0;
+    const idGraphElement: number = 0;
 
     if (!annotation.signal) {
       this.setState({ error: 'No signal found', loading: false });
@@ -82,143 +82,159 @@ class SignalAnnotation extends Component<RouteProps, State> {
       this.setState({ loading: false, annotation });
     }
 
-    const svgWidth = window.innerWidth - 20;
-    const svgHeight = 600;
-    const margin = { top: 20, right: 50, bottom: 100, left: 50 };
-    const margin2 = { top: svgHeight - 70, right: 50, bottom: 30, left: 50 };
-    const width = svgWidth - margin.left - margin.right;
-    const height = svgHeight - margin.top - margin.bottom;
-    const height2 = svgHeight - margin2.top - margin2.bottom;
+    const width = window.innerWidth - 20;
+    const height = 600;
+    const margin = { top: 20, right: 50, bottom: 20, left: 50 };
+    const heightPreview = 25;
 
-    const svg = d3
+    const canvasFocus = d3
+      .select('#signal')
+      .append('canvas')
+      .attr('width', width - margin.right - margin.left)
+      .attr('height', height)
+      .style('margin-top', margin.top + 'px')
+      .style('margin-bottom', margin.bottom + 'px')
+      .style('margin-right', margin.right + 'px')
+      .style('margin-left', margin.left + 'px');
+
+    const svgFocus = d3
       .select('#signal')
       .append('svg')
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom);
+      .attr('width', width)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g');
 
-    const focus = svg
-      .append('g')
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    const canvasPreview = d3
+      .select('#context')
+      .append('canvas')
+      .attr('width', width - margin.right - margin.left)
+      .attr('height', heightPreview)
+      .style('margin-top', margin.top + 'px')
+      .style('margin-bottom', margin.bottom + 'px')
+      .style('margin-right', margin.right + 'px')
+      .style('margin-left', margin.left + 'px');
 
-    const context = svg
-      .append('g')
-      .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
+    const svgPreview = d3
+      .select('#context')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', heightPreview + margin.top + margin.bottom)
+      .append('g');
 
     const yMa = d3.max(leads, lead => d3.max(lead, data => data.y));
     const yMi = d3.min(leads, lead => d3.min(lead, data => data.y));
 
     const xMax = d3.max(leads, lead => d3.max(lead, data => data.x));
-    const yMax = (yMa ? yMa : 0) + 100;
+    const yMax = (yMa ? yMa : 0) * 1.1;
     const xMin = d3.min(leads, lead => d3.min(lead, data => data.x));
-    const yMin = (yMi ? yMi : 0) - 100;
+    const yMin = (yMi ? yMi : 0) * 1.1;
 
     const xScale = d3
       .scaleLinear()
-      .range([0, width])
+      .range([0, width - margin.left - margin.right])
       .domain([0, xMax ? xMax : 0]);
 
     const yScale = d3
       .scaleLinear()
       .range([0, height])
-      .domain([yMax ? yMax : 0, yMin ? yMin : 0]);
+      .domain([yMax ? yMax : 0, yMin ? yMin : 0])
+      .nice();
 
-    const xScale2 = d3
+    const xScalePreview = d3
       .scaleLinear()
-      .range([0, width])
+      .range([0, width - margin.left - margin.right])
       .domain(xScale.domain());
 
-    const yScale2 = d3
+    const yScalePreview = d3
       .scaleLinear()
-      .range([0, height2])
-      .domain(yScale.domain());
+      .range([0, heightPreview])
+      .domain(yScale.domain())
+      .nice();
 
-    focus.append('g').attr('id', 'mainGraph');
-
-    context.append('g').attr('id', 'previewGraph');
-
-    let i = 0;
-    for (const lead of leads) {
-      lead.sort((a, b) => {
-        return a.x - b.x;
-      });
-
-      const lineMain = d3
-        .line<Point>()
-        .x(d => xScale(d.x))
-        .y(d => yScale(d.y))
-        .curve(d3.curveBasis);
-
-      focus
-        .datum<Point[]>(lead)
-        .select('#mainGraph')
-        .append('path')
-        .attr('class', 'line')
-        .attr('id', 'line' + i)
-        .attr('d', lineMain)
-        .attr('stroke', _ => colors[i % colors.length])
-        .attr('clip-path', 'url(#clip)');
-
-      const linePreview = d3
-        .line<Point>()
-        .x(d => xScale2(d.x))
-        .y(d => yScale2(d.y))
-        .curve(d3.curveBasis);
-
-      this.setState({
-        graphElements: [
-          ...this.state.graphElements,
-          {
-            selector: '#line' + i,
-            data: lead,
-            object: lineMain
-          }
-        ]
-      });
-
-      context
-        .datum<Point[]>(lead)
-        .select('#previewGraph')
-        .append('path')
-        .attr('class', 'line')
-        .attr('d', linePreview)
-        .attr('stroke', _ => colors[i % colors.length]);
-
-      i++;
-    }
-
-    const yAxis = d3.axisLeft(yScale).tickSize(-width);
-    const yAxisGroup = focus.append('g').call(yAxis);
+    const yAxis = d3
+      .axisLeft(yScale)
+      .tickSize(-width + margin.left + margin.right); // Longueur des axes horizontaux
+    const yAxisGroup = svgFocus
+      .append('g')
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(yAxis);
 
     const xAxis = d3.axisBottom(xScale).tickSize(-height);
-    const xAxisGroup = focus
+    const xAxisGroup = svgFocus
       .append('g')
-      .attr('transform', 'translate(0,' + height + ')')
+      .attr(
+        'transform',
+        'translate(' + margin.left + ', ' + (height + margin.top) + ')'
+      )
       .call(xAxis);
 
-    const xAxis2 = d3.axisBottom(xScale2);
-    const xAxisGroup2 = context
+    const xAxisPreview = d3.axisBottom(xScalePreview);
+    const xAxisGroupPreview = svgPreview
       .append('g')
-      .attr('transform', 'translate(0,' + height2 + ')')
-      .call(xAxis2);
+      .attr(
+        'transform',
+        'translate(' + margin.left + ',' + (heightPreview + margin.top) + ')'
+      )
+      .call(xAxisPreview);
+
+    const canvasFocusNode = canvasFocus.node();
+    const canvasPreviewNode = canvasPreview.node();
+
+    if (!canvasFocusNode || !canvasPreviewNode) {
+      return;
+    }
+
+    const canvasFocusContext = canvasFocusNode.getContext('2d');
+    const canvasPreviewContext = canvasPreviewNode.getContext('2d');
+
+    if (!canvasFocusContext || !canvasPreviewContext) {
+      return;
+    }
+
+    const drawLeads = (context: any, scaleX: any, scaleY: any) => {
+      let color = 0;
+      context.lineWidth = 2;
+      for (const lead of leads) {
+        lead.sort((a, b) => {
+          return a.x - b.x;
+        });
+        context.beginPath();
+        context.strokeStyle = colors[color % colors.length];
+        lead.forEach(point => {
+          const px = scaleX(point.x);
+          const py = scaleY(point.y);
+
+          context.lineTo(px, py);
+        });
+        context.stroke();
+        color++;
+      }
+    };
+
+    const drawFocus = (transform: any) => {
+      const scaleX = transform.rescaleX(xScale);
+
+      xAxisGroup.call(xAxis.scale(scaleX));
+      yAxisGroup.call(yAxis.scale(yScale));
+
+      canvasFocusContext.clearRect(0, 0, width, height);
+
+      drawLeads(canvasFocusContext, scaleX, yScale);
+    };
+
+    const drawPreview = (transform: any) => {
+      xAxisGroupPreview.call(xAxisPreview.scale(xScalePreview));
+      drawLeads(canvasPreviewContext, xScalePreview, yScalePreview);
+    };
 
     const zoomed = () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
-      xScale.domain(d3.event.transform.rescaleX(xScale2).domain());
-
-      for (const g of this.state.graphElements) {
-        focus
-          .datum<Point[]>(g.data)
-          .select(g.selector)
-          .attr('d', g.object);
-      }
-
-      xAxisGroup.call(xAxis);
-
-      context
+      drawFocus(d3.event.transform);
+      svgPreview
         .select('.brush')
         .call(brush.move, [
-          xScale2(d3.event.transform.rescaleX(xScale2).domain()[0]),
-          xScale2(d3.event.transform.rescaleX(xScale2).domain()[1])
+          xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[0]),
+          xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[1])
         ]);
     };
 
@@ -227,25 +243,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
       if (d3.event.selection) {
         xScale.domain([
-          xScale2.invert(d3.event.selection[0]),
-          xScale2.invert(d3.event.selection[1])
+          xScalePreview.invert(d3.event.selection[0]),
+          xScalePreview.invert(d3.event.selection[1])
         ]);
-        // Change graph zone when brush moved
-        focus
-          .select('.zoom')
-          .call(
-            zoom.transform,
-            d3.zoomIdentity
-              .scale(width / (d3.event.selection[1] - d3.event.selection[0]))
-              .translate(-d3.event.selection[0], 0)
-          );
-      }
 
-      for (const g of this.state.graphElements) {
-        focus
-          .datum<Point[]>(g.data)
-          .select(g.selector)
-          .attr('d', g.object);
+        drawFocus(d3.zoomIdentity);
       }
 
       xAxisGroup.call(xAxis);
@@ -256,18 +258,36 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .scaleExtent([1, 10000]) // Zoom x1 to x10000
       .translateExtent([[0, 0], [width, height]])
       .extent([[0, 0], [width, height]])
-      .on('zoom', zoomed)
-      .filter(() => this.state.moving);
+      .on('zoom', zoomed);
 
     const brush: any = d3
       .brushX()
-      .extent([[0, 0], [width, height2]])
+      .extent([[0, 0], [width - margin.left - margin.right, heightPreview]])
       .on('brush end', brushed);
 
+    svgFocus
+      .append('rect')
+      .attr('class', 'zoom')
+      .attr('width', width - margin.left - margin.right)
+      .attr('height', height)
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(zoom);
+
+    svgPreview
+      .append('g')
+      .attr('class', 'brush')
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(brush)
+      .call(brush.move, xScalePreview.range());
+
+    /*
     const brushAnnotation: any = d3
       .brushX()
       .extent([[0, 0], [width, height]])
       .on('end', () => {
+        if (!d3.event.selection) {
+          return;
+        }
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
@@ -324,36 +344,19 @@ class SignalAnnotation extends Component<RouteProps, State> {
           ]
         });
 
+        d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
+
         idGraphElement++;
       });
 
     focus
       .append('g')
       .attr('class', 'brush')
-      .call(brushAnnotation);
+      .attr('id', 'brush-createinterval')
+      .call(brushAnnotation);*/
 
-    focus
-      .append('rect')
-      .attr('class', 'zoom')
-      .attr('width', width)
-      .attr('height', height)
-      .call(zoom);
-
-    context
-      .append('g')
-      .attr('class', 'brush')
-      .call(brush)
-      .call(brush.move, xScale2.range());
-
-    svg
-      .append('defs')
-      .append('clipPath')
-      .attr('id', 'clip')
-      .append('rect')
-      .attr('width', width)
-      .attr('height', height);
-
-    focus.select('.line').attr('clip-path', 'url(#clip)');
+    drawPreview(d3.zoomIdentity);
+    drawFocus(d3.zoomIdentity);
   }
 
   public confirmDelete = (selectors: string[]) => {
@@ -404,6 +407,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
           />
           <div className='signal-main-container'>
             <div className='signal-graph-container' id='signal' />
+            <div className='signal-context-container' id='context' />
           </div>
           {this.state.popperVisible &&
             this.state.annotation &&

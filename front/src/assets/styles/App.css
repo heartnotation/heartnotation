@@ -120,21 +120,21 @@
   text-align: center;
 }
 
-.signal-graph-container {
+.signal-main-container {
   overflow-x: scroll;
 }
 
-.signal-graph-container::-webkit-scrollbar-track {
+.signal-main-container::-webkit-scrollbar-track {
   background-color: #d9d9d9;
 }
 
-.signal-graph-container::-webkit-scrollbar {
+.signal-main-container::-webkit-scrollbar {
   width: 5px;
   height: 5px;
   background: #d9d9d9;
 }
 
-.signal-graph-container::-webkit-scrollbar-thumb {
+.signal-main-container::-webkit-scrollbar-thumb {
   background-color: #0ae;
 }
 
@@ -222,4 +222,15 @@ div > .fixed-bottom-button {
 
 .ant-table-wrapper {
   margin-bottom: 30px;
+}
+
+#signal > svg,
+#context > svg {
+  position: absolute;
+  left: 0;
+}
+
+.signal-main-container {
+  margin-top: 20px;
+  margin-bottom: 50px;
 }
