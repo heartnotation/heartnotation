@@ -79,7 +79,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const areaGraph = d3
       .area<Point>()
       .x(d => xScale(d.x))
-      .y0(yScale(yMin))
+      .y0(() => yScale(yMin))
       .y1(d => yScale(d.y));
     return {
       datas: intervalData,
@@ -101,6 +101,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     selector: string,
     id: number,
     className: string,
+    margin: any,
     colors: string[]
   ) => {
     const color = this.getColors(selection, id, colors);
@@ -109,6 +110,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .select(selector)
       .append('path')
       .datum<Point[]>(datas)
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
       .attr('class', className)
       .attr('id', `${className}-${id}`)
       .attr('d', area)
@@ -367,55 +369,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .extent([[0, 0], [width - margin.left - margin.right, heightPreview]])
       .on('brush end', brushed);
 
-    const graphElements = intervals.map(interval => {
-      const mainGraphArea = this.getIntervalsData(
-        interval,
-        yMax,
-        yMin,
-        xScale,
-        yScale
-      );
-      this.drawInterval(
-        mainGraphArea,
-        svgFocus,
-        '#mainGraph',
-        idGraphElement,
-        'interval-area',
-        interval.tags ? interval.tags.map(inter => inter.color) : []
-      );
-      this.drawInterval(
-        this.getIntervalsData(
-          interval,
-          yMax,
-          yMin,
-          xScalePreview,
-          yScalePreview
-        ),
-        svgPreview,
-        '#previewGraph',
-        idGraphElement,
-        'interval-area-preview',
-        interval.tags ? interval.tags.map(inter => inter.color) : []
-      );
-      const graphElement = {
-        id: idGraphElement,
-        selector: `#interval-area-${idGraphElement}`,
-        data: [
-          { x: interval.time_start, y: yMax },
-          { x: interval.time_end, y: yMax }
-        ],
-        object: mainGraphArea.area
-      };
-      return { elements: graphElement, id: idGraphElement++ };
-    });
-
-    this.setState({
-      graphElements: [
-        ...this.state.graphElements,
-        ...graphElements.map(g => g.elements)
-      ]
-    });
-
     const brushAnnotation: any = d3
       .brushX()
       .extent([[0, 0], [width - margin.left - margin.right, height]])
@@ -441,7 +394,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .y1(yScalePreview(yScalePreview.domain()[1]));
 
         svgFocus
-          .select('#interval-container')
+          .select('#interval-focus-container')
           .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area')
@@ -454,6 +407,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .attr('clip-path', 'url(#clip)');
 
         svgPreview
+          .select('#interval-preview-container')
           .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area-preview')
@@ -466,8 +420,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
         const mainGraphDatas = this.getIntervalsData(
           { time_start: xStart, time_end: xEnd },
-          yMax,
-          yMin,
+          yScale.domain()[1],
+          yScale.domain()[0],
           xScale,
           yScale
         );
@@ -477,13 +431,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
           '#mainGraph',
           idGraphElement,
           'interval-area',
+          margin,
           []
         );
 
         const previewGraphDatas = this.getIntervalsData(
           { time_start: xStart, time_end: xEnd },
-          yMax,
-          yMin,
+          yScale.domain()[1],
+          yScale.domain()[0],
           xScalePreview,
           yScalePreview
         );
@@ -493,13 +448,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
           '#previewGraph',
           idGraphElement,
           'interval-area-preview',
+          margin,
           []
         );
 
         const graphElement = {
           id: idGraphElement,
           selector: `#interval-area-${idGraphElement}`,
-          data: [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }],
+          data: [
+            { x: xStart, y: yScale.domain()[1] },
+            { x: xEnd, y: yScale.domain()[1] }
+          ],
           object: mainGraphDatas.area
         };
         this.setState({
@@ -529,6 +488,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
         idGraphElement++;
       });
 
+    svgPreview.append('g').attr('id', 'interval-preview-container');
+
     svgPreview
       .append('g')
       .attr('class', 'brush')
@@ -536,7 +497,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .call(brush)
       .call(brush.move, xScalePreview.range());
 
-    svgFocus.append('g').attr('id', 'interval-container');
+    svgFocus.append('g').attr('id', 'interval-focus-container');
 
     svgFocus
       .append('g')
@@ -563,6 +524,57 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     drawPreview(d3.zoomIdentity);
     drawFocus(d3.zoomIdentity);
+
+    const graphElements = intervals.map(interval => {
+      const mainGraphArea = this.getIntervalsData(
+        interval,
+        yScale.domain()[1],
+        yScale.domain()[0],
+        xScale,
+        yScale
+      );
+      this.drawInterval(
+        mainGraphArea,
+        svgFocus,
+        '#interval-focus-container',
+        idGraphElement,
+        'interval-area',
+        margin,
+        interval.tags ? interval.tags.map(inter => inter.color) : []
+      );
+      this.drawInterval(
+        this.getIntervalsData(
+          interval,
+          yScale.domain()[1],
+          yScale.domain()[0],
+          xScalePreview,
+          yScalePreview
+        ),
+        svgPreview,
+        '#interval-preview-container',
+        idGraphElement,
+        'interval-area-preview',
+        margin,
+        interval.tags ? interval.tags.map(inter => inter.color) : []
+      );
+      const graphElement = {
+        id: idGraphElement,
+        selector: `#interval-area-${idGraphElement}`,
+        data: [
+          { x: interval.time_start, y: yScale.domain()[1] },
+          { x: interval.time_end, y: yScale.domain()[1] }
+        ],
+        object: mainGraphArea.area
+      };
+      return { elements: graphElement, id: idGraphElement++ };
+    });
+
+    this.setState({
+      graphElements: [
+        ...this.state.graphElements,
+        ...graphElements.map(g => g.elements)
+      ]
+    });
   }
 
   public confirmDelete = (selectors: string[]) => {
