@@ -214,6 +214,11 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 	contextUser := c.Get(r, "user").(*m.User)
 
+	if contextUser.RoleID == 3 {
+		http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
+		return
+	}
+
 	annotationStatus := d.AnnotationStatus{}
 	json.NewDecoder(r.Body).Decode(&annotationStatus)
 
@@ -222,12 +227,23 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if contextUser.RoleID != 1 && annotationStatus.EnumStatus >= 4 {
-		http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
-		return
-	}
-
 	db := u.GetConnection()
+	a := m.Annotation{}
+	db.Preload("Status").Preload("Status.EnumStatus").Where(annotationStatus.ID).Find(&a)
+
+	a.LastStatus, _ = a.GetLastAndFirstStatus()
+
+	if contextUser.RoleID == 1 && *a.LastStatus.EnumstatusID == 3 {
+		if *a.LastStatus.EnumstatusID == 1 || *a.LastStatus.EnumstatusID == 4 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
+			http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
+			return
+		}
+	} else {
+		if (*a.LastStatus.EnumstatusID == 2 && annotationStatus.EnumStatus != 1) || *a.LastStatus.EnumstatusID == 3 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
+			http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
+			return
+		}
+	}
 
 	enumStatus := m.EnumStatus{}
 	if u.CheckErrorCode(db.Where(annotationStatus.EnumStatus).First(&enumStatus).Error, w) {
