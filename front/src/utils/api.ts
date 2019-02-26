@@ -106,7 +106,7 @@ export const sendInterval = (datas: IntervalPayload): Promise<Interval> => {
 export const sendIntervalComment = (
   datas: IntervalCommentPayload
 ): Promise<IntervalComment> => {
-  return post<IntervalComment>(`${urls.intervalsComment}`, datas).then(
+  return post<IntervalComment>(`${urls.intervalsComments}`, datas).then(
     (response: IntervalComment) => {
       response.date = new Date(response.date);
       return response;
