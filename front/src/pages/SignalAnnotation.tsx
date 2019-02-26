@@ -213,7 +213,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('height', heightPreview + margin.top + margin.bottom)
       .append('g');
 
-    this.setState({ mainGraph: focus, preview: context });
+    this.setState({ mainGraph: svgFocus });
 
     const yMa = d3.max(leads, lead => d3.max(lead, data => data.y));
     const yMi = d3.min(leads, lead => d3.min(lead, data => data.y));
@@ -277,17 +277,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     if (!canvasFocusNode || !canvasPreviewNode) {
       return;
     }
-      this.setState({
-        graphElements: [
-          ...this.state.graphElements,
-          {
-            id: i,
-            selector: '#line' + i,
-            data: lead,
-            object: lineMain
-          }
-        ]
-      });
 
     const canvasFocusContext = canvasFocusNode.getContext('2d');
     const canvasPreviewContext = canvasPreviewNode.getContext('2d');
@@ -326,7 +315,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
       drawLeads(canvasFocusContext, scaleX, yScale);
 
-      console.log(this.state.graphElements);
       for (const g of this.state.graphElements) {
         g.object.x(d => scaleX(d.x));
         svgFocus
@@ -389,15 +377,21 @@ class SignalAnnotation extends Component<RouteProps, State> {
       );
       this.drawInterval(
         mainGraphArea,
-        focus,
+        svgFocus,
         '#mainGraph',
         idGraphElement,
         'interval-area',
         interval.tags ? interval.tags.map(inter => inter.color) : []
       );
       this.drawInterval(
-        this.getIntervalsData(interval, yMax, yMin, xScale2, yScale2),
-        context,
+        this.getIntervalsData(
+          interval,
+          yMax,
+          yMin,
+          xScalePreview,
+          yScalePreview
+        ),
+        svgPreview,
         '#previewGraph',
         idGraphElement,
         'interval-area-preview',
@@ -456,7 +450,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .attr(
             'transform',
             'translate(' + margin.left + ', ' + margin.top + ')'
-          ).attr('clip-path', 'url(#clip)');
+          )
+          .attr('clip-path', 'url(#clip)');
 
         svgPreview
           .append('path')
@@ -478,7 +473,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         );
         this.drawInterval(
           mainGraphDatas,
-          focus,
+          svgFocus,
           '#mainGraph',
           idGraphElement,
           'interval-area',
@@ -489,12 +484,12 @@ class SignalAnnotation extends Component<RouteProps, State> {
           { time_start: xStart, time_end: xEnd },
           yMax,
           yMin,
-          xScale2,
-          yScale2
+          xScalePreview,
+          yScalePreview
         );
         this.drawInterval(
           previewGraphDatas,
-          context,
+          svgPreview,
           '#previewGraph',
           idGraphElement,
           'interval-area-preview',
