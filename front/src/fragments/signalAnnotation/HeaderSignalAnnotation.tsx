@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
 import { Annotation, StatusInserter, Status, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
+import { withAuth, AuthProps } from '../../utils/auth';
 import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
@@ -10,72 +11,72 @@ interface State {
   error?: string;
 }
 
-interface Props extends RouteComponentProps {
+interface Props extends RouteComponentProps, AuthProps {
   annotation: Annotation;
   onToggle: (state: boolean) => void;
 }
 
-interface PropsButton {
+interface PropsButton extends AuthProps {
   conditionnal_id: number;
   annotation: Annotation;
   handleSubmit: (s: StatusInserter) => void;
 }
 
 const ValidateButton = (props: PropsButton) => {
-  return (
+  const { user } = props;
+  return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 5,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 5,
+          id: props.annotation.id
         });
       }}
     >
       Validate
     </Button>
-  );
+  ) : null;
 };
 
 const InvalidateButton = (props: PropsButton) => {
-  return (
+  const { user } = props;
+  return props.user.role.name === 'Gestionnaire' ? (
     <Button
       type='danger'
       icon='close-circle'
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 3,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 3,
+          id: props.annotation.id
         });
       }}
     >
       Invalidate
     </Button>
-  );
+  ) : null;
 };
 
 const CompleteButton = (props: PropsButton) => {
-  return (
+  const { user } = props;
+  return props.user.role.name === 'Annotateur' ? (
     <Button
       type='default'
       icon='check-circle'
       size='large'
       onClick={() => {
         props.handleSubmit({
-          enum_status_id: 4,
-          user_id: 1,
-          annotation_id: props.annotation.id
+          status: 4,
+          id: props.annotation.id
         });
       }}
     >
       Complete
     </Button>
-  );
+  ) : null;
 };
 
 const ConditionalButton = (props: PropsButton) => {
@@ -135,7 +136,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         this.props.history.push('/');
       })
       .catch(error => {
-        this.setState({ error });
+        this.setState({ error: 'Error during using button of header' });
       });
   }
 
@@ -147,10 +148,11 @@ class HeaderSignalAnnotation extends Component<Props, State> {
 
   public render() {
     const { Step } = Steps;
-    const { annotation } = this.props;
+    const { annotation, user } = this.props;
     const { stepProcess, error, mode } = this.state;
-    return (
+    return [
       <Row
+        key={1}
         type='flex'
         className='signal-header'
         align='middle'
@@ -161,12 +163,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
             checkedChildren={<Icon type='check' />}
             unCheckedChildren={<Icon type='close' />}
             defaultChecked={true}
-          />{' '}
+          />
           Display Leads
         </Col>
-        <Col span={4}>
-          {mode} Mode <Switch onChange={this.handleToggle} />
-        </Col>
+        {user.role.name === 'Annotateur' && stepProcess === 0 && (
+          <Col span={4}>
+            {mode} Mode <Switch onChange={this.handleToggle} />
+          </Col>
+        )}
         <Col span={8}>
           <Steps
             style={{ paddingTop: 30 }}
@@ -188,13 +192,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
               conditionnal_id={stepProcess}
               annotation={annotation}
               handleSubmit={this.handleSubmit}
+              user={user}
             />
             {error && <Alert message={error} type='error' />}
           </Row>
         </Col>
       </Row>
-    );
+    ];
   }
 }
 
-export default withRouter(HeaderSignalAnnotation);
+export default withRouter(withAuth(HeaderSignalAnnotation));

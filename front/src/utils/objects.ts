@@ -38,9 +38,8 @@ export interface Status {
 }
 
 export interface StatusInserter {
-  enum_status_id: number;
-  user_id: number;
-  annotation_id: number;
+  status: number;
+  id: number;
 }
 
 export interface EnumStatus {
@@ -53,6 +52,8 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  children: Tag[];
+  parent_id: number;
 }
 
 export interface Role {

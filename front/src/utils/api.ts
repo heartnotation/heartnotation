@@ -185,7 +185,19 @@ export const getCommentsOnAnnotationById = (
 };
 
 export const sendStatus = (s: StatusInserter): Promise<StatusInserter> => {
-  return post<StatusInserter>(`${urls.status}`, s);
+  return put<StatusInserter>(`${urls.annotationsStatus}`, s);
+};
+
+export const deleteOrganization = (o: Organization): Promise<Organization> => {
+  return del<Organization>(`${urls.organizations}/${o.id}`);
+};
+
+export const changeOrganization = (o: Organization): Promise<Organization> => {
+  return put<Organization>(`${urls.organizations}`, o);
+};
+
+export const createOrganization = (o: Organization): Promise<Organization> => {
+  return post<Organization>(`${urls.organizations}`, o);
 };
 
 const urls = {
@@ -198,6 +210,8 @@ const urls = {
   roles: 'roles',
   users: 'users',
   intervals: 'intervals',
-  intervalsComments: 'intervals/comments',
-  intervalsTags: 'intervals/tags'
+  intervalsComment: 'intervals/comment',
+  intervalsTags: 'intervals/tags',
+  annotationsStatus: 'annotations/status',
+  intervalsComments: 'intervals/comments'
 };
