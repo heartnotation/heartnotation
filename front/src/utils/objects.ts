@@ -52,6 +52,7 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  color: string;
   children: Tag[];
   parent_id: number;
 }
