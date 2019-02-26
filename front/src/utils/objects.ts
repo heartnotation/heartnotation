@@ -52,6 +52,8 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  children: Tag[];
+  parent_id: number;
 }
 
 export interface Role {
