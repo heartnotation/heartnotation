@@ -72,7 +72,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     }
     let leads: Point[][];
-    const idGraphElement: number = 0;
+    let idGraphElement: number = 0;
 
     if (!annotation.signal) {
       this.setState({ error: 'No signal found', loading: false });
@@ -220,6 +220,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
       canvasFocusContext.clearRect(0, 0, width, height);
 
       drawLeads(canvasFocusContext, scaleX, yScale);
+
+      console.log(this.state.graphElements);
+      for (const g of this.state.graphElements) {
+        g.object.x(d => scaleX(d.x));
+        svgFocus
+          .datum<Point[]>(g.data)
+          .select(g.selector)
+          .attr('d', g.object);
+      }
     };
 
     const drawPreview = (transform: any) => {
@@ -229,13 +238,13 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     const zoomed = () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
-      drawFocus(d3.event.transform);
       svgPreview
         .select('.brush')
         .call(brush.move, [
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[0]),
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[1])
         ]);
+      drawFocus(d3.event.transform);
     };
 
     const brushed = () => {
@@ -265,25 +274,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .extent([[0, 0], [width - margin.left - margin.right, heightPreview]])
       .on('brush end', brushed);
 
-    svgFocus
-      .append('rect')
-      .attr('class', 'zoom')
-      .attr('width', width - margin.left - margin.right)
-      .attr('height', height)
-      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
-      .call(zoom);
-
-    svgPreview
-      .append('g')
-      .attr('class', 'brush')
-      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
-      .call(brush)
-      .call(brush.move, xScalePreview.range());
-
-    /*
     const brushAnnotation: any = d3
       .brushX()
-      .extent([[0, 0], [width, height]])
+      .extent([[0, 0], [width - margin.left - margin.right, height]])
       .on('end', () => {
         if (!d3.event.selection) {
           return;
@@ -291,36 +284,42 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-        const areaData = [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }];
+        const areaData = [{ x: xStart, y: 0 }, { x: xEnd, y: 0 }];
 
         const areaMainGraph = d3
           .area<Point>()
           .x(d => xScale(d.x))
-          .y0(yScale(yMin))
-          .y1(d => yScale(d.y));
+          .y0(yScale(yScale.domain()[0]))
+          .y1(yScale(yScale.domain()[1]));
 
         const areaPreviewGraph = d3
           .area<Point>()
-          .x(d => xScale2(d.x))
-          .y0(yScale2(yMin))
-          .y1(d => yScale2(d.y));
+          .x(d => xScalePreview(d.x))
+          .y0(yScalePreview(yScalePreview.domain()[0]))
+          .y1(yScalePreview(yScalePreview.domain()[1]));
 
-        focus
-          .select('#mainGraph')
+        svgFocus
+          .select('#interval-container')
           .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area')
           .attr('id', 'interval-area-' + idGraphElement)
           .attr('d', areaMainGraph)
-          .attr('clip-path', 'url(#clip)');
+          .attr(
+            'transform',
+            'translate(' + margin.left + ', ' + margin.top + ')'
+          ).attr('clip-path', 'url(#clip)');
 
-        context
-          .select('#previewGraph')
+        svgPreview
           .append('path')
           .datum<Point[]>(areaData)
           .attr('class', 'interval-area-preview')
           .attr('id', 'interval-area-preview-' + idGraphElement)
-          .attr('d', areaPreviewGraph);
+          .attr('d', areaPreviewGraph)
+          .attr(
+            'transform',
+            'translate(' + margin.left + ', ' + margin.top + ')'
+          );
 
         this.setState({
           graphElements: [
@@ -349,11 +348,37 @@ class SignalAnnotation extends Component<RouteProps, State> {
         idGraphElement++;
       });
 
-    focus
+    svgPreview
+      .append('g')
+      .attr('class', 'brush')
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(brush)
+      .call(brush.move, xScalePreview.range());
+
+    svgFocus.append('g').attr('id', 'interval-container');
+
+    svgFocus
       .append('g')
       .attr('class', 'brush')
       .attr('id', 'brush-createinterval')
-      .call(brushAnnotation);*/
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(brushAnnotation);
+
+    svgFocus
+      .append('rect')
+      .attr('class', 'zoom')
+      .attr('width', width - margin.left - margin.right)
+      .attr('height', height)
+      .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')')
+      .call(zoom);
+
+    svgFocus
+      .append('defs')
+      .append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('width', width - margin.left - margin.right)
+      .attr('height', height);
 
     drawPreview(d3.zoomIdentity);
     drawFocus(d3.zoomIdentity);
