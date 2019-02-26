@@ -216,13 +216,11 @@ class CreateAnnotationForm extends Component<Props, States> {
     if (value == "") {
       this.setState({annotationValidateStatus:''})
       callback();
-      console.log("OK 1")
       return;
     }
 
     if (value && !this.isStringNumber(value)) {
       this.validateParentError('You should write a number',callback);
-      console.log("NOK 1")
       return;
     }
 
@@ -230,21 +228,17 @@ class CreateAnnotationForm extends Component<Props, States> {
 
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
       this.validateParentError('This annotations doesn\'t exist',callback);
-      console.log("NOK 2")
       return;
     }
     if (!annotationsFinished.map(a => a.id).includes(parseInt(value, 10))){
       this.validateParentError('This annotations isn\'t in a finished state (Cancelled of Validated)',callback);
-      console.log("NOK 3")
       return;
     }
     if(!potantialParents.map(a => a.id).includes(parseInt(value, 10))){
         this.validateParentError('This parent has not the same signal ID',callback);
-        console.log("NOK 4")
         return;
     }
     this.validateParentSucces(callback);
-    console.log("OK 2")
   }
 
   public validateParentSucces = (callback: any) => {
