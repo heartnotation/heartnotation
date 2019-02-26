@@ -166,10 +166,30 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     });
     this.setState({ tags: this.props.annotation.tags });
     console.log(this.props.annotation);
+    /*
     const selectTagsWithParents = this.props.annotation.tags.filter(
       (t: Tag) => t.parent_id
     );
     console.log(selectTagsWithParents);
+    */
+  }
+
+  public componentDidUpdate = () => {
+    this.state.selectedTags.forEach((x: number) => {
+      const t = document.getElementById(String(x));
+      if (
+        t !== null &&
+        t.parentNode !== null &&
+        t.parentNode.parentNode !== null
+      ) {
+        const grandparents: HTMLElement = t.parentNode
+          .parentNode as HTMLElement;
+        grandparents.style.color = '#ffffff';
+        grandparents.style.borderColor = '#ffffff';
+        grandparents.style.borderWidth = '1px';
+        grandparents.style.backgroundColor = String(t.dataset.color);
+      }
+    });
   }
 
   public render() {
@@ -178,23 +198,11 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     const { tags } = this.state;
     const tagValues = tags.map((val: Tag) => (
       <Option key={val.name} value={val.id} style={{ color: val.color }}>
-        {val.name}
+        <span id={String(val.id)} data-color={val.color}>
+          {val.name}
+        </span>
       </Option>
     ));
-
-    const SHOW_PARENT = TreeSelect.SHOW_PARENT;
-
-    const tProps = {
-      tagValues,
-      value: this.state.selectedTags,
-      onChange: this.handleChangeSelectTags,
-      treeCheckable: true,
-      showCheckedStrategy: SHOW_PARENT,
-      searchPlaceholder: 'Please select',
-      style: {
-        width: 300
-      }
-    };
 
     return (
       <div className='popup-comment-tag-container'>
