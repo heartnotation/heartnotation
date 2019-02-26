@@ -72,7 +72,7 @@ const r = {
     {
       path: '/tags',
       exact: true,
-      component: Tags,
+      component: () => <Tags getTags={api.getTags} />,
       title: 'Tags',
       iconName: 'tags',
       roles: ['Gestionnaire', 'Admin']
