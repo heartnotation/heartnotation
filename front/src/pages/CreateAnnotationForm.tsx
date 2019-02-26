@@ -221,7 +221,7 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateParent = (_: any, value: any, callback: any) => {
-    if (value === '') {
+    if (!value) {
       this.setState({ annotationValidateStatus: '' });
       callback();
       return;

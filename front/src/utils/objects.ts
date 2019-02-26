@@ -52,6 +52,9 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  color: string;
+  children: Tag[];
+  parent_id: number;
 }
 
 export interface Role {
@@ -111,4 +114,9 @@ export interface IntervalPayload {
 export interface IntervalTagsPayload {
   interval_id: number;
   tags: number[];
+}
+
+export interface AnnotationStatus {
+  id: number; // annotation id
+  status: number; // status id
 }

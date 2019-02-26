@@ -20,7 +20,12 @@ const r = {
   defaultRoute: {
     path: '/',
     exact: true,
-    component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+    component: () => (
+      <Dashboard
+        getAnnotations={api.getAnnotations}
+        changeStatus={api.changeStatus}
+      />
+    ),
     title: 'Dashboard'
   },
   hiddenRoutes: [
@@ -30,6 +35,7 @@ const r = {
         <SignalAnnotation
           getAnnotation={api.getAnnotationById}
           changeAnnotation={api.changeAnnotation}
+          getIntervals={api.getIntervalsByAnnotation}
         />
       ),
       title: 'Signal annotation',
@@ -47,7 +53,12 @@ const r = {
     {
       path: '/',
       exact: true,
-      component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+      component: () => (
+        <Dashboard
+          getAnnotations={api.getAnnotations}
+          changeStatus={api.changeStatus}
+        />
+      ),
       title: 'Dashboard',
       iconName: 'dashboard',
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
@@ -71,7 +82,7 @@ const r = {
     {
       path: '/tags',
       exact: true,
-      component: Tags,
+      component: () => <Tags getTags={api.getTags} />,
       title: 'Tags',
       iconName: 'tags',
       roles: ['Gestionnaire', 'Admin']

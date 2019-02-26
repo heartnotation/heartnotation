@@ -1,7 +1,15 @@
 import React, { Component, MouseEvent } from 'react';
-import { Table, Input, Icon, Tag } from 'antd';
+import { Table, Input, Icon, Tag, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import { Annotation, Organization, api, Status, Role, User } from '../utils';
+import {
+  Annotation,
+  Organization,
+  api,
+  Status,
+  Role,
+  User,
+  AnnotationStatus
+} from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -21,12 +29,17 @@ export interface State {
 
 interface Props extends RouteComponentProps, AuthProps {
   getAnnotations: () => Promise<Annotation[]>;
+  changeStatus: (annotationStatus: AnnotationStatus) => Promise<Annotation>;
 }
 
 interface ConditionnalColumn extends ColumnProps<Annotation> {
   roles: string[];
 }
 
+const CANCEL_ID: number = 6;
+const VALIDATED_ID: number = 5;
+const IN_PROCESS_ID: number = 3;
+const GESTIONNAIRE_ID: number = 2;
 class Dashboard extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
@@ -38,16 +51,35 @@ class Dashboard extends Component<Props, State> {
   };
 
   public async componentDidMount() {
-    const data = await this.getDatas();
+    this.refreshDatas();
+  }
+
+  private refreshDatas = async () => {
+    const data = await this.props.getAnnotations();
     this.setState({
       initialAnnotations: data,
       currentAnnotations: data.slice()
     });
   }
 
-  public async getDatas(): Promise<Annotation[]> {
-    const annotations = await this.props.getAnnotations();
-    return annotations;
+  private modalConfirm = (a: Annotation) => {
+    Modal.confirm({
+      title: 'Do you want to cancel this annotation ?',
+      content: a.name + ' du signal ' + a.signal_id,
+      centered: true,
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
+      onOk: () => {
+        this.props
+          .changeStatus({
+            id: a.id,
+            status: CANCEL_ID
+          })
+          .then(_ => this.refreshDatas())
+          .catch(e => console.log(e));
+      }
+    });
   }
 
   public columns: ConditionnalColumn[] = [
@@ -162,16 +194,21 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('first_status.user.mail', 'created by'),
+      title: () =>
+        this.getColumnSearchBox('first_status.user.mail', 'created by'),
       children: [
         {
           title: 'Created by',
-          dataIndex: 'first_status.user.mail', 
+          dataIndex: 'first_status.user.mail',
           sorter: (a: Annotation, b: Annotation) =>
-            a.first_status.user.mail.localeCompare(b.first_status.user.mail, 'en', {
-              sensitivity: 'base',
-              ignorePunctuation: true
-            })
+            a.first_status.user.mail.localeCompare(
+              b.first_status.user.mail,
+              'en',
+              {
+                sensitivity: 'base',
+                ignorePunctuation: true
+              }
+            )
         }
       ],
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
@@ -204,16 +241,21 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('last_status.user.mail', 'last edit by'),
+      title: () =>
+        this.getColumnSearchBox('last_status.user.mail', 'last edit by'),
       children: [
         {
           title: 'Last edit by',
           dataIndex: 'last_status.user.mail',
           sorter: (a: Annotation, b: Annotation) => {
-            return a.last_status.user.mail.localeCompare(b.last_status.user.mail, 'en', {
-              sensitivity: 'base',
-              ignorePunctuation: true
-            })
+            return a.last_status.user.mail.localeCompare(
+              b.last_status.user.mail,
+              'en',
+              {
+                sensitivity: 'base',
+                ignorePunctuation: true
+              }
+            );
           }
         }
       ],
@@ -223,10 +265,14 @@ class Dashboard extends Component<Props, State> {
       title: 'Status',
       dataIndex: 'last_status',
       sorter: (a: Annotation, b: Annotation) => {
-        return a.last_status.enum_status.name.localeCompare(b.last_status.enum_status.name, 'en', {
-          sensitivity: 'base',
-          ignorePunctuation: true
-        });
+        return a.last_status.enum_status.name.localeCompare(
+          b.last_status.enum_status.name,
+          'en',
+          {
+            sensitivity: 'base',
+            ignorePunctuation: true
+          }
+        );
       },
       render: (_, record: Annotation) => {
         return record.last_status.enum_status.name;
@@ -236,26 +282,57 @@ class Dashboard extends Component<Props, State> {
     {
       title: 'Edit',
       dataIndex: 'edit',
-      render: (_, annotation: Annotation) => (
-        <Icon
-          className='anticon-edit-dashboard'
-          type='edit'
-          theme='twoTone'
-          twoToneColor='#6669c9'
-          onClick={(e: MouseEvent) => {
-            e.stopPropagation();
-            this.setState({ editVisible: true, annotation });
-          }}
-        />
-      ),
+      render: (_, annotation: Annotation) => {
+        const { user } = this.props;
+        if (
+          annotation.last_status.enum_status.id !== CANCEL_ID &&
+          user.role.id === GESTIONNAIRE_ID &&
+          annotation.last_status.enum_status.id !== VALIDATED_ID &&
+          annotation.last_status.enum_status.id !== IN_PROCESS_ID
+        ) {
+          return (
+            <>
+              <Icon
+                className='anticon-edit-dashboard'
+                type='edit'
+                theme='twoTone'
+                twoToneColor='#6669c9'
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation();
+                  this.setState({ editVisible: true, annotation });
+                }}
+              />
+
+              <Icon
+                type='close'
+                style={{ color: 'red' }}
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation();
+                  this.modalConfirm(annotation);
+                }}
+              />
+            </>
+          );
+        } else {
+          return (
+            <Icon
+              className='anticon-edit-dashboard'
+              type='edit'
+              theme='twoTone'
+              twoToneColor='#6669c9'
+              onClick={(e: MouseEvent) => {
+                e.stopPropagation();
+                this.setState({ editVisible: true, annotation });
+              }}
+            />
+          );
+        }
+      },
       roles: ['Gestionnaire', 'Admin']
     }
   ];
 
-  public getColumnSearchBox = (
-    dataIndex: string,
-    displayText: string
-  ) => (
+  public getColumnSearchBox = (dataIndex: string, displayText: string) => (
     <div style={{ paddingTop: 8, textAlign: 'center' }}>
       <Input
         className={`search_${dataIndex}`}
@@ -307,7 +384,11 @@ class Dashboard extends Component<Props, State> {
 
         const creationUser = searches.get('first_status.user.mail');
         if (creationUser) {
-          if (!record.first_status.user.mail.toLowerCase().startsWith(creationUser.toLowerCase())) {
+          if (
+            !record.first_status.user.mail
+              .toLowerCase()
+              .startsWith(creationUser.toLowerCase())
+          ) {
             return false;
           }
         }
@@ -323,18 +404,22 @@ class Dashboard extends Component<Props, State> {
             return false;
           }
         }
-        
+
         const editUser = searches.get('last_status.user.mail');
         if (editUser) {
-          if (!record.last_status.user.mail.toLowerCase().startsWith(editUser.toLowerCase())) {
+          if (
+            !record.last_status.user.mail
+              .toLowerCase()
+              .startsWith(editUser.toLowerCase())
+          ) {
             return false;
           }
         }
         const statusName = searches.get('status.name');
         if (statusName) {
           if (
-            !record.last_status
-              .enum_status.name.toLowerCase()
+            !record.last_status.enum_status.name
+              .toLowerCase()
               .startsWith(statusName.toLowerCase())
           ) {
             return false;
@@ -364,11 +449,7 @@ class Dashboard extends Component<Props, State> {
   }
   public editHandleOk = async () => {
     this.editCloseModal();
-    const data = await this.getDatas();
-    this.setState({
-      initialAnnotations: data,
-      currentAnnotations: data.slice()
-    });
+    this.refreshDatas();
   }
   public editCloseModal() {
     this.setState({
@@ -380,11 +461,9 @@ class Dashboard extends Component<Props, State> {
   // Create Annotation Form
   public createHandleOk = async () => {
     this.createCloseModal();
-    const data = await this.getDatas();
+    this.refreshDatas();
     this.setState({
-      keepCreationData: false,
-      initialAnnotations: data,
-      currentAnnotations: data.slice()
+      keepCreationData: false
     });
   }
   public createHandleCancel = () => {
@@ -406,6 +485,7 @@ class Dashboard extends Component<Props, State> {
       editVisible,
       keepCreationData
     } = this.state;
+
     return [
       <Table<Annotation>
         key={1}
