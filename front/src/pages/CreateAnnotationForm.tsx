@@ -31,7 +31,7 @@ interface States {
   tagsSelected: Tag[];
   annotations: Annotation[];
   annotationsFinished: Annotation[];
-  potantialParents: Annotation[];
+  potentialParents: Annotation[];
   parentCallback: any;
   parentValue: string;
   signalCallback: any;
@@ -63,7 +63,7 @@ class CreateAnnotationForm extends Component<Props, States> {
       tagsSelected: [],
       annotations: [],
       annotationsFinished: [],
-      potantialParents: [],
+      potentialParents: [],
       parentCallback: undefined,
       parentValue: '',
       signalCallback: undefined,
@@ -106,7 +106,7 @@ class CreateAnnotationForm extends Component<Props, States> {
 
     this.setState(
       {
-        potantialParents: this.state.annotations.filter(
+        potentialParents: this.state.annotations.filter(
           (a: Annotation) => a.signal_id === value
         )
       },
@@ -232,13 +232,13 @@ class CreateAnnotationForm extends Component<Props, States> {
       return;
     }
 
-    const { annotations, annotationsFinished, potantialParents } = this.state;
+    const { annotations, annotationsFinished, potentialParents } = this.state;
 
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
       this.validateParentError('This annotations doesn\'t exist', callback);
       return;
     }
-    if (!potantialParents.map(a => a.id).includes(parseInt(value, 10))) {
+    if (!potentialParents.map(a => a.id).includes(parseInt(value, 10))) {
       this.validateParentError(
         'This parent has not the same signal ID',
         callback
