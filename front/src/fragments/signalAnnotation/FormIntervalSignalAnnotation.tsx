@@ -27,7 +27,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   end: number;
   annotation: Annotation;
   selectors: string[];
-  confirmCreate: () => void;
+  confirmCreate: (selectors: string[], tags: Tag[]) => void;
   confirmDelete: (selectors: string[]) => void;
 }
 
@@ -75,7 +75,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleCommentSubmit = () => {
-    if(!this.state.textAreaComment) {
+    if (!this.state.textAreaComment) {
       return;
     }
     if (this.state.currentInterval === undefined) {
@@ -121,11 +121,6 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleSubmit = (e: any) => {
-    const intervalPayload: IntervalPayload = {
-      annotation_id: this.props.annotation.id,
-      time_start: Math.round(this.props.start),
-      time_end: Math.round(this.props.end)
-    };
     this.setState({ confirmLoading: true });
     if (this.state.currentInterval === undefined) {
       message.error(
@@ -134,6 +129,11 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       );
       return;
     }
+
+    const selectedTags = this.state.tags.filter(t =>
+      this.state.selectedTags.includes(t.id)
+    );
+
     api
       .sendIntervalTags({
         tags: this.state.selectedTags,
@@ -141,7 +141,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       })
       .then(_ => {
         this.setState({ confirmLoading: false });
-        this.props.confirmCreate();
+        this.props.confirmCreate(this.props.selectors, selectedTags);
       });
   }
 
@@ -198,8 +198,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                 <p className='text-center'>
                   Tags to assignate to annotation task{' '}
                   {this.props.annotation.id} in interval between{' '}
-                  {Math.round(this.props.start)} and{' '}
-                  {Math.round(this.props.end)} :
+                  {this.props.start} and {this.props.end} :
                 </p>
                 <Select
                   mode='multiple'

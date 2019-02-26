@@ -1,16 +1,18 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Tag, Alert, Switch, message, Card, Button } from 'antd';
+import { Alert, message } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
-import { Annotation, Point } from '../utils';
+import { Annotation, Point, Interval } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
+import { Tag } from '../utils/objects';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
   changeAnnotation: (datas: Annotation) => Promise<Annotation>;
+  getIntervals: (a: Annotation) => Promise<Interval[]>;
 }
 
 interface State {
@@ -24,9 +26,13 @@ interface State {
   xIntervalEnd?: number;
   intervalSelectors: string[];
   graphElements: GraphElement[];
+  intervals: Interval[];
+  mainGraph?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
+  preview?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
 }
 
 interface GraphElement {
+  id: number;
   selector: string;
   data: Point[];
   object: d3.Line<Point> | d3.Area<Point>;
@@ -41,7 +47,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       refresh: false,
       popperVisible: false,
       graphElements: [],
-      intervalSelectors: []
+      intervalSelectors: [],
+      intervals: []
     };
   }
 
@@ -53,18 +60,103 @@ class SignalAnnotation extends Component<RouteProps, State> {
     }
   }
 
+  private getIntervalsData = (
+    { time_start, time_end }: { time_start: number; time_end: number },
+    yMax: number,
+    yMin: number,
+    xScale: any,
+    yScale: any
+  ): {
+    datas: [{ x: number; y: number }, { x: number; y: number }];
+    area: d3.Area<Point>;
+    scales: { x: any; y: any };
+    yLimits: { max: number; min: number };
+  } => {
+    const intervalData: [{ x: number; y: number }, { x: number; y: number }] = [
+      { x: time_start, y: yMax },
+      { x: time_end, y: yMax }
+    ];
+    const areaGraph = d3
+      .area<Point>()
+      .x(d => xScale(d.x))
+      .y0(yScale(yMin))
+      .y1(d => yScale(d.y));
+    return {
+      datas: intervalData,
+      area: areaGraph,
+      scales: { x: xScale, y: yScale },
+      yLimits: { max: yMax, min: yMin }
+    };
+  }
+
+  private drawInterval = (
+    {
+      datas,
+      area
+    }: {
+      datas: [{ x: number; y: number }, { x: number; y: number }];
+      area: d3.Area<Point>;
+    },
+    selection: d3.Selection<SVGGElement, {}, HTMLElement, any>,
+    selector: string,
+    id: number,
+    className: string,
+    colors: string[]
+  ) => {
+    const color = this.getColors(selection, id, colors);
+
+    selection
+      .select(selector)
+      .append('path')
+      .datum<Point[]>(datas)
+      .attr('class', className)
+      .attr('id', `${className}-${id}`)
+      .attr('d', area)
+      .attr('clip-path', 'url(#clip)')
+      .style('fill', color)
+      .style('stroke', 'grey')
+      .style('opacity', '0.2');
+  }
+
+  private getColors = (
+    selection: d3.Selection<SVGGElement, {}, HTMLElement, any>,
+    id: number,
+    colors: string[]
+  ): string => {
+    if (colors.length > 1) {
+      const grad = selection
+        .append('linearGradient')
+        .attr('id', `gradient-${id}`);
+      const steps = 100 / (colors.length - 1);
+      colors.forEach((c, index) => {
+        grad
+          .append('stop')
+          .attr('offset', `${Math.round(index * steps)}%`)
+          .style('stop-color', c);
+      });
+      return `url(#gradient-${id})`;
+    } else if (colors.length === 1) {
+      return colors[0];
+    } else {
+      return 'grey';
+    }
+  }
+
   public componentDidMount = async () => {
     const {
       match: {
         params: { id }
       },
-      getAnnotation
+      getAnnotation,
+      getIntervals
     } = this.props;
 
     const colors = ['blue', 'green', 'red'];
     let annotation;
+    let intervals;
     try {
       annotation = await getAnnotation(parseInt(id, 10));
+      intervals = await getIntervals(annotation);
     } catch (e) {
       if (e.status === 404) {
         this.setState({ refresh: true });
@@ -79,7 +171,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     } else {
       leads = annotation.signal;
-      this.setState({ loading: false, annotation });
+      this.setState({ loading: false, annotation, intervals });
     }
 
     const svgWidth = window.innerWidth - 20;
@@ -103,6 +195,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const context = svg
       .append('g')
       .attr('transform', 'translate(' + margin2.left + ',' + margin2.top + ')');
+
+    this.setState({ mainGraph: focus, preview: context });
 
     const yMa = d3.max(leads, lead => d3.max(lead, data => data.y));
     const yMi = d3.min(leads, lead => d3.min(lead, data => data.y));
@@ -168,6 +262,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         graphElements: [
           ...this.state.graphElements,
           {
+            id: i,
             selector: '#line' + i,
             data: lead,
             object: lineMain
@@ -264,6 +359,49 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .extent([[0, 0], [width, height2]])
       .on('brush end', brushed);
 
+    const graphElements = intervals.map(interval => {
+      const mainGraphArea = this.getIntervalsData(
+        interval,
+        yMax,
+        yMin,
+        xScale,
+        yScale
+      );
+      this.drawInterval(
+        mainGraphArea,
+        focus,
+        '#mainGraph',
+        idGraphElement,
+        'interval-area',
+        interval.tags ? interval.tags.map(inter => inter.color) : []
+      );
+      this.drawInterval(
+        this.getIntervalsData(interval, yMax, yMin, xScale2, yScale2),
+        context,
+        '#previewGraph',
+        idGraphElement,
+        'interval-area-preview',
+        interval.tags ? interval.tags.map(inter => inter.color) : []
+      );
+      const graphElement = {
+        id: idGraphElement,
+        selector: `#interval-area-${idGraphElement}`,
+        data: [
+          { x: interval.time_start, y: yMax },
+          { x: interval.time_end, y: yMax }
+        ],
+        object: mainGraphArea.area
+      };
+      return { elements: graphElement, id: idGraphElement++ };
+    });
+
+    this.setState({
+      graphElements: [
+        ...this.state.graphElements,
+        ...graphElements.map(g => g.elements)
+      ]
+    });
+
     const brushAnnotation: any = d3
       .brushX()
       .extent([[0, 0], [width, height]])
@@ -271,56 +409,64 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-        const areaData = [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }];
 
-        const areaMainGraph = d3
-          .area<Point>()
-          .x(d => xScale(d.x))
-          .y0(yScale(yMin))
-          .y1(d => yScale(d.y));
+        const mainGraphDatas = this.getIntervalsData(
+          { time_start: xStart, time_end: xEnd },
+          yMax,
+          yMin,
+          xScale,
+          yScale
+        );
+        this.drawInterval(
+          mainGraphDatas,
+          focus,
+          '#mainGraph',
+          idGraphElement,
+          'interval-area',
+          []
+        );
 
-        const areaPreviewGraph = d3
-          .area<Point>()
-          .x(d => xScale2(d.x))
-          .y0(yScale2(yMin))
-          .y1(d => yScale2(d.y));
+        const previewGraphDatas = this.getIntervalsData(
+          { time_start: xStart, time_end: xEnd },
+          yMax,
+          yMin,
+          xScale2,
+          yScale2
+        );
+        this.drawInterval(
+          previewGraphDatas,
+          context,
+          '#previewGraph',
+          idGraphElement,
+          'interval-area-preview',
+          []
+        );
 
-        focus
-          .select('#mainGraph')
-          .append('path')
-          .datum<Point[]>(areaData)
-          .attr('class', 'interval-area')
-          .attr('id', 'interval-area-' + idGraphElement)
-          .attr('d', areaMainGraph)
-          .attr('clip-path', 'url(#clip)');
-
-        context
-          .select('#previewGraph')
-          .append('path')
-          .datum<Point[]>(areaData)
-          .attr('class', 'interval-area-preview')
-          .attr('id', 'interval-area-preview-' + idGraphElement)
-          .attr('d', areaPreviewGraph);
-
+        const graphElement = {
+          id: idGraphElement,
+          selector: `#interval-area-${idGraphElement}`,
+          data: [{ x: xStart, y: yMax }, { x: xEnd, y: yMax }],
+          object: mainGraphDatas.area
+        };
         this.setState({
           graphElements: [
             ...this.state.graphElements,
-            {
-              selector: '#interval-area-' + idGraphElement,
-              data: areaData,
-              object: areaMainGraph
-            }
-          ]
-        });
-
-        this.setState({
+            ...[
+              graphElement,
+              {
+                ...graphElement,
+                object: previewGraphDatas.area,
+                selector: `#interval-area-preview-${idGraphElement}`
+              }
+            ]
+          ],
           popperVisible: true,
           xIntervalStart: xStart,
           xIntervalEnd: xEnd,
           intervalSelectors: [
             ...this.state.intervalSelectors,
-            '#interval-area-' + idGraphElement,
-            '#interval-area-preview-' + idGraphElement
+            `#interval-area-${idGraphElement}`,
+            `#interval-area-preview-${idGraphElement}`
           ]
         });
 
@@ -369,7 +515,19 @@ class SignalAnnotation extends Component<RouteProps, State> {
     message.error('Interval has been deleted.', 5);
   }
 
-  public confirmCreate = () => {
+  public confirmCreate = (selectors: string[], tags: Tag[]) => {
+    const { mainGraph, graphElements } = this.state;
+    const colors = tags.map(t => t.color);
+
+    selectors.forEach(s => {
+      const selection = d3.select(s);
+      const interval = graphElements.find(g => g.selector === s);
+
+      selection
+        .style('fill', this.getColors(mainGraph!, interval!.id, colors))
+        .style('stroke', tags ? tags[0].color : 'grey')
+        .style('opacity', '0.4');
+    });
     this.setState({ popperVisible: false, intervalSelectors: [] });
     message.success(
       'Interval has been created with the information entered.',
