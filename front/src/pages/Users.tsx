@@ -220,19 +220,19 @@ class Users extends Component<Props, State> {
     const filteredData = initialUsers.slice().filter((record: User) => {
       const id = searches.get('id');
       if (id) {
-        if (!record.id.toString().startsWith(id)) {
+        if (!record.id.toString().includes(id)) {
           return false;
         }
       }
       const mail = searches.get('mail');
       if (mail) {
-        if (!record.mail.toLowerCase().startsWith(mail.toLowerCase())) {
+        if (!record.mail.toLowerCase().includes(mail.toLowerCase())) {
           return false;
         }
       }
       const role = searches.get('role');
       if (role) {
-        if (!record.role.name.toLowerCase().startsWith(role.toLowerCase())) {
+        if (!record.role.name.toLowerCase().includes(role.toLowerCase())) {
           return false;
         }
       }
@@ -243,7 +243,7 @@ class Users extends Component<Props, State> {
       if (organization) {
         let found = false;
         record.organizations.forEach(orga => {
-          if (orga.name.toLowerCase().startsWith(organization.toLowerCase())) {
+          if (orga.name.toLowerCase().includes(organization.toLowerCase())) {
             found = true;
           }
         });
