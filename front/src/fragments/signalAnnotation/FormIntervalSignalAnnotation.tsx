@@ -8,12 +8,18 @@ import {
   Button,
   List,
   Comment,
-  Avatar
+  Avatar,
+  message
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Tag, api, Annotation } from '../../utils';
-import { Interval } from '../../utils/objects';
+import {
+  Interval,
+  IntervalPayload,
+  IntervalCommentPayload,
+  IntervalComment
+} from '../../utils/objects';
 import TextArea from 'antd/lib/input/TextArea';
 
 interface Props extends FormComponentProps, RouteComponentProps {
@@ -21,7 +27,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   end: number;
   annotation: Annotation;
   selectors: string[];
-  confirmCreate: () => void;
+  confirmCreate: (selectors: string[], tags: Tag[]) => void;
   confirmDelete: (selectors: string[]) => void;
 }
 
@@ -29,15 +35,17 @@ interface DataComment {
   author: string;
   content: any;
   avatar: any;
+  datetime: any;
 }
 
-interface States {
+interface State {
   tags: Tag[];
   confirmLoading: boolean;
   comments: DataComment[];
-  textAreaContent: string;
+  textAreaComment: string;
   selectedTags: number[];
   error: string;
+  currentInterval?: Interval;
 }
 
 const CommentList = (props: { comments: DataComment[] }) => (
@@ -53,55 +61,88 @@ const CommentList = (props: { comments: DataComment[] }) => (
   </div>
 );
 
-class FormIntervalSignalAnnotation extends Component<Props, States> {
+class FormIntervalSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
       tags: [],
       confirmLoading: false,
       comments: [],
-      textAreaContent: '',
+      textAreaComment: '',
       selectedTags: [],
       error: ''
     };
   }
 
   public handleCommentSubmit = () => {
-    this.setState({
-      comments: [
-        {
-          author: 'Yann Yolo',
-          avatar: (
-            <Avatar src='https://i0.wp.com/www.bicarbonatedesoude.fr/wp-content/uploads/2010/10/pieds-264x300.jpg?ssl=1' />
-          ),
-          content: <p>{this.state.textAreaContent}</p>
-        },
-        ...this.state.comments
-      ],
-      textAreaContent: ''
-    });
+    if (!this.state.textAreaComment) {
+      return;
+    }
+    if (this.state.currentInterval === undefined) {
+      message.error(
+        'Comment submission failed because interval is not correctly identified',
+        5
+      );
+      return;
+    }
+    const intervalCommentPayload: IntervalCommentPayload = {
+      interval_id: this.state.currentInterval.id,
+      comment: this.state.textAreaComment
+    };
+    api
+      .sendIntervalComment(intervalCommentPayload)
+      .then((response: IntervalComment) => {
+        this.setState({
+          comments: [
+            {
+              author: response.user.mail,
+              avatar: (
+                <Avatar
+                  style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+                  size='large'
+                >
+                  {response.user.mail[0].toUpperCase()}
+                </Avatar>
+              ),
+              content: <p>{response.comment}</p>,
+              datetime: response.date.toLocaleString()
+            },
+            ...this.state.comments
+          ],
+          textAreaComment: ''
+        });
+      });
   }
 
   public handleChangeWriteComment = (e: any) => {
     this.setState({
-      textAreaContent: e.target.value
+      textAreaComment: e.target.value
     });
   }
 
   public handleSubmit = (e: any) => {
-    const interval: Interval = {
-      annotation_id: this.props.annotation.id,
-      start: Math.round(this.props.start),
-      end: Math.round(this.props.end)
-    };
     this.setState({ confirmLoading: true });
-    api.sendInterval(interval).then(response => {
-      interval.id = response.id;
-      interval.tags = this.state.selectedTags;
-      api.sendIntervalTags(interval);
-      this.setState({ confirmLoading: false });
-      this.props.confirmCreate();
-    });
+    if (this.state.currentInterval === undefined) {
+      message.error(
+        'Tag submission failed because interval is not correctly identified',
+        5
+      );
+      return;
+    }
+
+    const selectedTags = this.state.tags.filter(t =>
+      this.state.selectedTags.includes(t.id)
+    );
+
+    api
+      .sendIntervalTags({
+        tags: this.state.selectedTags,
+        interval_id: this.state.currentInterval.id
+      })
+      .then(_ => {
+        this.setState({ confirmLoading: false });
+        this.props.confirmCreate(this.props.selectors, selectedTags);
+      });
   }
 
   public handleDelete = () => {
@@ -113,7 +154,33 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
   }
 
   public componentDidMount = () => {
-    api.getTags().then(res => this.setState({ tags: res }));
+    const intervalPayload: IntervalPayload = {
+      annotation_id: this.props.annotation.id,
+      time_start: Math.round(this.props.start),
+      time_end: Math.round(this.props.end)
+    };
+    api.sendInterval(intervalPayload).then(response => {
+      this.setState({ currentInterval: response });
+    });
+    this.setState({ tags: this.props.annotation.tags });
+  }
+
+  public componentDidUpdate = () => {
+    this.state.selectedTags.forEach((x: number) => {
+      const t = document.getElementById(String(x));
+      if (
+        t !== null &&
+        t.parentNode !== null &&
+        t.parentNode.parentNode !== null
+      ) {
+        const grandparents: HTMLElement = t.parentNode
+          .parentNode as HTMLElement;
+        grandparents.style.color = '#ffffff';
+        grandparents.style.borderColor = '#ffffff';
+        grandparents.style.borderWidth = '1px';
+        grandparents.style.backgroundColor = String(t.dataset.color);
+      }
+    });
   }
 
   public render() {
@@ -121,8 +188,10 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
     const Option = Select.Option;
     const { tags } = this.state;
     const tagValues = tags.map((val: Tag) => (
-      <Option key={val.name} value={val.id}>
-        {val.name}
+      <Option key={val.name} value={val.id} style={{ color: val.color }}>
+        <span id={String(val.id)} data-color={val.color}>
+          {val.name}
+        </span>
       </Option>
     ));
 
@@ -149,8 +218,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
                 <p className='text-center'>
                   Tags to assignate to annotation task{' '}
                   {this.props.annotation.id} in interval between{' '}
-                  {Math.round(this.props.start)} and{' '}
-                  {Math.round(this.props.end)} :
+                  {this.props.start} and {this.props.end} :
                 </p>
                 <Select
                   mode='multiple'
@@ -180,7 +248,7 @@ class FormIntervalSignalAnnotation extends Component<Props, States> {
                     <TextArea
                       rows={4}
                       onChange={this.handleChangeWriteComment}
-                      value={this.state.textAreaContent}
+                      value={this.state.textAreaComment}
                     />
                   </Form.Item>
                   <Form.Item>

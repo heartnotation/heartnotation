@@ -1,0 +1,17 @@
+div > .fixed-bottom-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+}
+
+.fixed-bottom-button {
+  font-size: 24px !important;
+  color: #f9fbf2 !important;
+  border-radius: 35px !important;
+  height: 55px !important;
+  width: 55px !important;
+}
+
+.fixed-bottom-button:hover {
+  opacity: 0.85;
+}

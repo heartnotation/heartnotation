@@ -2,22 +2,30 @@ import React, { Component } from 'react';
 import './assets/styles/App.css';
 import AppRouter from './Routes';
 import AnnotationForm from './pages/CreateAnnotationForm';
-import UserCreation from './pages/UserCreation';
 import TagCreation from './pages/TagCreation';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
 import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
 import { api, User } from './utils';
-import GoogleLogin from 'react-google-login';
 import { Authenticated, authenticate } from './utils/auth';
+import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
+import Login from './pages/Login';
+import Organizations from './pages/Organizations';
+import NotFound from './pages/errors/NotFound';
+import Forbidden from './pages/errors/Forbidden';
 
 const r = {
   defaultRoute: {
     path: '/',
     exact: true,
-    component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+    component: () => (
+      <Dashboard
+        getAnnotations={api.getAnnotations}
+        changeStatus={api.changeStatus}
+      />
+    ),
     title: 'Dashboard'
   },
   hiddenRoutes: [
@@ -27,38 +35,33 @@ const r = {
         <SignalAnnotation
           getAnnotation={api.getAnnotationById}
           changeAnnotation={api.changeAnnotation}
+          getIntervals={api.getIntervalsByAnnotation}
         />
       ),
-      title: 'Signal annotation'
+      title: 'Signal annotation',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/new/tags',
       component: TagCreation,
       title: 'Create Tags',
-      iconName: 'tag'
-    },
-    {
-      path: '/new/annotations',
-      component: () => (
-        <AnnotationForm
-          getTags={api.getTags}
-          getOrganizations={api.getOrganizations}
-          getAnnotations={api.getAnnotations}
-          checkSignal={api.checkSignal}
-          sendAnnotation={api.sendAnnotation}
-        />
-      ),
-      title: 'Create annotation',
-      iconName: 'plus'
+      iconName: 'tag',
+      roles: ['Admin']
     }
   ],
   routes: [
     {
       path: '/',
       exact: true,
-      component: () => <Dashboard getAnnotations={api.getAnnotations} />,
+      component: () => (
+        <Dashboard
+          getAnnotations={api.getAnnotations}
+          changeStatus={api.changeStatus}
+        />
+      ),
       title: 'Dashboard',
-      iconName: 'dashboard'
+      iconName: 'dashboard',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
       path: '/users',
@@ -73,25 +76,45 @@ const r = {
         />
       ),
       title: 'Users',
-      iconName: 'user'
+      iconName: 'user',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/tags',
       exact: true,
-      component: Tags,
+      component: () => <Tags getTags={api.getTags} />,
       title: 'Tags',
-      iconName: 'tags'
+      iconName: 'tags',
+      roles: ['Gestionnaire', 'Admin']
+    },
+    {
+      path: '/organizations',
+      exact: true,
+      component: () => (
+        <Organizations
+          getOrganizations={api.getOrganizations}
+          changeOrganization={api.changeOrganization}
+          deleteOrganization={api.deleteOrganization}
+          createOrganization={api.createOrganization}
+        />
+      ),
+      title: 'Organizations',
+      iconName: 'bank',
+      roles: ['Gestionnaire', 'Admin']
     },
     {
       path: '/about',
-      component: () => <h2>About</h2>,
+      component: () => (
+        <h2>Version : {process.env.REACT_APP_VERSION || 'unstable'}</h2>
+      ),
       title: 'About',
-      iconName: 'question'
+      iconName: 'question',
+      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     }
   ]
 };
 class App extends Component<
-  { clientId: string },
+  {},
   { user?: User; logged: boolean; token?: string }
 > {
   constructor(props: any) {
@@ -110,24 +133,18 @@ class App extends Component<
         .then(user => {
           this.setState({ user, logged: true });
         })
-        .catch(() => {
+        .catch(_ => {
           this.setState({ logged: false, user: undefined });
         });
     }
   }
 
-  private handleSuccess = (response: any) => {
-    authenticate(response.getAuthResponse().access_token)
-      .then(user => {
-        this.setState({ user, logged: true });
-      })
-      .catch(() => {
-        alert('Unrecognized token');
-      });
+  private handleSuccess = (user: User) => {
+    this.setState({ user, logged: true });
   }
+
   public render = () => {
     const { logged, token, user } = this.state;
-    const { clientId } = this.props;
 
     if (token && !logged) {
       return (
@@ -138,30 +155,45 @@ class App extends Component<
         />
       );
     }
-
-    if (!logged) {
-      return (
-        <GoogleLogin
-          clientId={clientId}
-          buttonText='Log in'
-          onSuccess={this.handleSuccess}
-          onFailure={err => console.log(err.details)}
-        />
-      );
-    }
     if (user) {
+      const checkIntUrl = window.location.pathname.split('/');
+      if (checkIntUrl.length === 3 && checkIntUrl[1] === 'annotations') {
+        if (isNaN(Number(checkIntUrl[2]))) {
+          return <NotFound />;
+        } else if (!r.hiddenRoutes[0].roles.includes(user.role.name)) {
+          return <Forbidden />;
+        }
+      } else {
+        const f = r.routes.find(p => window.location.pathname === p.path);
+        if (f === undefined) {
+          const fhidden = r.hiddenRoutes.find(
+            p => window.location.pathname === p.path
+          );
+          if (fhidden === undefined) {
+            return <NotFound />;
+          } else if (!fhidden.roles.includes(user.role.name)) {
+            return <Forbidden />;
+          }
+        } else if (!f.roles.includes(user.role.name)) {
+          return <Forbidden />;
+        }
+      }
+
       return (
-        user && (
-          <Authenticated user={user}>
-            <AppRouter
-              defaultRoute={r.defaultRoute}
-              routes={r.routes}
-              hiddenRoutes={r.hiddenRoutes}
-            />
-          </Authenticated>
-        )
+        <Authenticated user={user}>
+          <AppRouter
+            defaultRoute={r.defaultRoute}
+            routes={r.routes.filter(value =>
+              value.roles.includes(user.role.name)
+            )}
+            hiddenRoutes={r.hiddenRoutes.filter(value =>
+              value.roles.includes(user.role.name)
+            )}
+          />
+        </Authenticated>
       );
     }
+    return <Login onSuccess={this.handleSuccess} />;
   }
 }
 export default App;

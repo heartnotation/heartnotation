@@ -7,7 +7,12 @@ import {
   Tag,
   Point,
   Role,
-  User
+  User,
+  StatusInserter,
+  Interval,
+  IntervalPayload,
+  IntervalTagsPayload,
+  AnnotationStatus
 } from './objects';
 export const API_URL = process.env.REACT_APP_API
   ? process.env.REACT_APP_API
@@ -22,5 +27,10 @@ export type Tag = Tag;
 export type Point = Point;
 export type Role = Role;
 export type User = User;
+export type StatusInserter = StatusInserter;
+export type IntervalPayload = IntervalPayload;
+export type Interval = Interval;
+export type IntervalTagsPayload = IntervalTagsPayload;
+export type AnnotationStatus = AnnotationStatus;
 
 export const auth = au;

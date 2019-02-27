@@ -10,8 +10,8 @@
 }
 
 .logo {
-  margin: 5px 10px 0px 30px;
-  width: 70px;
+  margin-right: 10px;
+  width: 100px;
   float: left;
 }
 
@@ -120,21 +120,21 @@
   text-align: center;
 }
 
-.signal-graph-container {
+.signal-main-container {
   overflow-x: scroll;
 }
 
-.signal-graph-container::-webkit-scrollbar-track {
+.signal-main-container::-webkit-scrollbar-track {
   background-color: #d9d9d9;
 }
 
-.signal-graph-container::-webkit-scrollbar {
+.signal-main-container::-webkit-scrollbar {
   width: 5px;
   height: 5px;
   background: #d9d9d9;
 }
 
-.signal-graph-container::-webkit-scrollbar-thumb {
+.signal-main-container::-webkit-scrollbar-thumb {
   background-color: #0ae;
 }
 
@@ -159,11 +159,13 @@
 .interval-area {
   fill: rgba(255, 165, 0, 0.5);
   stroke: rgba(255, 165, 0, 1);
-  stroke-width: -2px;
+  stroke-width: 2px;
 }
 
 .interval-area-preview {
   fill: rgba(255, 165, 0, 0.5);
+  stroke: rgba(255, 165, 0, 1);
+  stroke-width: 2px;
 }
 
 .full-screen-popper {
@@ -181,7 +183,7 @@
 
 .ant-drawer-body > div > .comments-container {
   padding: 24px;
-  background-color: #f9fbf2;
+  background-color: #fafafa;
   height: 65vh;
   overflow-y: scroll;
 }
@@ -193,7 +195,7 @@
 .modal-comments-container {
   margin-bottom: 25px;
   padding: 25px;
-  background-color: #f9fbf2;
+  background-color: #fafafa;
   height: 250px;
   overflow-y: scroll;
 }
@@ -218,4 +220,19 @@ div > .fixed-bottom-button {
 
 .fixed-bottom-button:hover {
   opacity: 0.85;
+}
+
+.ant-table-wrapper {
+  margin-bottom: 30px;
+}
+
+#signal > svg,
+#context > svg {
+  position: absolute;
+  left: 0;
+}
+
+.signal-main-container {
+  margin-top: 20px;
+  margin-bottom: 50px;
 }

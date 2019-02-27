@@ -16,7 +16,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
-	u "restapi/user"
+	m "restapi/models"
 	"restapi/utils"
 )
 
@@ -51,8 +51,8 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userFound := u.User{}
-	err = utils.GetConnection().Preload("Role").Where("mail=?", googleUser.Email).Find(&userFound).Error
+	userFound := m.User{}
+	err = utils.GetConnection().Preload("Role").Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&userFound).Error
 	if err != nil {
 		http.Error(w, err.Error(), 404)
 		return
@@ -73,7 +73,7 @@ func createJWTFromCredentials(user GoogleUser) (string, error) {
 
 	claims["authorized"] = true
 	claims["email"] = user.Email
-	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 2).Unix()
 
 	tokenString, err := token.SignedString(signingKey)
 
@@ -113,7 +113,7 @@ func ValidateMiddleware(next http.HandlerFunc) http.HandlerFunc {
 					return signingKey, nil
 				})
 				if err != nil {
-					http.Error(w, err.Error(), 400)
+					http.Error(w, err.Error(), http.StatusUnauthorized)
 					return
 				}
 				if !token.Valid {
@@ -136,15 +136,15 @@ func ValidateMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func getUserFromClaims(claims jwt.Claims) (*u.User, error) {
+func getUserFromClaims(claims jwt.Claims) (*m.User, error) {
 	db := utils.GetConnection()
 
 	var googleUser GoogleUser
 	mapstructure.Decode(claims.(jwt.MapClaims), &googleUser)
 
-	var u u.User
+	var u m.User
 
-	if err := db.Preload("Role").Where("mail=?", googleUser.Email).Find(&u).Error; err != nil {
+	if err := db.Preload("Organizations").Preload("Role").Where("mail=? AND is_active = ?", googleUser.Email, true).Find(&u).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil

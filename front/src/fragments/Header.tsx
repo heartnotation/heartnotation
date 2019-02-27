@@ -8,7 +8,7 @@ import {
 import { Menu, Icon, Row, Col } from 'antd';
 import { ClickParam } from 'antd/lib/menu';
 
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo2.png';
 import '../assets/styles/App.css';
 import { AppRoute } from '../Routes';
 

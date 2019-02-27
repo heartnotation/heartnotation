@@ -2,14 +2,17 @@ export interface Annotation {
   id: number;
   name: string;
   organization: Organization;
-  status: Status;
+  status?: Status[];
+  last_status: Status;
+  first_status: Status;
   parent: Annotation;
   signal?: Point[][];
-  signal_id: number;
+  signal_id: string;
   creation_date: Date;
   edit_date?: Date;
   is_active: boolean;
   is_editable: boolean;
+  tags: Tag[];
 }
 
 export interface Point {
@@ -25,6 +28,22 @@ export interface Organization {
 
 export interface Status {
   id: number;
+  date: Date;
+  enum_status_id: number;
+  enum_status: EnumStatus;
+  user_id: number;
+  user: User;
+  annotation_id: number;
+  annotation: Annotation;
+}
+
+export interface StatusInserter {
+  status: number;
+  id: number;
+}
+
+export interface EnumStatus {
+  id: number;
   name: string;
   is_active: boolean;
 }
@@ -33,6 +52,9 @@ export interface Tag {
   id: number;
   name: string;
   is_active: boolean;
+  color: string;
+  children: Tag[];
+  parent_id: number;
 }
 
 export interface Role {
@@ -50,15 +72,51 @@ export interface User {
 }
 
 export interface AnnotationCommentPayload {
-  content: string;
+  annotation_id: number;
+  comment: string;
+}
+
+export interface AnnotationComment {
+  id: number;
+  comment: string;
+  date: Date;
+  user: User;
+}
+
+export interface IntervalCommentPayload {
+  interval_id: number;
+  comment: string;
+}
+
+export interface IntervalComment {
+  id: number;
+  comment: string;
+  date: Date;
+  user: User;
 }
 
 export interface Interval {
-  id?: number;
+  id: number;
   annotation_id: number;
-  user_id?: number;
-  comment?: string;
-  start: number;
-  end: number;
-  tags?: number[];
+  user: User;
+  comments: IntervalComment[];
+  time_start: number;
+  time_end: number;
+  tags: Tag[];
+}
+
+export interface IntervalPayload {
+  annotation_id: number;
+  time_start: number;
+  time_end: number;
+}
+
+export interface IntervalTagsPayload {
+  interval_id: number;
+  tags: number[];
+}
+
+export interface AnnotationStatus {
+  id: number; // annotation id
+  status: number; // status id
 }
