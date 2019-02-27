@@ -356,6 +356,8 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	if annotation.Organization == nil && a.OrganizationID != annotation.OrganizationID {
 		changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID)
+	} else if annotation.Organization != nil && a.OrganizationID == nil {
+		changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID)
 	}
 
 	transaction := db.Begin()
