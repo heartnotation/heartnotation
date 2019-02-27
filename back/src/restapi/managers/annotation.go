@@ -2,6 +2,7 @@ package managers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	d "restapi/dtos"
 	m "restapi/models"
@@ -152,6 +153,27 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//All tests have passed, parendID is correct, can copy for the child
+
+		annotationComments := []m.AnnotationComment{}
+
+		err = db.Preload("User").Where("annotation_id = ?", a.ParentID).Find(&annotationComments).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		fmt.Println("parent annotationComments")
+		fmt.Println(annotationComments)
+
+		annotationInterval := []m.Interval{}
+
+		err = db.Preload("Commentinterval").Preload("Tags").Preload("Commentinterval.User").Where("annotation_id = ?", a.ParentID).Find(&annotationInterval).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		fmt.Println("parent annotationInterval")
+		fmt.Println(annotationInterval)
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
