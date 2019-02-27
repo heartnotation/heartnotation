@@ -139,6 +139,7 @@ class EditUserForm extends Component<Props, States> {
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
+
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         values.id = this.props.currentUser.id;

@@ -339,7 +339,7 @@ class Users extends Component<Props, State> {
           handleOk={this.handleOkModification}
           currentUser={user}
           modalVisible={modifyVisible}
-          user = {this.props.user}
+          user={this.props.user}
         />
       ),
       this.props.user.role.name === 'Admin' && (

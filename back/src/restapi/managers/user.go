@@ -114,7 +114,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	contextUser := c.Get(r, "user").(*m.User)
-	if contextUser.RoleID == 3 && contextUser.RoleID != a.RoleID && contextUser.ID == user.ID { // 3 admin
+	if contextUser.RoleID == 3 && contextUser.RoleID != a.RoleID && contextUser.ID == *a.ID { // 3 admin
 		http.Error(w, "This action is not permitted on the actual user", 403)
 		return
 	}
