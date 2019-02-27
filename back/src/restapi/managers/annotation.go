@@ -94,7 +94,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.Annotation
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.SignalID == "" || a.Name == nil || a.TagsID == nil {
+	if a.SignalID == "" || a.Name == "" || a.TagsID == nil {
 		http.Error(w, "invalid args", 400)
 		return
 	}
@@ -121,7 +121,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.Find(&tags, a.TagsID).Error, w) {
 		return
 	}
-	if a.SignalID == "" || *a.Name == "" {
+	if a.SignalID == "" || a.Name == "" {
 		http.Error(w, "Missing field", 424)
 		return
 	}
@@ -163,7 +163,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	transaction := db.Begin()
 
 	date := time.Now()
-	annotation := m.Annotation{Name: *a.Name, OrganizationID: a.OrganizationID, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	annotation := m.Annotation{Name: a.Name, OrganizationID: a.OrganizationID, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
 	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
 		transaction.Rollback()
 		return
