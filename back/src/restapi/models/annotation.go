@@ -39,17 +39,22 @@ func ToMap(annotation Annotation, d d.Annotation) map[string]interface{} {
 	m["id"] = d.ID
 	m["name"] = d.Name
 
-	orga := &Organization{}
-	if err := utils.GetConnection().Where(*d.OrganizationID).Find(orga).Error; err != nil {
-		orga = nil
-	}
+	if d.OrganizationID != nil {
+		orga := &Organization{}
+		if err := utils.GetConnection().Where(*d.OrganizationID).Find(orga).Error; err != nil {
+			orga = nil
+		}
 
-	m["organization"] = orga
-	m["organization_id"] = nil
+		m["organization"] = orga
+		m["organization_id"] = nil
+	} else {
+		m["organization"] = nil
+		m["organization_id"] = nil
+	}
 
 	var newStatus int
 
-	if *d.OrganizationID == 0 {
+	if d.OrganizationID == nil {
 		newStatus = 1
 	} else if annotation.LastStatus != nil && annotation.LastStatus.ID < 3 && *d.OrganizationID != 0 {
 		newStatus = 2

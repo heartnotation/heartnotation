@@ -328,7 +328,7 @@ class Dashboard extends Component<Props, State> {
           );
         }
       },
-      roles: ['Gestionnaire', 'Admin']
+      roles: ['Gestionnaire']
     }
   ];
 
@@ -505,7 +505,7 @@ class Dashboard extends Component<Props, State> {
           onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
-      this.props.user.role.name !== 'Annotateur' && (
+      this.props.user.role.name === 'Gestionnaire' && (
         <AddButton
           key={2}
           onClick={() => {

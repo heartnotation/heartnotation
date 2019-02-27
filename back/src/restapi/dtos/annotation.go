@@ -2,13 +2,13 @@ package dtos
 
 // Annotation DTO of annotation
 type Annotation struct {
-	ID             *int    `json:"id"`
-	Name           *string `json:"name"`
-	OrganizationID *int    `json:"organization_id"`
-	SignalID       string  `json:"signal_id"`
-	StatusID       []int   `json:"status_id"`
-	ParentID       *int    `json:"parent_id"`
-	TagsID         []int   `json:"tags"`
+	ID             *int   `json:"id"`
+	Name           string `json:"name"`
+	OrganizationID *int   `json:"organization_id"`
+	SignalID       string `json:"signal_id"`
+	StatusID       []int  `json:"status_id"`
+	ParentID       *int   `json:"parent_id"`
+	TagsID         []int  `json:"tags"`
 }
 
 /*
