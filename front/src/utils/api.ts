@@ -117,8 +117,8 @@ export const sendIntervalComment = (
 
 export const sendIntervalTags = (
   datas: IntervalTagsPayload
-): Promise<Interval> => {
-  return post<Interval>(`${urls.intervalsTags}`, datas);
+): Promise<Tag[]> => {
+  return post<Tag[]>(`${urls.intervalsTags}`, datas);
 };
 
 export const sendUser = (datas: User): Promise<User> => {
