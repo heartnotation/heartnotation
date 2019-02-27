@@ -4,8 +4,11 @@ import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Role, User } from '../utils';
+import { AuthProps } from '../utils/auth';
 
 const { Option } = Select;
+
+const ROLE_ADMIN_ID = 3;
 
 const formItemLayout = {
   labelCol: { span: 10 },
@@ -21,15 +24,16 @@ interface States {
   roleSelected?: Role;
   loading: boolean;
   error: string;
+  isNotAdminEditingHimself: boolean;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps, RouteComponentProps, AuthProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
   handleCancel: () => void;
   handleOk: () => void;
-  user: User;
+  currentUser: User;
   modalVisible: boolean;
 }
 
@@ -43,16 +47,23 @@ class EditUserForm extends Component<Props, States> {
       roles: [],
       rolesSearch: [],
       loading: false,
-      error: ''
+      error: '',
+      isNotAdminEditingHimself: false
     };
   }
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
     Promise.all([getOrganizations(), getRoles()]).then(responses => {
+      const { currentUser, user } = this.props;
+      let disabled: boolean = false;
+      if (user.role.id === ROLE_ADMIN_ID && currentUser.id === user.id) {
+        disabled = true;
+      }
       this.setState({
         organizations: responses[0],
-        roles: responses[1]
+        roles: responses[1],
+        isNotAdminEditingHimself: disabled
       });
     });
   }
@@ -130,7 +141,7 @@ class EditUserForm extends Component<Props, States> {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
-        values.id = this.props.user.id;
+        values.id = this.props.currentUser.id;
         this.setState({ loading: true, error: '' });
         this.props
           .modifyUser(values)
@@ -198,7 +209,7 @@ class EditUserForm extends Component<Props, States> {
             <Form layout='horizontal'>
               <Form.Item {...formItemLayout} label='Email Address'>
                 {getFieldDecorator('mail', {
-                  initialValue: this.props.user.mail,
+                  initialValue: this.props.currentUser.mail,
                   rules: [
                     {
                       type: 'email',
@@ -213,7 +224,7 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Role'>
                 {getFieldDecorator('role_id', {
-                  initialValue: this.props.user.role.id,
+                  initialValue: this.props.currentUser.role.id,
                   rules: [
                     {
                       required: true,
@@ -226,6 +237,7 @@ class EditUserForm extends Component<Props, States> {
                     mode='simple'
                     onChange={this.handleChangeRole}
                     filterOption={this.filterSearchRole}
+                    disabled={this.state.isNotAdminEditingHimself}
                   >
                     {filteredRoles.map((role: Role) => (
                       <Option key='key' value={role.id}>
@@ -237,8 +249,8 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organizations', {
-                  initialValue: this.props.user.organizations
-                    ? this.props.user.organizations.map(o => o.id)
+                  initialValue: this.props.currentUser.organizations
+                    ? this.props.currentUser.organizations.map(o => o.id)
                     : [],
                   rules: [
                     {
