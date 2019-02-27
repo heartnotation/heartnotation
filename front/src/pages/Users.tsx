@@ -237,15 +237,17 @@ class Users extends Component<Props, State> {
         }
       }
       const organization = searches.get('organizations');
+      if (!record.organizations) {
+        return false;
+      }
       if (organization) {
         let found = false;
-        for (const o of record.organizations) {
-          if (o.name.toLowerCase().startsWith(organization.toLowerCase())) {
+        record.organizations.forEach(orga => {
+          if (orga.name.toLowerCase().startsWith(organization.toLowerCase())) {
             found = true;
-            break;
           }
-        }
-        if(!found) {
+        });
+        if (!found) {
           return false;
         }
       }
@@ -347,15 +349,17 @@ class Users extends Component<Props, State> {
           }}
         />
       ),
-      keepCreationData && (<UserCreation
-        key={4}
-        getOrganizations={this.props.getOrganizations}
-        getRoles={this.props.getRoles}
-        sendUser={this.props.sendUser}
-        handleCancel={this.handleCancelCreation}
-        handleOk={this.handleOkCreation}
-        modalVisible={creationVisible}
-      />),
+      keepCreationData && (
+        <UserCreation
+          key={4}
+          getOrganizations={this.props.getOrganizations}
+          getRoles={this.props.getRoles}
+          sendUser={this.props.sendUser}
+          handleCancel={this.handleCancelCreation}
+          handleOk={this.handleOkCreation}
+          modalVisible={creationVisible}
+        />
+      ),
       error && <Alert key={5} message={error} type='error' showIcon={true} />
     ];
   }
