@@ -47,7 +47,7 @@ class Dashboard extends Component<Props, State> {
     currentAnnotations: [],
     editVisible: false,
     creationVisible: false,
-    keepCreationData: true
+    keepCreationData: false
   };
 
   public async componentDidMount() {
@@ -214,25 +214,23 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: () => this.getColumnSearchBox('edit_date', 'last edit date'),
+      title: () =>
+        this.getColumnSearchBox('last_status.date', 'last status change'),
       children: [
         {
-          title: 'Last edit',
-          dataIndex: 'edit_date',
-          render: (date: Date | undefined) => {
-            if (date === undefined) {
-              return '-';
-            }
+          title: 'Last status change',
+          dataIndex: 'last_status.date',
+          render: (date: Date) => {
             return date.toLocaleDateString('fr-FR');
           },
           sorter: (a: Annotation, b: Annotation) => {
             let timeA = 0;
             let timeB = 0;
-            if (a.edit_date !== undefined) {
-              timeA = a.edit_date.getTime();
+            if (a.last_status.date !== undefined) {
+              timeA = a.last_status.date.getTime();
             }
-            if (b.edit_date !== undefined) {
-              timeB = b.edit_date.getTime();
+            if (b.last_status.date !== undefined) {
+              timeB = b.last_status.date.getTime();
             }
             return timeA - timeB;
           }
@@ -242,10 +240,13 @@ class Dashboard extends Component<Props, State> {
     },
     {
       title: () =>
-        this.getColumnSearchBox('last_status.user.mail', 'last edit by'),
+        this.getColumnSearchBox(
+          'last_status.user.mail',
+          'last status change by'
+        ),
       children: [
         {
-          title: 'Last edit by',
+          title: 'Last status change by',
           dataIndex: 'last_status.user.mail',
           sorter: (a: Annotation, b: Annotation) => {
             return a.last_status.user.mail.localeCompare(

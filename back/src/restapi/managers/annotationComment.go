@@ -39,7 +39,7 @@ func CreateCommentOnAnnotation(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, annotationcomment)
 }
 
-// FindCommentsByAnnotationID
+// FindCommentsByAnnotationID find comments by annotation ID and send the response
 func FindCommentsByAnnotationID(w http.ResponseWriter, r *http.Request) {
 	if u.CheckMethodPath("GET", u.CheckRoutes["annotationscomments"], w, r) {
 		return

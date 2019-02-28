@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Table, Input, Icon, Tag, Row, Col, Alert } from 'antd';
-import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
 import { withAuth, AuthProps } from '../utils/auth';
@@ -337,8 +336,9 @@ class Users extends Component<Props, State> {
           modifyUser={this.props.modifyUser}
           handleCancel={this.handleCancelModification}
           handleOk={this.handleOkModification}
-          user={user}
+          currentUser={user}
           modalVisible={modifyVisible}
+          user={this.props.user}
         />
       ),
       this.props.user.role.name === 'Admin' && (

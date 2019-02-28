@@ -67,6 +67,7 @@ export const getAnnotations = (): Promise<Annotation[]> => {
       if (a.status) {
         a.status.forEach((s: Status) => (s.date = new Date(s.date)));
       }
+      a.last_status.date = new Date(a.last_status.date);
     });
     return annotations;
   });
@@ -125,6 +126,10 @@ export const sendUser = (datas: User): Promise<User> => {
   return post<User>(`${urls.users}`, datas);
 };
 
+export const sendTag = (datas: Tag): Promise<Tag> => {
+  return post<Tag>(`${urls.tags}`, datas);
+};
+
 export const changeAnnotation = (datas: Annotation): Promise<Annotation> => {
   const d: any = {
     ...datas,
@@ -178,6 +183,19 @@ export const modifyUser = (datas: User): Promise<User> => {
 
 export const deleteUser = (datas: User): Promise<User> => {
   return del(`${urls.users}/${datas.id}`);
+};
+
+
+export const deleteTag = (tagID: number): Promise<Tag> => {
+  return del(`${urls.tags}/${tagID}`);
+};
+
+export const modifyTag = (datas: Tag): Promise<Tag> => {
+  return put<Tag>(`${urls.tags}`, datas);
+};
+
+export const deleteInterval = (datas: Interval): Promise<Interval> => {
+  return del(`${urls.intervals}/${datas.id}`);
 };
 
 export const getCommentsOnAnnotationById = (

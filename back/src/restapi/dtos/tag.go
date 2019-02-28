@@ -6,4 +6,5 @@ type Tag struct {
 	Name     *string `json:"name"`
 	Color    *string `json:"color"`
 	ParentID *int    `json:"parent_id"`
+	IsActive *bool   `json:"is_active"`
 }

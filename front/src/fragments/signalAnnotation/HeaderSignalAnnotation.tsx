@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
+import { Row, Col, Icon, Switch, Button, Steps, Alert, Tooltip } from 'antd';
 import { Annotation, StatusInserter, Status, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { withAuth, AuthProps } from '../../utils/auth';
@@ -7,7 +7,7 @@ import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
   stepProcess: number;
-  mode: 'Navigation' | 'Annotation';
+  mode: 'Navigation' | 'Annotation' | 'Edit';
   error?: string;
   finalTitle: 'Canceled' | 'Validated';
   finalStatus: 'wait' | 'process' | 'finish' | 'error' | undefined;
@@ -15,7 +15,7 @@ interface State {
 
 interface Props extends RouteComponentProps, AuthProps {
   annotation: Annotation;
-  onToggle: (state: boolean) => void;
+  onToggle: (tool: 'Navigation' | 'Annotation' | 'Edit') => void;
 }
 
 interface PropsButton extends AuthProps {
@@ -168,10 +168,8 @@ class HeaderSignalAnnotation extends Component<Props, State> {
       });
   }
 
-  private handleToggle = (toggle: boolean) => {
-    this.setState({ mode: toggle ? 'Annotation' : 'Navigation' }, () =>
-      this.props.onToggle(toggle)
-    );
+  private handleToggle = (tool: 'Navigation' | 'Annotation' | 'Edit') => {
+    this.setState({ mode: tool }, () => this.props.onToggle(tool));
   }
 
   public render() {
@@ -186,10 +184,63 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         align='middle'
         justify='space-between'
       >
-        <Col span={7}>
+        <Col span={8}>
           {user.role.name === 'Annotateur' && stepProcess === 0 && (
-            <Col span={7}>
-              {mode} Mode <Switch onChange={this.handleToggle} />
+            <Col span={8}>
+              <Button.Group>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to navigation mode
+                      <br />
+                      (zoom and drag)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='drag'
+                    onClick={() => this.handleToggle('Navigation')}
+                  />
+                </Tooltip>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to annotation mode
+                      <br />
+                      (creation only)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='box-plot'
+                    onClick={() => this.handleToggle('Annotation')}
+                  />
+                </Tooltip>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to edit mode
+                      <br />
+                      (edit and delete annotations)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='select'
+                    onClick={() => this.handleToggle('Edit')}
+                  />
+                </Tooltip>
+              </Button.Group>
+              {' ' + mode} Mode
             </Col>
           )}
         </Col>
