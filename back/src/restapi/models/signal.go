@@ -33,7 +33,7 @@ func FormatData(data []byte, leads int) ([][]*Point, error) {
 			if err := binary.Read(buffer, binary.LittleEndian, &value); err != nil {
 				return nil, err
 			}
-			formatedDatas[lead][sample] = &Point{X: (float64(sample) / 250), Y: value}
+			formatedDatas[lead][sample] = &Point{X: (float64(sample) / 250) * 1000, Y: value}
 		}
 	}
 	return formatedDatas, nil
