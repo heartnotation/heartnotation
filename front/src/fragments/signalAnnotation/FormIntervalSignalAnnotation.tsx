@@ -29,7 +29,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   annotation: Annotation;
   selectors: string[];
   confirmCreate: (interval: Interval) => void;
-  confirmDelete: (selectors: string[]) => void;
+  confirmDelete: (interval: Interval) => void;
   confirmCancel: () => void;
 }
 
@@ -159,8 +159,8 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   public handleDelete = () => {
     if(this.state.currentInterval) {
       api.deleteInterval(this.state.currentInterval);
+      this.props.confirmDelete(this.state.currentInterval);
     }
-    this.props.confirmDelete(this.props.selectors);
   }
 
   public handleCancel = () => {

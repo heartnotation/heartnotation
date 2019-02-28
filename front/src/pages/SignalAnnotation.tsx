@@ -461,24 +461,25 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const xStart = domain[0];
         const xEnd = domain[1];
 
-        this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
-          this,
-          yScale.domain()[0],
-          yScale.domain()[1],
-          xScale,
-          yScale,
-          xScalePreview,
-          yScalePreview,
-          svgPreview,
-          svgFocus,
-          margin
-        );
         this.setState({popperVisible: true,
           xIntervalStart: xStart,
           xIntervalEnd: xEnd});
 
           d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
       });
+
+      this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
+        this,
+        yScale.domain()[0],
+        yScale.domain()[1],
+        xScale,
+        yScale,
+        xScalePreview,
+        yScalePreview,
+        svgPreview,
+        svgFocus,
+        margin
+      );
 
     svgPreview.append('g').attr('id', 'interval-preview-container');
 
@@ -538,17 +539,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
-  public confirmDelete = (selectors: string[]) => {
-    for (const selector of selectors) {
-      d3.select(selector).remove(); // Remove in graph
-      this.setState({
-        graphElements: this.state.graphElements.filter(
-          (g: GraphElement) => g.selector !== selector
-        )
-      }); // Remove in elements
-    }
-    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
-    message.error('Interval has been deleted.', 5);
+  public confirmDelete = (delInterval:Interval) => {
+    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined, intervals: this.state.intervals.filter((inter:Interval) => inter.id !== delInterval.id)}, () => {
+      message.error('Interval has been deleted.', 5);
+      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    });
   }
 
   private confirmCreate = (newInterval: Interval) => {
@@ -562,6 +557,10 @@ class SignalAnnotation extends Component<RouteProps, State> {
       this.state.intervals.push(newInterval);
     }
     this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    message.success(
+      'Interval has been created with the information entered.',
+      5
+    );
   }
 
   private confirmCancel = () => {
@@ -607,10 +606,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
  
     this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
-    message.success(
-      'Interval has been created with the information entered.',
-      5
-    );
   }
 
   public render = () => {
