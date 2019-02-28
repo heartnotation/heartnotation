@@ -2,7 +2,6 @@ package managers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	d "restapi/dtos"
 	m "restapi/models"
@@ -190,8 +189,6 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 			annotationIntervalChild = append(annotationIntervalChild, annotationIntervalCpy)
 		}
-		fmt.Println("child annotationIntervalChild")
-		fmt.Println(annotationIntervalChild)
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
