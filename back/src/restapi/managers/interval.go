@@ -66,7 +66,7 @@ func RemoveIntervalByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db := u.GetConnection()
-	if u.CheckErrorCode(db.First(&interval, v["id"]).Delete(&interval).Error, w) {
+	if u.CheckErrorCode(db.First(&interval, v["id"]).Update("is_active", false).Error, w) {
 		return
 	}
 }

@@ -552,7 +552,15 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   private confirmCreate = (newInterval: Interval) => {
-    this.state.intervals.push(newInterval);
+    const exists = this.state.intervals.find((i:Interval) => i.id === newInterval.id);
+    if(exists) {
+      // Interval modification
+      exists.tags = newInterval.tags;
+      exists.comments = newInterval.comments;
+    } else {
+      // Interval creation
+      this.state.intervals.push(newInterval);
+    }
     this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 

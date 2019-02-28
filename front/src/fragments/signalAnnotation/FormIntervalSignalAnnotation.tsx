@@ -94,6 +94,13 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     api
       .sendIntervalComment(intervalCommentPayload)
       .then((response: IntervalComment) => {
+        if(this.props.clickedInterval) {
+          if(this.props.clickedInterval.comments) {
+            this.props.clickedInterval.comments.push(response);
+          } else {
+            this.props.clickedInterval.comments = [response];
+          }
+        }
         this.setState({
           comments: [
             {
@@ -111,7 +118,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
             },
             ...this.state.comments
           ],
-          textAreaComment: ''
+          textAreaComment: '',
         });
       })
       .catch(err => {
@@ -150,6 +157,9 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleDelete = () => {
+    if(this.state.currentInterval) {
+      api.deleteInterval(this.state.currentInterval);
+    }
     this.props.confirmDelete(this.props.selectors);
   }
 
