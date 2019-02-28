@@ -283,8 +283,8 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                   <p className='text-center'>
                     Tags to assignate to annotation task{' '}
                     {this.props.clickedInterval.annotation_id} in interval
-                    between {this.props.clickedInterval.time_start} and{' '}
-                    {this.props.clickedInterval.time_end} :
+                    between <b>{this.props.clickedInterval.time_start} ms</b> and{' '}
+                    <b>{this.props.clickedInterval.time_end} ms</b> :
                   </p>
                 )}
                 <Select

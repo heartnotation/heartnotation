@@ -48,22 +48,23 @@ class UserCreation extends Component<Props, States> {
       organizationsSelected: [],
       roles: [],
       rolesSearch: [],
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
-    Promise.all([getOrganizations(), getRoles(), getAllUsers()]).then(
-      responses => {
+    Promise.all([getOrganizations(), getRoles(), getAllUsers()])
+      .then(responses => {
         this.setState({
           organizations: responses[0],
           roles: responses[1],
-          users: responses[2]
+          users: responses[2],
+          loading: false
         });
-      }
-    );
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
@@ -72,12 +73,20 @@ class UserCreation extends Component<Props, States> {
       if (!err) {
         values.mail = values.mail.toLowerCase();
         this.setState({ loading: true, error: '' });
-        this.props.sendUser(values).then(() => {
-          this.props.handleOk();
-        });
+        this.props
+          .sendUser(values)
+          .then(() => {
+            this.props.handleOk();
+            this.setState({ loading: false });
+          })
+          .catch(() =>
+            this.setState({
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
+            })
+          );
       }
     });
-    this.setState({ loading: false });
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -189,20 +198,9 @@ class UserCreation extends Component<Props, States> {
         key={2}
         title='Create user'
         visible={this.props.modalVisible}
+        onOk={this.handleOk}
         onCancel={this.props.handleCancel}
-        footer={[
-          <Button key='back' onClick={this.props.handleCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key='submit'
-            type='primary'
-            loading={loading}
-            onClick={this.handleOk}
-          >
-            Create
-          </Button>
-        ]}
+        confirmLoading={loading}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={15}>

@@ -156,14 +156,6 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         align='middle'
         justify='space-between'
       >
-        <Col span={4}>
-          <Switch
-            checkedChildren={<Icon type='check' />}
-            unCheckedChildren={<Icon type='close' />}
-            defaultChecked={true}
-          />
-          Display Leads
-        </Col>
         {user.role.name === 'Annotateur' && stepProcess === 0 && (
           <Col span={4}>
             <Button.Group>

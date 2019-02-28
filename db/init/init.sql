@@ -422,13 +422,19 @@ INSERT INTO public.Annotation (parent_id, name, organization_id, signal_id, crea
 -- INTERVAL
 
 INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
-	VALUES (3, 4, TRUE, 1);
+	VALUES (62000, 65100, TRUE, 1);
 
 INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id)
-	VALUES (7, 9, TRUE, 1);
+	VALUES (55000, 60100, TRUE, 1);
+
+INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id)
+	VALUES (50000, 70100, TRUE, 1);
 
 INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
-	VALUES (11, 29, TRUE, 2);
+	VALUES (24820, 24920, TRUE, 2);
+
+INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
+	VALUES (10000, 20000, TRUE, 2);
 
 
 -- CommentInterval
@@ -477,7 +483,28 @@ INSERT INTO public.Interval_Tag (interval_id, tag_id)
 	VALUES (1, 2);
 
 INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (1, 3);
+	VALUES (2, 1);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (2, 3);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (3, 3);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (4, 1);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (4, 2);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (4, 3);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (5, 2);
+
+INSERT INTO public.Interval_Tag (interval_id, tag_id) 
+	VALUES (5, 3);
 
 -- Status
 INSERT INTO public.Status (user_id, enumstatus_id, annotation_id, date) 
