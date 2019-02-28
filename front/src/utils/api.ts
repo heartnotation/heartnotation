@@ -67,6 +67,7 @@ export const getAnnotations = (): Promise<Annotation[]> => {
       if (a.status) {
         a.status.forEach((s: Status) => (s.date = new Date(s.date)));
       }
+      a.last_status.date = new Date(a.last_status.date);
     });
     return annotations;
   });
