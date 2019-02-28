@@ -42,19 +42,22 @@ class EditUserForm extends Component<Props, States> {
       organizationsSelected: [],
       roles: [],
       rolesSearch: [],
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
-    Promise.all([getOrganizations(), getRoles()]).then(responses => {
-      this.setState({
-        organizations: responses[0],
-        roles: responses[1]
-      });
-    });
+    Promise.all([getOrganizations(), getRoles()])
+      .then(responses => {
+        this.setState({
+          organizations: responses[0],
+          roles: responses[1],
+          loading: false
+        });
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -136,15 +139,16 @@ class EditUserForm extends Component<Props, States> {
           .modifyUser(values)
           .then(() => {
             this.props.handleOk();
+            this.setState({ loading: false });
           })
           .catch(error =>
             this.setState({
-              error: error.data
+              error: error.data,
+              loading: false
             })
           );
       }
     });
-    this.setState({ loading: false });
   }
 
   public render() {
@@ -179,19 +183,8 @@ class EditUserForm extends Component<Props, States> {
         title='Edit user'
         visible={this.props.modalVisible}
         onCancel={this.props.handleCancel}
-        footer={[
-          <Button key='back' onClick={this.props.handleCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key='submit'
-            type='primary'
-            loading={loading}
-            onClick={this.handleOk}
-          >
-            Modify
-          </Button>
-        ]}
+        confirmLoading={loading}
+        onOk={this.handleOk}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={15}>
