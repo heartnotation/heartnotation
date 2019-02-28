@@ -79,7 +79,7 @@ export const orderIntervals = (
     tags: Tag[];
   }>
 > => {
-  let sorted = sortByDuration(intervals);
+  let sorted = sortByStartTime(intervals);
   const lines = [];
   while (sorted.length !== 0) {
     const l = [sorted.shift()!];
@@ -96,7 +96,7 @@ export const orderIntervals = (
   return lines;
 };
 
-const sortByDuration = (
+const sortByStartTime = (
   intervals: Array<{
     id: number;
     time_start: number;
