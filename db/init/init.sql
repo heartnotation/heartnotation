@@ -85,7 +85,7 @@ CREATE TABLE public.User_Organization(
 CREATE TABLE public.Tag(
 	id          SERIAL NOT NULL ,
 	name        VARCHAR (50) NOT NULL ,
-	color       CHAR (7)  NOT NULL ,
+	color       CHAR (50)  NOT NULL ,
 	is_active   BOOL  NOT NULL ,
 	parent_id      INT    ,
 	CONSTRAINT Tag_PK PRIMARY KEY (id)
@@ -445,13 +445,13 @@ INSERT INTO public.CommentInterval (interval_id, user_id, comment, date)
 -- TAG
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on fire', '#ff0000', TRUE);
+	VALUES (NULL, 'Lungs on fire', 'rgba(240,162,2, 0.6)', TRUE);
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on water', '#0000ff', TRUE);
+	VALUES (NULL, 'Lungs on water', 'rgba(235,81,96, 0.6)', TRUE);
 
 INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (2, 'Weird lungs', '#00ff00', TRUE);
+	VALUES (2, 'Weird lungs', 'rgba(0,159,253, 0.6)', TRUE);
 
 -- ANNOTATION_TAG
 
