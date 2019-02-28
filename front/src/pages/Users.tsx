@@ -220,32 +220,34 @@ class Users extends Component<Props, State> {
     const filteredData = initialUsers.slice().filter((record: User) => {
       const id = searches.get('id');
       if (id) {
-        if (!record.id.toString().startsWith(id)) {
+        if (!record.id.toString().includes(id)) {
           return false;
         }
       }
       const mail = searches.get('mail');
       if (mail) {
-        if (!record.mail.toLowerCase().startsWith(mail.toLowerCase())) {
+        if (!record.mail.toLowerCase().includes(mail.toLowerCase())) {
           return false;
         }
       }
       const role = searches.get('role');
       if (role) {
-        if (!record.role.name.toLowerCase().startsWith(role.toLowerCase())) {
+        if (!record.role.name.toLowerCase().includes(role.toLowerCase())) {
           return false;
         }
       }
       const organization = searches.get('organizations');
+      if (!record.organizations) {
+        return false;
+      }
       if (organization) {
         let found = false;
-        for (const o of record.organizations) {
-          if (o.name.toLowerCase().startsWith(organization.toLowerCase())) {
+        record.organizations.forEach(orga => {
+          if (orga.name.toLowerCase().includes(organization.toLowerCase())) {
             found = true;
-            break;
           }
-        }
-        if(!found) {
+        });
+        if (!found) {
           return false;
         }
       }
@@ -347,15 +349,17 @@ class Users extends Component<Props, State> {
           }}
         />
       ),
-      keepCreationData && (<UserCreation
-        key={4}
-        getOrganizations={this.props.getOrganizations}
-        getRoles={this.props.getRoles}
-        sendUser={this.props.sendUser}
-        handleCancel={this.handleCancelCreation}
-        handleOk={this.handleOkCreation}
-        modalVisible={creationVisible}
-      />),
+      keepCreationData && (
+        <UserCreation
+          key={4}
+          getOrganizations={this.props.getOrganizations}
+          getRoles={this.props.getRoles}
+          sendUser={this.props.sendUser}
+          handleCancel={this.handleCancelCreation}
+          handleOk={this.handleOkCreation}
+          modalVisible={creationVisible}
+        />
+      ),
       error && <Alert key={5} message={error} type='error' showIcon={true} />
     ];
   }

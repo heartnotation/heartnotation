@@ -27,7 +27,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   end: number;
   annotation: Annotation;
   selectors: string[];
-  confirmCreate: (selectors: string[], tags: Tag[]) => void;
+  confirmCreate: (interval: Interval) => void;
   confirmDelete: (selectors: string[]) => void;
 }
 
@@ -111,6 +111,9 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
           ],
           textAreaComment: ''
         });
+      })
+      .catch(err => {
+        this.setState({ error: err.data });
       });
   }
 
@@ -130,18 +133,17 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       return;
     }
 
-    const selectedTags = this.state.tags.filter(t =>
-      this.state.selectedTags.includes(t.id)
-    );
-
     api
       .sendIntervalTags({
         tags: this.state.selectedTags,
         interval_id: this.state.currentInterval.id
       })
-      .then(_ => {
+      .then(tags => {
         this.setState({ confirmLoading: false });
-        this.props.confirmCreate(this.props.selectors, selectedTags);
+        this.props.confirmCreate({ ...this.state.currentInterval!, tags });
+      })
+      .catch(err => {
+        this.setState({ error: err.data });
       });
   }
 
@@ -159,9 +161,12 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       time_start: Math.round(this.props.start),
       time_end: Math.round(this.props.end)
     };
-    api.sendInterval(intervalPayload).then(response => {
-      this.setState({ currentInterval: response });
-    });
+    api
+      .sendInterval(intervalPayload)
+      .then(response => {
+        this.setState({ currentInterval: response });
+      })
+      .catch(err => this.setState({ error: err }));
     this.setState({ tags: this.props.annotation.tags });
   }
 

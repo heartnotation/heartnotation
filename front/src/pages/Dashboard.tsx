@@ -328,7 +328,7 @@ class Dashboard extends Component<Props, State> {
           );
         }
       },
-      roles: ['Gestionnaire', 'Admin']
+      roles: ['Gestionnaire']
     }
   ];
 
@@ -355,13 +355,13 @@ class Dashboard extends Component<Props, State> {
       .filter((record: Annotation) => {
         const id = searches.get('id');
         if (id) {
-          if (!record.id.toString().startsWith(id)) {
+          if (!record.id.toString().includes(id)) {
             return false;
           }
         }
         const signalId = searches.get('signal_id');
         if (signalId) {
-          if (!record.signal_id.toString().startsWith(signalId)) {
+          if (!record.signal_id.toString().includes(signalId)) {
             return false;
           }
         }
@@ -387,7 +387,7 @@ class Dashboard extends Component<Props, State> {
           if (
             !record.first_status.user.mail
               .toLowerCase()
-              .startsWith(creationUser.toLowerCase())
+              .includes(creationUser.toLowerCase())
           ) {
             return false;
           }
@@ -410,7 +410,7 @@ class Dashboard extends Component<Props, State> {
           if (
             !record.last_status.user.mail
               .toLowerCase()
-              .startsWith(editUser.toLowerCase())
+              .includes(editUser.toLowerCase())
           ) {
             return false;
           }
@@ -420,7 +420,7 @@ class Dashboard extends Component<Props, State> {
           if (
             !record.last_status.enum_status.name
               .toLowerCase()
-              .startsWith(statusName.toLowerCase())
+              .includes(statusName.toLowerCase())
           ) {
             return false;
           }
@@ -430,7 +430,7 @@ class Dashboard extends Component<Props, State> {
           if (
             !record.organization.name
               .toLowerCase()
-              .startsWith(organizations.toLowerCase())
+              .includes(organizations.toLowerCase())
           ) {
             return false;
           }
@@ -505,7 +505,7 @@ class Dashboard extends Component<Props, State> {
           onClick: () => this.props.history.push(`/annotations/${a.id}`)
         })}
       />,
-      this.props.user.role.name !== 'Annotateur' && (
+      this.props.user.role.name === 'Gestionnaire' && (
         <AddButton
           key={2}
           onClick={() => {
