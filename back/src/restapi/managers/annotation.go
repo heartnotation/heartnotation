@@ -304,7 +304,6 @@ func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, 
 	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
 		return
 	}
-	u.Respond(w, &annotation)
 }
 
 // UpdateAnnotation modifies an annotation
