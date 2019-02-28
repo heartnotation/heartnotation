@@ -23,12 +23,14 @@ import {
 import TextArea from 'antd/lib/input/TextArea';
 
 interface Props extends FormComponentProps, RouteComponentProps {
-  start: number;
-  end: number;
+  start: number | undefined;
+  end: number | undefined;
+  clickedInterval: Interval | undefined;
   annotation: Annotation;
   selectors: string[];
   confirmCreate: (interval: Interval) => void;
   confirmDelete: (selectors: string[]) => void;
+  confirmCancel: () => void;
 }
 
 interface DataComment {
@@ -151,22 +153,62 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     this.props.confirmDelete(this.props.selectors);
   }
 
+  public handleCancel = () => {
+      message.info(
+        'Tags modifications not saved but interval not deleted',
+        5
+      );
+    this.props.confirmCancel();
+  }
+
   public handleChangeSelectTags = (values: number[]) => {
     this.setState({ selectedTags: values });
   }
 
   public componentDidMount = () => {
-    const intervalPayload: IntervalPayload = {
-      annotation_id: this.props.annotation.id,
-      time_start: Math.round(this.props.start),
-      time_end: Math.round(this.props.end)
-    };
-    api
-      .sendInterval(intervalPayload)
-      .then(response => {
-        this.setState({ currentInterval: response });
-      })
-      .catch(err => this.setState({ error: err }));
+    if(this.props.clickedInterval) {
+      let datacomments:DataComment[] = [];
+      let tags:number[] = [];
+      if(this.props.clickedInterval.comments) {
+        datacomments = this.props.clickedInterval.comments.map(
+          (comment: IntervalComment) => {
+            return {
+              author: comment.user.mail,
+              avatar: (
+                <Avatar
+                  style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+                  size='large'
+                >
+                  {comment.user.mail[0].toUpperCase()}
+                </Avatar>
+              ),
+              content: <p>{comment.comment}</p>,
+              datetime: comment.date.toLocaleString()
+            };
+          }
+        );
+      }
+      if(this.props.clickedInterval.tags) {
+        tags = this.props.clickedInterval.tags.map((tag: Tag) => tag.id);
+      }
+      this.setState({
+        comments: datacomments,
+        selectedTags: tags,
+        currentInterval: this.props.clickedInterval
+      });
+    }else if (this.props.start && this.props.end) {
+      const intervalPayload: IntervalPayload = {
+        annotation_id: this.props.annotation.id,
+        time_start: Math.round(this.props.start),
+        time_end: Math.round(this.props.end)
+      };
+      api
+        .sendInterval(intervalPayload)
+        .then(response => {
+          this.setState({ currentInterval: response });
+        })
+        .catch(err => this.setState({ error: err }));
+    } 
     this.setState({ tags: this.props.annotation.tags });
   }
 
@@ -206,7 +248,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
           visible={true}
           onOk={this.handleSubmit}
           confirmLoading={this.state.confirmLoading}
-          onCancel={this.handleDelete}
+          onCancel={this.handleCancel}
           footer={null}
         >
           <Form>
@@ -220,16 +262,27 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                 }
                 key='1'
               >
-                <p className='text-center'>
-                  Tags to assignate to annotation task{' '}
-                  {this.props.annotation.id} in interval between{' '}
-                  {this.props.start} and {this.props.end} :
-                </p>
+                {!this.props.clickedInterval && (
+                  <p className='text-center'>
+                    Tags to assignate to annotation task{' '}
+                    {this.props.annotation.id} in interval between{' '}
+                    {this.props.start} and {this.props.end} :
+                  </p>
+                )}
+                {this.props.clickedInterval && (
+                  <p className='text-center'>
+                    Tags to assignate to annotation task{' '}
+                    {this.props.clickedInterval.annotation_id} in interval
+                    between {this.props.clickedInterval.time_start} and{' '}
+                    {this.props.clickedInterval.time_end} :
+                  </p>
+                )}
                 <Select
                   mode='multiple'
                   style={{ width: '100%' }}
                   placeholder='Please select'
                   onChange={this.handleChangeSelectTags}
+                  value={this.state.selectedTags}
                 >
                   {tagValues}
                 </Select>

@@ -24,6 +24,7 @@ interface State {
   popperVisible: boolean;
   xIntervalStart?: number;
   xIntervalEnd?: number;
+  clickedInterval?: Interval;
   intervalSelectors: string[];
   graphElements: GraphElement[];
   intervals: Interval[];
@@ -65,7 +66,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public onClickInterval = (intervalId: number) => {
-    console.log(this.state.intervals.find((inter:Interval) => inter.id === intervalId));
+    this.setState({popperVisible:true,
+      clickedInterval: this.state.intervals.find((inter:Interval) => inter.id === intervalId)});
   }
 
   private getIntervalsData = (
@@ -545,15 +547,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
         )
       }); // Remove in elements
     }
-    this.setState({ popperVisible: false, intervalSelectors: [] });
+    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
     message.error('Interval has been deleted.', 5);
   }
 
   private confirmCreate = (newInterval: Interval) => {
     this.state.intervals.push(newInterval);
-    console.log(newInterval);
     this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
-    console.log(newInterval);
+  }
+
+  private confirmCancel = () => {
+    this.setState({popperVisible: false});
   }
 
   public afterCreate = (
@@ -594,11 +598,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       margin
     );
  
-    this.setState({
-      popperVisible: false,
-      intervalSelectors: []
-    });
-
+    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
     message.success(
       'Interval has been created with the information entered.',
       5
@@ -636,15 +636,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
           </div>
           {this.state.popperVisible &&
             this.state.annotation &&
-            this.state.xIntervalStart &&
-            this.state.xIntervalEnd && (
+            ((this.state.xIntervalStart &&
+            this.state.xIntervalEnd) || this.state.clickedInterval) && (
               <FormIntervalSignalAnnotation
                 start={this.state.xIntervalStart}
                 end={this.state.xIntervalEnd}
+                clickedInterval={this.state.clickedInterval}
                 selectors={this.state.intervalSelectors}
                 annotation={this.state.annotation}
                 confirmCreate={this.confirmCreate}
                 confirmDelete={this.confirmDelete}
+                confirmCancel={this.confirmCancel}
               />
             )}
         </div>
