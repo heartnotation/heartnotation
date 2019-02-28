@@ -8,6 +8,7 @@ import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAn
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
 import { Tag } from '../utils/objects';
+import { orderIntervals, sizeInterval } from '../utils/intervals';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -28,7 +29,6 @@ interface State {
   graphElements: GraphElement[];
   intervals: Interval[];
   mainGraph?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
-  preview?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
 }
 
 interface GraphElement {
@@ -69,23 +69,20 @@ class SignalAnnotation extends Component<RouteProps, State> {
   ): {
     datas: [{ x: number; y: number }, { x: number; y: number }];
     area: d3.Area<Point>;
-    scales: { x: any; y: any };
-    yLimits: { max: number; min: number };
   } => {
-    const intervalData: [{ x: number; y: number }, { x: number; y: number }] = [
+    const datas: [{ x: number; y: number }, { x: number; y: number }] = [
       { x: time_start, y: yMax },
       { x: time_end, y: yMax }
     ];
-    const areaGraph = d3
+
+    const area = d3
       .area<Point>()
       .x(d => xScale(d.x))
-      .y0(() => yScale(yMin))
-      .y1(d => yScale(d.y));
+      .y0(d => yScale(d.y))
+      .y1(() => yScale(yMin));
     return {
-      datas: intervalData,
-      area: areaGraph,
-      scales: { x: xScale, y: yScale },
-      yLimits: { max: yMax, min: yMin }
+      datas,
+      area
     };
   }
 
@@ -117,7 +114,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('clip-path', 'url(#clip)')
       .style('fill', color)
       .style('stroke', 'grey')
-      .style('opacity', '0.2');
+      .style('opacity', '0.4');
   }
 
   private getColors = (
@@ -142,6 +139,80 @@ class SignalAnnotation extends Component<RouteProps, State> {
     } else {
       return 'grey';
     }
+  }
+
+  private drawAllIntervals = (
+    yMax: number,
+    yMin: number,
+    xScale: any,
+    yScale: any,
+    selection: d3.Selection<SVGGElement, {}, HTMLElement, any>,
+    selector: string,
+    className: string,
+    margin: any
+  ) => {
+    const { intervals } = this.state;
+    const i = intervals.map((interval, _, array) => {
+      const intersectors = array.filter(
+        i =>
+          i.id !== interval.id &&
+          ((interval.time_start > i.time_start &&
+            interval.time_start < i.time_end) ||
+            (interval.time_end > i.time_start &&
+              interval.time_end < i.time_end) ||
+            (i.time_start > interval.time_start &&
+              i.time_start < interval.time_end) ||
+            (i.time_end > interval.time_start &&
+              i.time_end < interval.time_end))
+      );
+      return {
+        ...interval,
+        colors: interval.tags ? interval.tags.map(t => t.color) : [],
+        took: false,
+        intersectors
+      };
+    });
+    const lines = sizeInterval(orderIntervals(i));
+    const block = (yMax - yMin) / lines.length;
+
+    lines.map((line, lineNumber) => {
+      line
+        .map(interval => {
+          const yUp = yMax - block * lineNumber;
+          const yDown = yUp - block * (interval.additionnalBlock + 1);
+          return { ...interval, yMax: yUp, yMin: yDown };
+        })
+        .forEach(interval => {
+          const datas = this.getIntervalsData(
+            interval,
+            interval.yMax,
+            interval.yMin,
+            xScale,
+            yScale
+          );
+          this.drawInterval(
+            datas,
+            selection,
+            selector,
+            interval.id,
+            className,
+            margin,
+            interval.tags ? interval.tags.map(t => t.color) : []
+          );
+          const graphElement = {
+            id: interval.id,
+            selector: `#${className}-${interval.id}`,
+            data: [
+              { x: interval.time_start, y: interval.yMax },
+              { x: interval.time_end, y: interval.yMax }
+            ],
+            object: datas.area
+          };
+          this.setState({
+            graphElements: [...this.state.graphElements, graphElement]
+          });
+        });
+    });
   }
 
   public componentDidMount = async () => {
@@ -461,6 +532,18 @@ class SignalAnnotation extends Component<RouteProps, State> {
           ],
           object: mainGraphDatas.area
         };
+        this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
+          this,
+          yScale.domain()[0],
+          yScale.domain()[1],
+          xScale,
+          yScale,
+          xScalePreview,
+          yScalePreview,
+          svgPreview,
+          svgFocus,
+          margin
+        );
         this.setState({
           graphElements: [
             ...this.state.graphElements,
@@ -524,57 +607,26 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     drawPreview(d3.zoomIdentity);
     drawFocus(d3.zoomIdentity);
-
-    const graphElements = intervals.map(interval => {
-      const mainGraphArea = this.getIntervalsData(
-        interval,
-        yScale.domain()[1],
-        yScale.domain()[0],
-        xScale,
-        yScale
-      );
-      this.drawInterval(
-        mainGraphArea,
-        svgFocus,
-        '#interval-focus-container',
-        idGraphElement,
-        'interval-area',
-        margin,
-        interval.tags ? interval.tags.map(inter => inter.color) : []
-      );
-      this.drawInterval(
-        this.getIntervalsData(
-          interval,
-          yScale.domain()[1],
-          yScale.domain()[0],
-          xScalePreview,
-          yScalePreview
-        ),
-        svgPreview,
-        '#interval-preview-container',
-        idGraphElement,
-        'interval-area-preview',
-        margin,
-        interval.tags ? interval.tags.map(inter => inter.color) : []
-      );
-      const graphElement = {
-        id: idGraphElement,
-        selector: `#interval-area-${idGraphElement}`,
-        data: [
-          { x: interval.time_start, y: yScale.domain()[1] },
-          { x: interval.time_end, y: yScale.domain()[1] }
-        ],
-        object: mainGraphArea.area
-      };
-      return { elements: graphElement, id: idGraphElement++ };
-    });
-
-    this.setState({
-      graphElements: [
-        ...this.state.graphElements,
-        ...graphElements.map(g => g.elements)
-      ]
-    });
+    this.drawAllIntervals(
+      yScale.domain()[0],
+      yScale.domain()[1],
+      xScale,
+      yScale,
+      svgFocus,
+      '#interval-focus-container',
+      'interval-area',
+      margin
+    );
+    this.drawAllIntervals(
+      yScalePreview.domain()[0],
+      yScalePreview.domain()[1],
+      xScalePreview,
+      yScalePreview,
+      svgPreview,
+      '#interval-preview-container',
+      'interval-area-preview',
+      margin
+    );
   }
 
   public confirmDelete = (selectors: string[]) => {
@@ -590,20 +642,50 @@ class SignalAnnotation extends Component<RouteProps, State> {
     message.error('Interval has been deleted.', 5);
   }
 
-  public confirmCreate = (selectors: string[], tags: Tag[]) => {
-    const { mainGraph, graphElements } = this.state;
-    const colors = tags.map(t => t.color);
+  private confirmCreate = (newInterval: Interval) => {
+    this.state.intervals.push(newInterval);
+    this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+  }
 
-    selectors.forEach(s => {
-      const selection = d3.select(s);
-      const interval = graphElements.find(g => g.selector === s);
-
-      selection
-        .style('fill', this.getColors(mainGraph!, interval!.id, colors))
-        .style('stroke', tags ? tags[0].color : 'grey')
-        .style('opacity', '0.4');
+  public afterCreate = (
+    yMax: number,
+    yMin: number,
+    xScale: any,
+    yScale: any,
+    xScalePreview: any,
+    yScalePreview: any,
+    svgPreview: any,
+    svgFocus: any,
+    margin: any
+  ) => {
+    this.state.graphElements.forEach(graphElement => {
+      d3.select(graphElement.selector).remove();
     });
-    this.setState({ popperVisible: false, intervalSelectors: [] });
+    this.setState({ graphElements: [] });
+    this.drawAllIntervals(
+      yMax,
+      yMin,
+      xScale,
+      yScale,
+      svgFocus,
+      '#interval-focus-container',
+      'interval-area',
+      margin
+    );
+    this.drawAllIntervals(
+      yMax,
+      yMin,
+      xScalePreview,
+      yScalePreview,
+      svgPreview,
+      '#interval-preview-container',
+      'interval-area-preview',
+      margin
+    );
+    this.setState({
+      popperVisible: false,
+      intervalSelectors: []
+    });
     message.success(
       'Interval has been created with the information entered.',
       5
