@@ -7,9 +7,7 @@ import { Annotation, Point, Interval } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
-import { Tag } from '../utils/objects';
 import { orderIntervals, sizeInterval } from '../utils/intervals';
-import { interval } from 'd3';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
   getAnnotation: (id: number) => Promise<Annotation>;
@@ -248,7 +246,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     }
     let leads: Point[][];
-    let idGraphElement: number = 0;
 
     if (!annotation.signal) {
       this.setState({ error: 'No signal found', loading: false });
