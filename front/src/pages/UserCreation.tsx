@@ -67,12 +67,11 @@ class UserCreation extends Component<Props, States> {
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
-    this.setState({ loading: true });
+    this.setState({ loading: true, error: '' });
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         values.mail = values.mail.toLowerCase();
-        this.setState({ loading: true, error: '' });
         this.props
           .sendUser(values)
           .then(() => {
@@ -198,16 +197,9 @@ class UserCreation extends Component<Props, States> {
         key={2}
         title='Create user'
         visible={this.props.modalVisible}
+        onOk={this.handleOk}
         onCancel={this.props.handleCancel}
         confirmLoading={loading}
-        footer={[
-          <Button key='back' onClick={this.props.handleCancel}>
-            Cancel
-          </Button>,
-          <Button key='submit' type='primary' onClick={this.handleOk}>
-            Create
-          </Button>
-        ]}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={15}>
