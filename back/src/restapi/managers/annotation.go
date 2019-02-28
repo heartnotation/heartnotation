@@ -199,7 +199,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	transaction := db.Begin()
 
 	date := time.Now()
-	annotation := m.Annotation{Name: *a.Name, OrganizationID: a.OrganizationID, Commentannotation: annotationCommentsChild, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	annotation := m.Annotation{Name: a.Name, OrganizationID: a.OrganizationID, Commentannotation: annotationCommentsChild, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
 
 	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
 		transaction.Rollback()
