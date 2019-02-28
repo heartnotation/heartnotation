@@ -126,8 +126,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing field", 424)
 		return
 	}
-	annotationCommentsParent := []m.AnnotationComment{}
 	annotationCommentsChild := []m.AnnotationComment{}
+	annotationIntervalChild := []m.Interval{}
+	annotationIntervalCommentChild := []m.IntervalComment{}
 	if a.ParentID != nil {
 		parent := &m.Annotation{}
 		err = db.Preload("Status").Preload("Status.EnumStatus").Find(&parent, *a.ParentID).Error
@@ -157,6 +158,8 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 		//All tests have passed, parendID is correct can copy the datas
 
+		//annotation comments
+		annotationCommentsParent := []m.AnnotationComment{}
 		err = db.Preload("User").Where("annotation_id = ?", a.ParentID).Find(&annotationCommentsParent).Error
 		if err != nil {
 			u.CheckErrorCode(err, w)
@@ -170,8 +173,44 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 			annotationCommentsChild = append(annotationCommentsChild, annotationCommentCpy)
 		}
-		fmt.Println("child annotationComments")
-		fmt.Println(annotationCommentsChild)
+
+		//annotation interval
+		annotationIntervalParent := []m.Interval{}
+		err = db.Preload("Tags").Where("annotation_id = ?", a.ParentID).Find(&annotationIntervalParent).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		for i := 0; i < len(annotationIntervalParent); i++ {
+			annotationIntervalCpy := m.Interval{}
+			annotationIntervalCpy.Tags = annotationIntervalParent[i].Tags
+			annotationIntervalCpy.TimeEnd = annotationIntervalParent[i].TimeEnd
+			annotationIntervalCpy.TimeStart = annotationIntervalParent[i].TimeStart
+			annotationIntervalCpy.IsActive = true
+
+			annotationIntervalChild = append(annotationIntervalChild, annotationIntervalCpy)
+		}
+		fmt.Println("child annotationIntervalChild")
+		fmt.Println(annotationIntervalChild)
+
+		//annotation interval comments
+		annotationIntervalCommentParent := []m.IntervalComment{}
+		for j := 0; j < len(annotationIntervalCommentParent); j++ {
+			err = db.Preload("Tags").Where("interval_id = ?", a.ParentID).Find(&annotationIntervalCommentParent).Error
+			if err != nil {
+				u.CheckErrorCode(err, w)
+				return
+			}
+			for i := 0; i < len(annotationIntervalCommentParent); i++ {
+				annotationIntervalCommentCpy := m.IntervalComment{}
+				annotationIntervalCommentCpy.Comment = annotationIntervalCommentParent[i].Comment
+				annotationIntervalCommentCpy.Date = annotationIntervalCommentParent[i].Date
+
+				annotationIntervalCommentChild = append(annotationIntervalCommentChild, annotationIntervalCommentCpy)
+			}
+		}
+		fmt.Println("child annotationIntervalChild")
+		fmt.Println(annotationIntervalCommentChild)
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
@@ -186,6 +225,13 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
 		transaction.Rollback()
 		return
+	}
+	for i := 0; i < len(annotationIntervalChild); i++ {
+		annotationIntervalChild[i].AnnotationID = annotation.ID
+		if u.CheckErrorCode(transaction.Create(&annotationIntervalChild[i]).Error, w) {
+			transaction.Rollback()
+			return
+		}
 	}
 	/*
 		if a.ParentID != nil {
