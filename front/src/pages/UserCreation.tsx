@@ -48,30 +48,31 @@ class UserCreation extends Component<Props, States> {
       organizationsSelected: [],
       roles: [],
       rolesSearch: [],
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
-    Promise.all([getOrganizations(), getRoles(), getAllUsers()]).then(
-      responses => {
+    Promise.all([getOrganizations(), getRoles(), getAllUsers()])
+      .then(responses => {
         this.setState({
           organizations: responses[0],
           roles: responses[1],
-          users: responses[2]
+          users: responses[2],
+          loading: false
         });
-      }
-    );
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
-    this.setState({ loading: true, error: '' });
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         values.mail = values.mail.toLowerCase();
+        this.setState({ loading: true, error: '' });
         this.props
           .sendUser(values)
           .then(() => {

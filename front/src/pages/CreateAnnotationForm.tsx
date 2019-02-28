@@ -69,25 +69,26 @@ class CreateAnnotationForm extends Component<Props, States> {
       signalCallback: undefined,
       signalValue: '',
       annotationValidateStatus: '',
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
     const { getTags, getOrganizations, getAnnotations } = this.props;
-    Promise.all([getTags(), getOrganizations(), getAnnotations()]).then(
-      responses => {
+    Promise.all([getTags(), getOrganizations(), getAnnotations()])
+      .then(responses => {
         this.setState({
           tags: responses[0],
           organizations: responses[1],
           annotations: responses[2],
           annotationsFinished: responses[2].filter(
             (a: Annotation) => a.last_status.enum_status.id > 4
-          )
+          ),
+          loading: false
         });
-      }
-    );
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -290,7 +291,6 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
-    this.setState({ loading: true });
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
@@ -307,6 +307,7 @@ class CreateAnnotationForm extends Component<Props, States> {
         } else {
           values.organization_id = null;
         }
+        this.setState({ loading: true });
         this.props
           .sendAnnotation(values)
           .then(() => {
