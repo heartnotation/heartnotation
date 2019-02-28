@@ -9,7 +9,7 @@ type Tag struct {
 	Annotations []Annotation `json:"users,omitempty" gorm:"many2many:annotation_tag;PRELOAD:false"`
 	Intervals   []Interval   `json:"intervals,omitempty" gorm:"many2many:interval_tag;PRELOAD:false"`
 	IsActive    bool         `json:"is_active"`
-	Children    []Tag        `json:"children" gorm:"foreignkey:ParentID"`
+	Children    []Tag        `json:"children,omitempty" gorm:"foreignkey:ParentID"`
 }
 
 // TableName sets table name of the struct

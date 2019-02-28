@@ -44,7 +44,7 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 	var i d.Interval
 	err := json.NewDecoder(r.Body).Decode(&i)
 	if err != nil || i.TimeStart == nil || i.TimeEnd == nil || i.AnnotationID == nil && (*i.TimeStart > *i.TimeEnd) {
-		http.Error(w, "Bad args", 204)
+		http.Error(w, "Bad args", 400)
 		return
 	}
 	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID, IsActive: true}
@@ -96,4 +96,5 @@ func AddTagsOnInterval(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	db.Model(&interval).Association("Tags").Replace(tags)
+	u.RespondCreate(w, &tags)
 }
