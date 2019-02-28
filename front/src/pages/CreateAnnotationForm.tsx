@@ -290,6 +290,7 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
+    this.setState({ loading: true });
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
@@ -306,15 +307,16 @@ class CreateAnnotationForm extends Component<Props, States> {
         } else {
           values.organization_id = null;
         }
-        // this.setState({ loading: true, error: '' });
         this.props
           .sendAnnotation(values)
           .then(() => {
             this.props.handleOk();
+            this.setState({ loading: false });
           })
           .catch(() =>
             this.setState({
-              error: 'Problem while sending datas, please retry later...'
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
             })
           );
       }
@@ -343,6 +345,7 @@ class CreateAnnotationForm extends Component<Props, States> {
         key={2}
         visible={this.props.creationVisible}
         onOk={this.handleOk}
+        confirmLoading={loading}
         onCancel={this.props.handleCancel}
         title='Create annotation'
       >
