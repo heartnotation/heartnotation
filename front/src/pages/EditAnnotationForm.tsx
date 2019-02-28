@@ -159,10 +159,9 @@ class EditAnnotationForm extends Component<Props, States> {
       this.setState({ loading: true, error: '' });
       const a = { ...this.props.annotation };
 
-      const o = this.state.organizations.find(
+      a.organization = this.state.organizations.find(
         orga => orga.name === values.organization
       );
-      o ? (a.organization = o) : (a.organization = undefined);
       a.name = values.name;
       a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
       this.props
