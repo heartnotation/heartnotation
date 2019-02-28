@@ -254,7 +254,8 @@ ALTER TABLE public.Annotation
 ALTER TABLE public.CommentInterval
 	ADD CONSTRAINT CommentInterval_Interval0_FK
 	FOREIGN KEY (interval_id)
-	REFERENCES public.Interval(id);
+	REFERENCES public.Interval(id)
+	ON DELETE CASCADE;
 
 ALTER TABLE public.CommentInterval
 	ADD CONSTRAINT CommentInterval_User1_FK
@@ -299,7 +300,8 @@ ALTER TABLE public.Annotation_Tag
 ALTER TABLE public.Interval_Tag
 	ADD CONSTRAINT Interval_Tag_Interval0_FK
 	FOREIGN KEY (interval_id)
-	REFERENCES public.Interval(id);
+	REFERENCES public.Interval(id)
+	ON DELETE CASCADE;
 
 ALTER TABLE public.Interval_Tag
 	ADD CONSTRAINT Interval_Tag_Tag1_FK
