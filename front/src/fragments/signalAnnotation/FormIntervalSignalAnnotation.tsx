@@ -30,7 +30,7 @@ interface Props extends FormComponentProps, RouteComponentProps {
   selectors: string[];
   confirmCreate: (interval: Interval) => void;
   confirmDelete: (interval: Interval) => void;
-  confirmCancel: () => void;
+  confirmCancel: (interval: Interval) => void;
 }
 
 interface DataComment {
@@ -94,13 +94,6 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     api
       .sendIntervalComment(intervalCommentPayload)
       .then((response: IntervalComment) => {
-        if(this.props.clickedInterval) {
-          if(this.props.clickedInterval.comments) {
-            this.props.clickedInterval.comments.push(response);
-          } else {
-            this.props.clickedInterval.comments = [response];
-          }
-        }
         this.setState({
           comments: [
             {
@@ -118,8 +111,11 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
             },
             ...this.state.comments
           ],
-          textAreaComment: '',
+          textAreaComment: ''
         });
+        if (this.state.currentInterval) {
+          this.state.currentInterval.comments.push(response);
+        }
       })
       .catch(err => {
         this.setState({ error: err.data });
@@ -157,18 +153,14 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public handleDelete = () => {
-    if(this.state.currentInterval) {
+    if (this.state.currentInterval) {
       api.deleteInterval(this.state.currentInterval);
       this.props.confirmDelete(this.state.currentInterval);
     }
   }
 
   public handleCancel = () => {
-      message.info(
-        'Tags modifications not saved but interval not deleted',
-        5
-      );
-    this.props.confirmCancel();
+    this.props.confirmCancel({ ...this.state.currentInterval! });
   }
 
   public handleChangeSelectTags = (values: number[]) => {
@@ -176,10 +168,10 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
   }
 
   public componentDidMount = () => {
-    if(this.props.clickedInterval) {
-      let datacomments:DataComment[] = [];
-      let tags:number[] = [];
-      if(this.props.clickedInterval.comments) {
+    if (this.props.clickedInterval) {
+      let datacomments: DataComment[] = [];
+      let tags: number[] = [];
+      if (this.props.clickedInterval.comments) {
         datacomments = this.props.clickedInterval.comments.map(
           (comment: IntervalComment) => {
             return {
@@ -197,8 +189,10 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
             };
           }
         );
+      } else {
+        this.props.clickedInterval.comments = [];
       }
-      if(this.props.clickedInterval.tags) {
+      if (this.props.clickedInterval.tags) {
         tags = this.props.clickedInterval.tags.map((tag: Tag) => tag.id);
       }
       this.setState({
@@ -206,7 +200,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
         selectedTags: tags,
         currentInterval: this.props.clickedInterval
       });
-    }else if (this.props.start && this.props.end) {
+    } else if (this.props.start && this.props.end) {
       const intervalPayload: IntervalPayload = {
         annotation_id: this.props.annotation.id,
         time_start: Math.round(this.props.start),
@@ -215,10 +209,11 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       api
         .sendInterval(intervalPayload)
         .then(response => {
+          response.comments = [];
           this.setState({ currentInterval: response });
         })
         .catch(err => this.setState({ error: err }));
-    } 
+    }
     this.setState({ tags: this.props.annotation.tags });
   }
 
@@ -283,8 +278,8 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                   <p className='text-center'>
                     Tags to assignate to annotation task{' '}
                     {this.props.clickedInterval.annotation_id} in interval
-                    between <b>{this.props.clickedInterval.time_start} ms</b> and{' '}
-                    <b>{this.props.clickedInterval.time_end} ms</b> :
+                    between <b>{this.props.clickedInterval.time_start} ms</b>{' '}
+                    and <b>{this.props.clickedInterval.time_end} ms</b> :
                   </p>
                 )}
                 <Select
@@ -336,6 +331,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                 type='primary'
                 loading={this.state.confirmLoading}
                 onClick={this.handleSubmit}
+                disabled={this.state.confirmLoading}
               >
                 Assign informations
               </Button>

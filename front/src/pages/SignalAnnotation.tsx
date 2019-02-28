@@ -66,7 +66,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public onClickInterval = (intervalId: number) => {
-    this.setState({popperVisible:true,
+    this.setState({xIntervalStart: undefined, xIntervalEnd: undefined, popperVisible:true,
       clickedInterval: this.state.intervals.find((inter:Interval) => inter.id === intervalId)});
   }
 
@@ -388,18 +388,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
     };
 
-    const drawFocus = (transform: any) => {
-      const scaleX = transform.rescaleX(xScale);
-
-      xAxisGroup.call(xAxis.scale(scaleX));
+    const drawFocus = () => {
+      xAxisGroup.call(xAxis.scale(xScale));
       yAxisGroup.call(yAxis.scale(yScale));
 
       canvasFocusContext.clearRect(0, 0, width, height);
 
-      drawLeads(canvasFocusContext, scaleX, yScale);
+      drawLeads(canvasFocusContext, xScale, yScale);
 
       for (const g of this.state.graphElements) {
-        g.object.x(d => scaleX(d.x));
+        g.object.x(d => xScale(d.x));
         svgFocus
           .datum<Point[]>(g.data)
           .select(g.selector)
@@ -407,20 +405,23 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
     };
 
-    const drawPreview = (transform: any) => {
+    const drawPreview = () => {
       xAxisGroupPreview.call(xAxisPreview.scale(xScalePreview));
       drawLeads(canvasPreviewContext, xScalePreview, yScalePreview);
     };
 
     const zoomed = () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
+      
+      xScale.domain(d3.event.transform.rescaleX(xScalePreview).domain());
+      drawFocus();
+      xAxisGroup.call(xAxis);
       svgPreview
         .select('.brush')
         .call(brush.move, [
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[0]),
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[1])
-        ]);
-      drawFocus(d3.event.transform);
+        ]); 
     };
 
     const brushed = () => {
@@ -432,7 +433,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
           xScalePreview.invert(d3.event.selection[1])
         ]);
 
-        drawFocus(d3.zoomIdentity);
+        // Change graph zone when brush moved
+        svgFocus
+          .select('.zoom')
+          .call(
+            zoom.transform,
+            d3.zoomIdentity
+              .scale((width - margin.right - margin.left) / (d3.event.selection[1] - d3.event.selection[0]))
+              .translate(-d3.event.selection[0], 0)
+          );
+
+        drawFocus();
       }
 
       xAxisGroup.call(xAxis);
@@ -441,8 +452,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const zoom: any = d3
       .zoom()
       .scaleExtent([1, 10000]) // Zoom x1 to x10000
-      .translateExtent([[0, 0], [width, height]])
-      .extent([[0, 0], [width, height]])
+      .translateExtent([[0, 0], [width - margin.right - margin.left, height]])
+      .extent([[0, 0], [width - margin.right - margin.left, height]])
       .on('zoom', zoomed);
 
     const brush: any = d3
@@ -460,7 +471,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-
+        
         this.setState({popperVisible: true,
           xIntervalStart: xStart,
           xIntervalEnd: xEnd});
@@ -515,8 +526,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('width', width - margin.left - margin.right)
       .attr('height', height);
 
-    drawPreview(d3.zoomIdentity);
-    drawFocus(d3.zoomIdentity);
+    drawPreview();
+    drawFocus();
     this.drawAllIntervals(
       yScale.domain()[0],
       yScale.domain()[1],
@@ -547,6 +558,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   private confirmCreate = (newInterval: Interval) => {
+    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined});
     const exists = this.state.intervals.find((i:Interval) => i.id === newInterval.id);
     if(exists) {
       // Interval modification
@@ -563,8 +575,23 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
-  private confirmCancel = () => {
-    this.setState({popperVisible: false});
+  private confirmCancel = (canInterval:Interval) => {
+    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined}, () => {
+      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+      message.info(
+        'Tags modifications not saved but interval not deleted',
+        5
+      );
+    });
+    const exists = this.state.intervals.find((i:Interval) => i.id === canInterval.id);
+    if(exists) {
+      // Interval modification (comments added)
+      exists.tags = canInterval.tags;
+      exists.comments = canInterval.comments;
+    } else {
+      // Interval creation
+      this.state.intervals.push(canInterval);
+    }
   }
 
   public afterCreate = (
