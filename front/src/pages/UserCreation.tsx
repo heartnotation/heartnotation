@@ -67,17 +67,26 @@ class UserCreation extends Component<Props, States> {
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
+    this.setState({ loading: true });
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         values.mail = values.mail.toLowerCase();
         this.setState({ loading: true, error: '' });
-        this.props.sendUser(values).then(() => {
-          this.props.handleOk();
-        });
+        this.props
+          .sendUser(values)
+          .then(() => {
+            this.props.handleOk();
+            this.setState({ loading: false });
+          })
+          .catch(() =>
+            this.setState({
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
+            })
+          );
       }
     });
-    this.setState({ loading: false });
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -190,16 +199,12 @@ class UserCreation extends Component<Props, States> {
         title='Create user'
         visible={this.props.modalVisible}
         onCancel={this.props.handleCancel}
+        confirmLoading={loading}
         footer={[
           <Button key='back' onClick={this.props.handleCancel}>
             Cancel
           </Button>,
-          <Button
-            key='submit'
-            type='primary'
-            loading={loading}
-            onClick={this.handleOk}
-          >
+          <Button key='submit' type='primary' onClick={this.handleOk}>
             Create
           </Button>
         ]}
