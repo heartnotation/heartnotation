@@ -161,25 +161,17 @@ class EditAnnotationForm extends Component<Props, States> {
       const o = this.state.organizations.find(
         orga => orga.name === values.organization
       );
-      if(o) {
-        a.organization = o;
-        a.name = values.name;
-        a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
-
-        this.props
-          .changeAnnotation(a)
-          .then(() => {
-            this.props.handleOk();
-          })
-          .catch(() => {
-            this.setState({ error: 'Error while sending datas' });
-          });
-      } else {
-        this.setState({
-          error:
-            'Organization is invalid'
+      (o) ? a.organization = o : a.organization = undefined;
+      a.name = values.name;
+      a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
+      this.props
+        .changeAnnotation(a)
+        .then(() => {
+          this.props.handleOk();
+        })
+        .catch(() => {
+          this.setState({ error: 'Error while sending datas' });
         });
-      }
     });
   }
 

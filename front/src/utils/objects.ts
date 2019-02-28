@@ -1,7 +1,7 @@
 export interface Annotation {
   id: number;
   name: string;
-  organization: Organization;
+  organization?: Organization;
   status?: Status[];
   last_status: Status;
   first_status: Status;

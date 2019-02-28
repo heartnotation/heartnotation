@@ -11,6 +11,7 @@ import (
 
 	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 // GetAllAnnotations list all annotations
@@ -95,7 +96,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.Annotation
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.SignalID == "" || a.Name == nil || a.TagsID == nil {
+	if a.SignalID == "" || a.Name == "" || a.TagsID == nil {
 		http.Error(w, "invalid args", 400)
 		return
 	}
@@ -122,7 +123,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	if u.CheckErrorCode(db.Find(&tags, a.TagsID).Error, w) {
 		return
 	}
-	if a.SignalID == "" || *a.Name == "" {
+	if a.SignalID == "" || a.Name == "" {
 		http.Error(w, "Missing field", 424)
 		return
 	}
@@ -202,6 +203,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 
 	date := time.Now()
 	annotation := m.Annotation{Name: *a.Name, OrganizationID: a.OrganizationID, Commentannotation: annotationCommentsChild, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+
 	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
 		transaction.Rollback()
 		return
@@ -328,28 +330,32 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	changeStatusEditDate(db, w, annotationStatus.EnumStatus, &contextUser.ID, annotationStatus.ID)
+}
+
+func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) {
 	enumStatus := m.EnumStatus{}
-	if u.CheckErrorCode(db.Where(annotationStatus.EnumStatus).First(&enumStatus).Error, w) {
+	if u.CheckErrorCode(db.Where(enumStatusID).First(&enumStatus).Error, w) {
 		return
 	}
 
 	transaction := db.Begin()
 
 	date := time.Now()
-	status := m.Status{EnumStatus: &enumStatus, UserID: &contextUser.ID, AnnotationID: &annotationStatus.ID, Date: date}
+	status := m.Status{EnumStatus: &enumStatus, UserID: userID, AnnotationID: &annotationID, Date: date}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
 		return
 	}
 
-	annotation := m.Annotation{ID: annotationStatus.ID}
+	annotation := m.Annotation{ID: annotationID}
 	if u.CheckErrorCode(transaction.Model(&annotation).Association("Status").Append(&status).Error, w) {
 		transaction.Rollback()
 		return
 	}
 
 	annotationEditDate := m.Annotation{}
-	if u.CheckErrorCode(db.First(&annotationEditDate, annotationStatus.ID).Error, w) {
+	if u.CheckErrorCode(db.First(&annotationEditDate, annotationID).Error, w) {
 		transaction.Rollback()
 		return
 	}
@@ -363,7 +369,6 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	u.Respond(w, &annotation)
-
 }
 
 // UpdateAnnotation modifies an annotation
@@ -412,6 +417,12 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m := m.ToMap(annotation, a)
+
+	if annotation.Organization == nil && a.OrganizationID != annotation.OrganizationID {
+		changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID)
+	} else if annotation.Organization != nil && a.OrganizationID == nil {
+		changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID)
+	}
 
 	transaction := db.Begin()
 	if u.CheckErrorCode(transaction.Model(&annotation).Updates(m).Error, w) {
