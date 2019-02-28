@@ -128,7 +128,7 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	}
 	annotationCommentsChild := []m.AnnotationComment{}
 	annotationIntervalChild := []m.Interval{}
-	annotationIntervalCommentChild := []m.IntervalComment{}
+	annotationIntervalParent := []m.Interval{}
 	if a.ParentID != nil {
 		parent := &m.Annotation{}
 		err = db.Preload("Status").Preload("Status.EnumStatus").Find(&parent, *a.ParentID).Error
@@ -175,7 +175,6 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//annotation interval
-		annotationIntervalParent := []m.Interval{}
 		err = db.Preload("Tags").Where("annotation_id = ?", a.ParentID).Find(&annotationIntervalParent).Error
 		if err != nil {
 			u.CheckErrorCode(err, w)
@@ -192,25 +191,6 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println("child annotationIntervalChild")
 		fmt.Println(annotationIntervalChild)
-
-		//annotation interval comments
-		annotationIntervalCommentParent := []m.IntervalComment{}
-		for j := 0; j < len(annotationIntervalCommentParent); j++ {
-			err = db.Preload("Tags").Where("interval_id = ?", a.ParentID).Find(&annotationIntervalCommentParent).Error
-			if err != nil {
-				u.CheckErrorCode(err, w)
-				return
-			}
-			for i := 0; i < len(annotationIntervalCommentParent); i++ {
-				annotationIntervalCommentCpy := m.IntervalComment{}
-				annotationIntervalCommentCpy.Comment = annotationIntervalCommentParent[i].Comment
-				annotationIntervalCommentCpy.Date = annotationIntervalCommentParent[i].Date
-
-				annotationIntervalCommentChild = append(annotationIntervalCommentChild, annotationIntervalCommentCpy)
-			}
-		}
-		fmt.Println("child annotationIntervalChild")
-		fmt.Println(annotationIntervalCommentChild)
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
@@ -232,32 +212,26 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 			transaction.Rollback()
 			return
 		}
-	}
-	/*
-		if a.ParentID != nil {
 
-			fmt.Println("parent annotationComments 1")
-			fmt.Println(annotationComments)
-			for i := 0; i < len(annotationComments); i++ {
-				fmt.Println("_annotationComments[i].AnnotationID")
-				fmt.Println(annotationComments[i].AnnotationID)
-				fmt.Println("_annotationComments[i].ID")
-				fmt.Println(annotationComments[i].ID)
-				fmt.Println("_annotation.ID")
-				fmt.Println(annotation.ID)
-				annotationComments[i].AnnotationID = annotation.ID
-				annotationComments[i].ID = 0
-				fmt.Println("annotationComments[i].AnnotationID")
-				fmt.Println(annotationComments[i].AnnotationID)
-				fmt.Println("annotationComments[i].ID")
-				fmt.Println(annotationComments[i].ID)
-				fmt.Println("annotation.ID")
-				fmt.Println(annotation.ID)
-			}
-			fmt.Println("parent annotationComments 2")
-			fmt.Println(annotationComments)
+		annotationIntervalComments := []m.IntervalComment{}
+		err = db.Where("interval_id = ?", annotationIntervalParent[i].ID).Find(&annotationIntervalComments).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
 		}
-	*/
+		for j := 0; j < len(annotationIntervalComments); j++ {
+			annotationIntervalCommentCpy := m.IntervalComment{}
+			annotationIntervalCommentCpy.Comment = annotationIntervalComments[j].Comment
+			annotationIntervalCommentCpy.Date = annotationIntervalComments[j].Date
+			annotationIntervalCommentCpy.UserID = annotationIntervalComments[j].UserID
+			annotationIntervalCommentCpy.IntervalID = annotationIntervalChild[i].ID
+			if u.CheckErrorCode(transaction.Create(&annotationIntervalCommentCpy).Error, w) {
+				transaction.Rollback()
+				return
+			}
+		}
+	}
+
 	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID, Date: time.Now()}
 	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
 		transaction.Rollback()
