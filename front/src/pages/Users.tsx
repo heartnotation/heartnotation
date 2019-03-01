@@ -236,6 +236,9 @@ class Users extends Component<Props, State> {
         }
       }
       const organization = searches.get('organizations');
+      if (!organization) {
+        return true;
+      }
       if (!record.organizations) {
         return false;
       }

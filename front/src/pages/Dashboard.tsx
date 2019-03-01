@@ -427,14 +427,20 @@ class Dashboard extends Component<Props, State> {
           }
         }
         const organizations = searches.get('organization');
-        if (organizations && record.organization) {
-          if (
+        if (!organizations) {
+          return true;
+        }
+        if (!record.organization) {
+          return false;
+        }
+        if (
+          organizations &&
+          (record.organization.name === '' ||
             !record.organization.name
               .toLowerCase()
-              .includes(organizations.toLowerCase())
-          ) {
-            return false;
-          }
+              .includes(organizations.toLowerCase()))
+        ) {
+          return false;
         }
         return true;
       });
