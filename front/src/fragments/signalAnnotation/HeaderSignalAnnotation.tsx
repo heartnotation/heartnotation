@@ -9,6 +9,8 @@ interface State {
   stepProcess: number;
   mode: 'Navigation' | 'Annotation';
   error?: string;
+  finalTitle: 'Canceled' | 'Validated';
+  finalStatus: 'wait' | 'process' | 'finish' | 'error' | undefined;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
@@ -100,6 +102,23 @@ const ConditionalButton = (props: PropsButton) => {
   return null;
 };
 
+const StepsProcess = (state: State) => {
+  const { stepProcess, finalStatus, finalTitle } = state;
+  const { Step } = Steps;
+  return (
+    <Steps
+      style={{ paddingTop: 30 }}
+      progressDot={true}
+      current={stepProcess}
+      size='default'
+    >
+      <Step title='In Progress' />
+      <Step title='Completed' />
+      <Step title={finalTitle} status={finalStatus} />
+    </Steps>
+  );
+};
+
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -108,6 +127,8 @@ class HeaderSignalAnnotation extends Component<Props, State> {
       props.annotation.status.sort(
         (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
       );
+      let finalT: 'Canceled' | 'Validated' = 'Validated';
+      let finalS: 'wait' | 'process' | 'finish' | 'error' | undefined;
       switch (props.annotation.status[0].enum_status.name) {
         case 'ASSIGNED':
         case 'IN_PROCESS':
@@ -119,12 +140,19 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         case 'VALIDATED':
           step = 2;
           break;
+        case 'CANCELED':
+          step = 3;
+          finalT = 'Canceled';
+          finalS = 'error';
+          break;
         default:
           break;
       }
       this.state = {
         stepProcess: step,
-        mode: 'Navigation'
+        mode: 'Navigation',
+        finalTitle: finalT,
+        finalStatus: finalS
       };
     }
   }
@@ -147,9 +175,9 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   }
 
   public render() {
-    const { Step } = Steps;
     const { annotation, user } = this.props;
     const { stepProcess, error, mode } = this.state;
+
     return [
       <Row
         key={1}
@@ -158,22 +186,20 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         align='middle'
         justify='space-between'
       >
-        {user.role.name === 'Annotateur' && stepProcess === 0 && (
-          <Col span={4}>
-            {mode} Mode <Switch onChange={this.handleToggle} />
-          </Col>
-        )}
+        <Col span={7}>
+          {user.role.name === 'Annotateur' && stepProcess === 0 && (
+            <Col span={7}>
+              {mode} Mode <Switch onChange={this.handleToggle} />
+            </Col>
+          )}
+        </Col>
         <Col span={8}>
-          <Steps
-            style={{ paddingTop: 30 }}
-            progressDot={true}
-            current={stepProcess}
-            size='default'
-          >
-            <Step title='In Progress' />
-            <Step title='Completed' />
-            <Step title='Validated' />
-          </Steps>
+          <StepsProcess
+            stepProcess={stepProcess}
+            mode={this.state.mode}
+            finalTitle={this.state.finalTitle}
+            finalStatus={this.state.finalStatus}
+          />
         </Col>
         <Col offset={1} span={3}>
           <ChatDrawerAnnotation annotation_id={this.props.annotation.id} />
