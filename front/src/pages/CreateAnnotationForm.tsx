@@ -97,6 +97,14 @@ class CreateAnnotationForm extends Component<Props, States> {
     return !isNaN(Number(s));
   }
 
+  private getSignalByAnnotationID = (id: string) => {
+    console.log(id);
+    const idInt = parseInt(id, 10);
+    return this.state.annotations
+      .filter(a => a.id === idInt)
+      .map(an => an.signal_id);
+  }
+
   public validateIdInt = (_: any, value: any, callback: any) => {
     const {
       annotations,
@@ -379,8 +387,36 @@ class CreateAnnotationForm extends Component<Props, States> {
                   ]
                 })(<Input />)}
               </Form.Item>
+              <Form.Item
+                {...formItemLayout}
+                label='Original annotation'
+                hasFeedback={true}
+                validateStatus={annotationValidateStatus}
+              >
+                {getFieldDecorator('parent_id', {
+                  initialValue: null,
+                  rules: [
+                    {
+                      whitespace: true,
+                      message: msgEmpty
+                    },
+                    { validator: this.validateParentInt }
+                  ]
+                })(<Input />)}
+              </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>
+                {console.log(
+                  'signal id',
+                  this.getSignalByAnnotationID(
+                    this.props.form.getFieldValue('parent_id')
+                  )
+                )}
                 {getFieldDecorator('signal_id', {
+                  initialValue: this.props.form.getFieldValue('parent_id')
+                    ? this.getSignalByAnnotationID(
+                        this.props.form.getFieldValue('parent_id')
+                      )
+                    : '',
                   rules: [
                     {
                       whitespace: true,
@@ -410,23 +446,6 @@ class CreateAnnotationForm extends Component<Props, States> {
                     onSearch={this.handleSearchOrganization}
                   />
                 )}
-              </Form.Item>
-              <Form.Item
-                {...formItemLayout}
-                label='Original annotation'
-                hasFeedback={true}
-                validateStatus={annotationValidateStatus}
-              >
-                {getFieldDecorator('parent_id', {
-                  initialValue: null,
-                  rules: [
-                    {
-                      whitespace: true,
-                      message: msgEmpty
-                    },
-                    { validator: this.validateParentInt }
-                  ]
-                })(<Input />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tags autorisés'>
                 {getFieldDecorator('tags', {
