@@ -85,9 +85,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   private parseTags = (annotation: Annotation, intervals: Interval[]) => {
-    const t = intervals.map(interval => (interval.tags ? interval.tags : []));
-    const usedTags = t.length
-      ? t.reduce((prev, curr) => [
+    const authorizedTag = intervals.map(interval => (interval.tags ? interval.tags : []));
+    const usedTags = authorizedTag.length
+      ? authorizedTag.reduce((prev, curr) => [
           ...prev,
           ...curr.filter(tag => prev.find(t => t.id === tag.id) === undefined)
         ])
