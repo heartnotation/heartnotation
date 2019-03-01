@@ -374,6 +374,10 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), 404)
 				return
 			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
+				return
+			}
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -381,6 +385,10 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 		if err := changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID); err != nil {
 			if err == gorm.ErrRecordNotFound {
 				http.Error(w, err.Error(), 404)
+				return
+			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
 				return
 			}
 			http.Error(w, err.Error(), 500)

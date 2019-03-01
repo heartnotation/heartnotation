@@ -9,6 +9,7 @@ import (
 
 	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 // FindIntervalByID get an interval by ID
@@ -57,7 +58,18 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 	}
 	annotation.LastStatus, _ = annotation.GetLastAndFirstStatus()
 	if annotation.LastStatus.EnumStatus.ID == 2 {
-		changeStatusEditDate(db, w, 3, &contextUser.ID, *i.AnnotationID)
+		if err := changeStatusEditDate(db, w, 3, &contextUser.ID, *i.AnnotationID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 
 	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID, IsActive: true}
