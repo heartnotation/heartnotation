@@ -227,12 +227,8 @@ class Dashboard extends Component<Props, State> {
           sorter: (a: Annotation, b: Annotation) => {
             let timeA = 0;
             let timeB = 0;
-            if (a.last_status.date !== undefined) {
-              timeA = a.last_status.date.getTime();
-            }
-            if (b.last_status.date !== undefined) {
-              timeB = b.last_status.date.getTime();
-            }
+            timeA = a.last_status.date.getTime();
+            timeB = b.last_status.date.getTime();
             return timeA - timeB;
           }
         }
