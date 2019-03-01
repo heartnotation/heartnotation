@@ -45,10 +45,8 @@ const LegendTag = ({ color, name }: { color: string; name: string }) => (
     className='legend-tag'
     style={{
       margin: 4,
-      fontWeight: 'bold',
-      '&:hover': {
-        cursor: 'initial'
-      }
+      backgroundColor: `${color}B0`,
+      fontWeight: 'bold'
     }}
     color={color}
   >
