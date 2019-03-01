@@ -156,21 +156,22 @@ class EditAnnotationForm extends Component<Props, States> {
         return;
       }
 
+      this.setState({ loading: true, error: '' });
       const a = { ...this.props.annotation };
 
-      const o = this.state.organizations.find(
+      a.organization = this.state.organizations.find(
         orga => orga.name === values.organization
       );
-      (o) ? a.organization = o : a.organization = undefined;
       a.name = values.name;
       a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
       this.props
         .changeAnnotation(a)
         .then(() => {
           this.props.handleOk();
+          this.setState({ loading: false });
         })
         .catch(() => {
-          this.setState({ error: 'Error while sending datas' });
+          this.setState({ error: 'Error while sending datas', loading: false });
         });
     });
   }
@@ -182,7 +183,13 @@ class EditAnnotationForm extends Component<Props, States> {
       editVisible,
       handleCancel
     } = this.props;
-    const { tags, organizationsSearch, tagsSelected, error } = this.state;
+    const {
+      tags,
+      organizationsSearch,
+      tagsSelected,
+      error,
+      loading
+    } = this.state;
 
     const filteredTags = tags.filter(
       t => !tagsSelected.map(tag => tag.id).includes(t.id)
@@ -197,6 +204,7 @@ class EditAnnotationForm extends Component<Props, States> {
         key={2}
         visible={editVisible}
         onOk={this.handleOk}
+        confirmLoading={loading}
         onCancel={handleCancel}
         title='Edit annotation'
       >

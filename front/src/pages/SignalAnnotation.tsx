@@ -448,8 +448,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
           return;
         }
         const domain = d3.event.selection.map(xScale.invert, xScale);
-        const xStart = domain[0];
-        const xEnd = domain[1];
+        const xStart = Math.round(domain[0]);
+        const xEnd = Math.round(domain[1]);
         const areaData = [{ x: xStart, y: 0 }, { x: xEnd, y: 0 }];
 
         const areaMainGraph = d3
