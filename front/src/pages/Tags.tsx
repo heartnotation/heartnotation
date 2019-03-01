@@ -292,7 +292,7 @@ class Tags extends Component<Props, State> {
       <Tree
         key={1}
         className='draggable-tree'
-        draggable={true}
+        draggable={false}
         onDragEnter={this.onDragEnter}
         onDrop={this.onDrop}
         switcherIcon={<Icon type='down' />}
