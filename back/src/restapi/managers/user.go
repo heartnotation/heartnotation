@@ -8,6 +8,7 @@ import (
 	u "restapi/utils"
 	"strings"
 
+	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
 )
 
@@ -34,6 +35,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Mail or role invalid", 400)
 		return
 	}
+
 	db := u.GetConnection()
 
 	existingUsers := []m.User{}
@@ -58,6 +60,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid args", 400)
 		return
 	}
+
 	user := m.User{Mail: *a.Mail, Role: &role, Organizations: organizations, IsActive: true}
 	if u.CheckErrorCode(db.Preload("Organization").Preload("Role").Create(&user).Error, w) {
 		return
@@ -108,6 +111,11 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&a)
 	if a.ID == nil {
 		http.Error(w, "bad argues", 400)
+		return
+	}
+	contextUser := c.Get(r, "user").(*m.User)
+	if contextUser.RoleID == 3 && contextUser.RoleID != a.RoleID && contextUser.ID == *a.ID { // 3 admin
+		http.Error(w, "This action is not permitted on the actual user", 403)
 		return
 	}
 	db := u.GetConnection()
