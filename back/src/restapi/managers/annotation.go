@@ -102,13 +102,13 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	contextUser := c.Get(r, "user").(*m.User)
 
 	switch contextUser.Role.ID {
-	// Role Annotateur
-	case 1:
+	// Role Gestionnaire
+	case 2:
+		break
+	// Role Annotateur & Admin
+	default:
 		http.Error(w, "This action is not permitted on the actual user", 403)
 		return
-	// Role Gestionnaire & Admin
-	default:
-		break
 	}
 
 	tags := []m.Tag{}
@@ -126,6 +126,9 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing field", 424)
 		return
 	}
+	annotationCommentsChild := []m.AnnotationComment{}
+	annotationIntervalChild := []m.Interval{}
+	annotationIntervalParent := []m.Interval{}
 	if a.ParentID != nil {
 		parent := &m.Annotation{}
 		err = db.Preload("Status").Preload("Status.EnumStatus").Find(&parent, *a.ParentID).Error
@@ -153,6 +156,39 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//All tests have passed, parendID is correct can copy the datas
+
+		//annotation comments
+		annotationCommentsParent := []m.AnnotationComment{}
+		err = db.Preload("User").Where("annotation_id = ?", a.ParentID).Find(&annotationCommentsParent).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		for i := 0; i < len(annotationCommentsParent); i++ {
+			annotationCommentCpy := m.AnnotationComment{}
+			annotationCommentCpy.Comment = annotationCommentsParent[i].Comment
+			annotationCommentCpy.Date = annotationCommentsParent[i].Date
+			annotationCommentCpy.UserID = annotationCommentsParent[i].UserID
+
+			annotationCommentsChild = append(annotationCommentsChild, annotationCommentCpy)
+		}
+
+		//annotation interval
+		err = db.Preload("Tags").Where("annotation_id = ?", a.ParentID).Find(&annotationIntervalParent).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		for i := 0; i < len(annotationIntervalParent); i++ {
+			annotationIntervalCpy := m.Interval{}
+			annotationIntervalCpy.Tags = annotationIntervalParent[i].Tags
+			annotationIntervalCpy.TimeEnd = annotationIntervalParent[i].TimeEnd
+			annotationIntervalCpy.TimeStart = annotationIntervalParent[i].TimeStart
+			annotationIntervalCpy.IsActive = true
+
+			annotationIntervalChild = append(annotationIntervalChild, annotationIntervalCpy)
+		}
 	}
 	var statusID int
 	if a.OrganizationID != nil && *a.OrganizationID != 0 {
@@ -160,14 +196,39 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	} else {
 		statusID = 1
 	}
-
 	transaction := db.Begin()
 
 	date := time.Now()
-	annotation := m.Annotation{Name: a.Name, OrganizationID: a.OrganizationID, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+	annotation := m.Annotation{Name: a.Name, OrganizationID: a.OrganizationID, Commentannotation: annotationCommentsChild, ParentID: a.ParentID, SignalID: a.SignalID, Tags: tags, CreationDate: date, EditDate: date, IsActive: true, IsEditable: true}
+
 	if u.CheckErrorCode(transaction.Create(&annotation).Error, w) {
 		transaction.Rollback()
 		return
+	}
+	for i := 0; i < len(annotationIntervalChild); i++ {
+		annotationIntervalChild[i].AnnotationID = annotation.ID
+		if u.CheckErrorCode(transaction.Create(&annotationIntervalChild[i]).Error, w) {
+			transaction.Rollback()
+			return
+		}
+
+		annotationIntervalComments := []m.IntervalComment{}
+		err = db.Where("interval_id = ?", annotationIntervalParent[i].ID).Find(&annotationIntervalComments).Error
+		if err != nil {
+			u.CheckErrorCode(err, w)
+			return
+		}
+		for j := 0; j < len(annotationIntervalComments); j++ {
+			annotationIntervalCommentCpy := m.IntervalComment{}
+			annotationIntervalCommentCpy.Comment = annotationIntervalComments[j].Comment
+			annotationIntervalCommentCpy.Date = annotationIntervalComments[j].Date
+			annotationIntervalCommentCpy.UserID = annotationIntervalComments[j].UserID
+			annotationIntervalCommentCpy.IntervalID = annotationIntervalChild[i].ID
+			if u.CheckErrorCode(transaction.Create(&annotationIntervalCommentCpy).Error, w) {
+				transaction.Rollback()
+				return
+			}
+		}
 	}
 
 	status := m.Status{EnumstatusID: &statusID, UserID: &contextUser.ID, AnnotationID: &annotation.ID, Date: time.Now()}
@@ -266,45 +327,59 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	changeStatusEditDate(db, w, annotationStatus.EnumStatus, &contextUser.ID, annotationStatus.ID)
+	if err := changeStatusEditDate(db, w, annotationStatus.EnumStatus, &contextUser.ID, annotationStatus.ID); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, err.Error(), 404)
+			return
+		}
+		if err == gorm.ErrInvalidSQL {
+			http.Error(w, err.Error(), 400)
+			return
+		}
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	u.Respond(w, a)
+
 }
 
-func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) {
+func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) error {
+	var err error
+
+	if &enumStatusID == nil || userID == nil || &annotationID == nil {
+		return gorm.ErrInvalidSQL
+	}
+
 	enumStatus := m.EnumStatus{}
-	if u.CheckErrorCode(db.Where(enumStatusID).First(&enumStatus).Error, w) {
-		return
+	if err = db.Where(enumStatusID).First(&enumStatus).Error; err != nil {
+		return err
 	}
 
 	transaction := db.Begin()
 
 	date := time.Now()
 	status := m.Status{EnumStatus: &enumStatus, UserID: userID, AnnotationID: &annotationID, Date: date}
-	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
+	if err = transaction.Create(&status).Error; err != nil {
 		transaction.Rollback()
-		return
+		return err
 	}
 
 	annotation := m.Annotation{ID: annotationID}
-	if u.CheckErrorCode(transaction.Model(&annotation).Association("Status").Append(&status).Error, w) {
+	if err = transaction.Model(&annotation).Association("Status").Append(&status).Error; err != nil {
 		transaction.Rollback()
-		return
+		return err
 	}
 
-	annotationEditDate := m.Annotation{}
-	if u.CheckErrorCode(db.First(&annotationEditDate, annotationID).Error, w) {
+	annotation.EditDate = date
+	if err = transaction.Save(&annotation).Error; err != nil {
 		transaction.Rollback()
-		return
-	}
-	annotationEditDate.EditDate = date
-	if u.CheckErrorCode(db.Save(&annotationEditDate).Error, w) {
-		transaction.Rollback()
-		return
+		return err
 	}
 	transaction.Commit()
-	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
-		return
+	if err = db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error; err != nil {
+		return err
 	}
-	u.Respond(w, &annotation)
+	return nil
 }
 
 // UpdateAnnotation modifies an annotation
@@ -355,9 +430,31 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	m := m.ToMap(annotation, a)
 
 	if annotation.Organization == nil && a.OrganizationID != annotation.OrganizationID {
-		changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID)
+		if err := changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	} else if annotation.Organization != nil && a.OrganizationID == nil {
-		changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID)
+		if err := changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 
 	transaction := db.Begin()

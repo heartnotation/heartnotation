@@ -12,7 +12,12 @@ import {
   Interval,
   IntervalPayload,
   IntervalTagsPayload,
-  AnnotationStatus
+  AnnotationStatus,
+  EnumStatus,
+  AnnotationComment,
+  AnnotationCommentPayload,
+  IntervalCommentPayload,
+  IntervalComment
 } from './objects';
 export const API_URL = process.env.REACT_APP_API
   ? process.env.REACT_APP_API
@@ -32,5 +37,10 @@ export type IntervalPayload = IntervalPayload;
 export type Interval = Interval;
 export type IntervalTagsPayload = IntervalTagsPayload;
 export type AnnotationStatus = AnnotationStatus;
+export type EnumStatus = EnumStatus;
+export type AnnotationCommentPayload = AnnotationCommentPayload;
+export type AnnotationComment = AnnotationComment;
+export type IntervalCommentPayload = IntervalCommentPayload;
+export type IntervalComment = IntervalComment;
 
 export const auth = au;

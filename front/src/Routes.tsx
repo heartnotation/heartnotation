@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ComponentClass, Component } from 'react';
+import React, { FunctionComponent, ComponentClass } from 'react';
 import {
   BrowserRouter as Router,
   Route,

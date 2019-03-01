@@ -2,10 +2,12 @@ import React, { Component } from 'react';
 import { Form, Input, Button, Select, Row, Col, Alert, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
-import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Role, User } from '../utils';
+import { AuthProps } from '../utils/auth';
 
 const { Option } = Select;
+
+const ROLE_ADMIN_ID = 3;
 
 const formItemLayout = {
   labelCol: { span: 10 },
@@ -21,21 +23,23 @@ interface States {
   roleSelected?: Role;
   loading: boolean;
   error: string;
+  isAdminEditingHimself: boolean;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps, AuthProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   modifyUser: (datas: User) => Promise<User>;
   handleCancel: () => void;
   handleOk: () => void;
-  user: User;
+  currentUser: User;
   modalVisible: boolean;
 }
 
 class EditUserForm extends Component<Props, States> {
   constructor(props: Props) {
     super(props);
+    const { user, currentUser } = props;
     this.state = {
       organizations: [],
       organizationsSearch: [],
@@ -43,18 +47,23 @@ class EditUserForm extends Component<Props, States> {
       roles: [],
       rolesSearch: [],
       loading: false,
-      error: ''
+      error: '',
+      isAdminEditingHimself:
+        user.role.id === ROLE_ADMIN_ID && currentUser.id === user.id
     };
   }
 
   public componentDidMount = () => {
     const { getOrganizations, getRoles } = this.props;
-    Promise.all([getOrganizations(), getRoles()]).then(responses => {
-      this.setState({
-        organizations: responses[0],
-        roles: responses[1]
-      });
-    });
+    Promise.all([getOrganizations(), getRoles()])
+      .then(responses => {
+        this.setState({
+          organizations: responses[0],
+          roles: responses[1],
+          loading: false
+        });
+      })
+      .catch(err => this.setState({ error: err, loading: false }));
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -128,27 +137,40 @@ class EditUserForm extends Component<Props, States> {
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
+    const {
+      form: { validateFieldsAndScroll },
+      currentUser,
+      handleOk,
+      modifyUser
+    } = this.props;
+
+    validateFieldsAndScroll((err, values) => {
       if (!err) {
-        values.id = this.props.user.id;
+        values.id = currentUser.id;
         this.setState({ loading: true, error: '' });
-        this.props
-          .modifyUser(values)
+        modifyUser(values)
           .then(() => {
-            this.props.handleOk();
+            handleOk();
+            this.setState({ loading: false });
           })
           .catch(error =>
             this.setState({
-              error: error.data
+              error: error.data,
+              loading: false
             })
           );
       }
     });
-    this.setState({ loading: false });
   }
 
   public render() {
-    const { getFieldDecorator } = this.props.form;
+    const {
+      form: { getFieldDecorator },
+      modalVisible,
+      handleCancel,
+      currentUser
+    } = this.props;
+    const { isAdminEditingHimself } = this.state;
     const {
       roles,
       organizations,
@@ -177,28 +199,17 @@ class EditUserForm extends Component<Props, States> {
       <Modal
         key={2}
         title='Edit user'
-        visible={this.props.modalVisible}
-        onCancel={this.props.handleCancel}
-        footer={[
-          <Button key='back' onClick={this.props.handleCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key='submit'
-            type='primary'
-            loading={loading}
-            onClick={this.handleOk}
-          >
-            Modify
-          </Button>
-        ]}
+        visible={modalVisible}
+        onCancel={handleCancel}
+        confirmLoading={loading}
+        onOk={this.handleOk}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={15}>
             <Form layout='horizontal'>
               <Form.Item {...formItemLayout} label='Email Address'>
                 {getFieldDecorator('mail', {
-                  initialValue: this.props.user.mail,
+                  initialValue: currentUser.mail,
                   rules: [
                     {
                       type: 'email',
@@ -213,7 +224,7 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Role'>
                 {getFieldDecorator('role_id', {
-                  initialValue: this.props.user.role.id,
+                  initialValue: currentUser.role.id,
                   rules: [
                     {
                       required: true,
@@ -226,6 +237,7 @@ class EditUserForm extends Component<Props, States> {
                     mode='simple'
                     onChange={this.handleChangeRole}
                     filterOption={this.filterSearchRole}
+                    disabled={isAdminEditingHimself}
                   >
                     {filteredRoles.map((role: Role) => (
                       <Option key='key' value={role.id}>
@@ -237,8 +249,8 @@ class EditUserForm extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organizations', {
-                  initialValue: this.props.user.organizations
-                    ? this.props.user.organizations.map(o => o.id)
+                  initialValue: this.props.currentUser.organizations
+                    ? this.props.currentUser.organizations.map(o => o.id)
                     : [],
                   rules: [
                     {
@@ -270,4 +282,4 @@ class EditUserForm extends Component<Props, States> {
   }
 }
 
-export default Form.create()(withRouter(EditUserForm));
+export default Form.create()(EditUserForm);

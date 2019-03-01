@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Icon, Switch, Button, Steps, Alert } from 'antd';
+import { Row, Col, Icon, Switch, Button, Steps, Alert, Tooltip } from 'antd';
 import { Annotation, StatusInserter, Status, api } from '../../utils';
 import { RouteComponentProps, withRouter } from 'react-router';
 import { withAuth, AuthProps } from '../../utils/auth';
@@ -7,13 +7,15 @@ import ChatDrawerAnnotation from '../chatAnnotation/ChatDrawerAnnotation';
 
 interface State {
   stepProcess: number;
-  mode: 'Navigation' | 'Annotation';
+  mode: 'Navigation' | 'Annotation' | 'Edit';
   error?: string;
+  finalTitle: 'Canceled' | 'Validated';
+  finalStatus: 'wait' | 'process' | 'finish' | 'error' | undefined;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
   annotation: Annotation;
-  onToggle: (state: boolean) => void;
+  onToggle: (tool: 'Navigation' | 'Annotation' | 'Edit') => void;
 }
 
 interface PropsButton extends AuthProps {
@@ -23,16 +25,16 @@ interface PropsButton extends AuthProps {
 }
 
 const ValidateButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Gestionnaire' ? (
+  const { user, annotation, handleSubmit } = props;
+  return user.role.name === 'Gestionnaire' ? (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 5,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -42,16 +44,16 @@ const ValidateButton = (props: PropsButton) => {
 };
 
 const InvalidateButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Gestionnaire' ? (
+  const { user, handleSubmit, annotation } = props;
+  return user.role.name === 'Gestionnaire' ? (
     <Button
       type='danger'
       icon='close-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 3,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -61,16 +63,16 @@ const InvalidateButton = (props: PropsButton) => {
 };
 
 const CompleteButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Annotateur' ? (
+  const { user, handleSubmit, annotation } = props;
+  return user.role.name === 'Annotateur' ? (
     <Button
       type='default'
       icon='check-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 4,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -100,6 +102,23 @@ const ConditionalButton = (props: PropsButton) => {
   return null;
 };
 
+const StepsProcess = (state: State) => {
+  const { stepProcess, finalStatus, finalTitle } = state;
+  const { Step } = Steps;
+  return (
+    <Steps
+      style={{ paddingTop: 30 }}
+      progressDot={true}
+      current={stepProcess}
+      size='default'
+    >
+      <Step title='In Progress' />
+      <Step title='Completed' />
+      <Step title={finalTitle} status={finalStatus} />
+    </Steps>
+  );
+};
+
 class HeaderSignalAnnotation extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -108,6 +127,8 @@ class HeaderSignalAnnotation extends Component<Props, State> {
       props.annotation.status.sort(
         (s1: Status, s2: Status) => s2.date.getTime() - s1.date.getTime()
       );
+      let finalT: 'Canceled' | 'Validated' = 'Validated';
+      let finalS: 'wait' | 'process' | 'finish' | 'error' | undefined;
       switch (props.annotation.status[0].enum_status.name) {
         case 'ASSIGNED':
         case 'IN_PROCESS':
@@ -119,37 +140,43 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         case 'VALIDATED':
           step = 2;
           break;
+        case 'CANCELED':
+          step = 3;
+          finalT = 'Canceled';
+          finalS = 'error';
+          break;
         default:
           break;
       }
       this.state = {
         stepProcess: step,
-        mode: 'Navigation'
+        mode: 'Navigation',
+        finalTitle: finalT,
+        finalStatus: finalS
       };
     }
   }
 
   public handleSubmit = (s: StatusInserter) => {
+    const { history } = this.props;
     api
       .sendStatus(s)
       .then(() => {
-        this.props.history.push('/');
+        history.push('/');
       })
-      .catch(error => {
-        this.setState({ error: 'Error during using button of header' });
+      .catch(err => {
+        this.setState({ error: err.data });
       });
   }
 
-  private handleToggle = (toggle: boolean) => {
-    this.setState({ mode: toggle ? 'Annotation' : 'Navigation' }, () =>
-      this.props.onToggle(toggle)
-    );
+  private handleToggle = (tool: 'Navigation' | 'Annotation' | 'Edit') => {
+    this.setState({ mode: tool }, () => this.props.onToggle(tool));
   }
 
   public render() {
-    const { Step } = Steps;
     const { annotation, user } = this.props;
     const { stepProcess, error, mode } = this.state;
+
     return [
       <Row
         key={1}
@@ -158,33 +185,76 @@ class HeaderSignalAnnotation extends Component<Props, State> {
         align='middle'
         justify='space-between'
       >
-        <Col span={4}>
-          <Switch
-            checkedChildren={<Icon type='check' />}
-            unCheckedChildren={<Icon type='close' />}
-            defaultChecked={true}
-          />
-          Display Leads
-        </Col>
-        {user.role.name === 'Annotateur' && stepProcess === 0 && (
-          <Col span={4}>
-            {mode} Mode <Switch onChange={this.handleToggle} />
-          </Col>
-        )}
         <Col span={8}>
-          <Steps
-            style={{ paddingTop: 30 }}
-            progressDot={true}
-            current={stepProcess}
-            size='default'
-          >
-            <Step title='In Progress' />
-            <Step title='Completed' />
-            <Step title='Validated' />
-          </Steps>
+          {user.role.name === 'Annotateur' && stepProcess === 0 && (
+            <Col span={8}>
+              <Button.Group>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to navigation mode
+                      <br />
+                      (zoom and drag)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='drag'
+                    onClick={() => this.handleToggle('Navigation')}
+                  />
+                </Tooltip>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to annotation mode
+                      <br />
+                      (creation only)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='box-plot'
+                    onClick={() => this.handleToggle('Annotation')}
+                  />
+                </Tooltip>
+                <Tooltip
+                  placement='top'
+                  title={
+                    <div className='text-center'>
+                      Switch to edit mode
+                      <br />
+                      (edit and delete annotations)
+                    </div>
+                  }
+                >
+                  <Button
+                    type='primary'
+                    size='large'
+                    icon='select'
+                    onClick={() => this.handleToggle('Edit')}
+                  />
+                </Tooltip>
+              </Button.Group>
+              {' ' + mode} Mode
+            </Col>
+          )}
+        </Col>
+        <Col span={8}>
+          <StepsProcess
+            stepProcess={stepProcess}
+            mode={this.state.mode}
+            finalTitle={this.state.finalTitle}
+            finalStatus={this.state.finalStatus}
+          />
         </Col>
         <Col offset={1} span={3}>
-          <ChatDrawerAnnotation annotation_id={this.props.annotation.id} />
+          <ChatDrawerAnnotation annotation_id={annotation.id} />
         </Col>
         <Col span={4}>
           <Row type='flex' align='middle' justify='end'>

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {
   Form,
   Input,
-  Button,
   Select,
   AutoComplete,
   Row,
@@ -12,9 +11,7 @@ import {
 } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
-import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Tag, Annotation } from '../utils';
-import { finished } from 'stream';
 
 const { Option } = Select;
 
@@ -41,7 +38,7 @@ interface States {
   error: string;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps {
   getTags: () => Promise<Tag[]>;
   getOrganizations: () => Promise<Organization[]>;
   getAnnotations: () => Promise<Annotation[]>;
@@ -69,25 +66,26 @@ class CreateAnnotationForm extends Component<Props, States> {
       signalCallback: undefined,
       signalValue: '',
       annotationValidateStatus: '',
-      loading: false,
+      loading: true,
       error: ''
     };
   }
 
   public componentDidMount = () => {
     const { getTags, getOrganizations, getAnnotations } = this.props;
-    Promise.all([getTags(), getOrganizations(), getAnnotations()]).then(
-      responses => {
+    Promise.all([getTags(), getOrganizations(), getAnnotations()])
+      .then(responses => {
         this.setState({
           tags: responses[0],
           organizations: responses[1],
           annotations: responses[2],
           annotationsFinished: responses[2].filter(
             (a: Annotation) => a.last_status.enum_status.id > 4
-          )
+          ),
+          loading: false
         });
-      }
-    );
+      })
+      .catch(err => this.setState({ error: err.data, loading: false }));
   }
 
   private filterNoCaseSensitive = (value: string, items: string[]) => {
@@ -100,30 +98,32 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateIdInt = (_: any, value: any, callback: any) => {
+    const {
+      annotations,
+      parentValue,
+      parentCallback,
+      signalCallback
+    } = this.state;
     this.setState({
       signalValue: value
     });
 
     this.setState(
       {
-        potentialParents: this.state.annotations.filter(
+        potentialParents: annotations.filter(
           (a: Annotation) => a.signal_id === value
         )
       },
       () => {
-        if (this.state.parentCallback) {
-          this.validateParent(
-            _,
-            this.state.parentValue,
-            this.state.parentCallback
-          );
+        if (parentCallback) {
+          this.validateParent(_, parentValue, parentCallback);
         }
       }
     );
 
     this.validateId(_, value, callback);
 
-    if (!this.state.signalCallback) {
+    if (!signalCallback) {
       this.setState({
         signalCallback: callback
       });
@@ -205,18 +205,19 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateParentInt = (_: any, value: any, callback: any) => {
+    const { signalCallback, parentCallback, signalValue } = this.state;
     this.setState({
       parentValue: value
     });
     this.validateParent(_, value, callback);
 
-    if (!this.state.parentCallback) {
+    if (!parentCallback) {
       this.setState({
         parentCallback: callback
       });
     }
     if (this.state.signalCallback) {
-      this.validateId(_, this.state.signalValue, this.state.signalCallback);
+      this.validateId(_, signalValue, signalCallback);
     }
   }
 
@@ -256,8 +257,11 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateParentSucces = (callback: any) => {
-    const parentIdValue = this.props.form.getFieldValue('parent_id');
-    this.props.form.setFieldsValue({
+    const {
+      form: { getFieldValue, setFieldsValue }
+    } = this.props;
+    const parentIdValue = getFieldValue('parent_id');
+    setFieldsValue({
       parent_id: parentIdValue
     });
     this.setState({ annotationValidateStatus: 'success' }, () => {
@@ -265,10 +269,11 @@ class CreateAnnotationForm extends Component<Props, States> {
     });
   }
   public validateParentError = (error: string, callback: any) => {
-    const parentIdValue = this.props.form.getFieldValue('parent_id');
-    this.props.form.setFieldsValue({
-      parent_id: parentIdValue
-    });
+    const {
+      form: { getFieldValue, setFieldsValue }
+    } = this.props;
+    const parentIdValue = getFieldValue('parent_id');
+    setFieldsValue({ parent_id: parentIdValue });
     this.setState({ annotationValidateStatus: 'error' }, () => {
       callback(error);
     });
@@ -290,8 +295,13 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
+    const {
+      form: { validateFieldsAndScroll },
+      sendAnnotation,
+      handleOk
+    } = this.props;
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
+    validateFieldsAndScroll((err, values) => {
       const { organizations } = this.state;
       if (!err) {
         values.parent_id = values.parent_id
@@ -306,15 +316,16 @@ class CreateAnnotationForm extends Component<Props, States> {
         } else {
           values.organization_id = null;
         }
-        // this.setState({ loading: true, error: '' });
-        this.props
-          .sendAnnotation(values)
+        this.setState({ loading: true });
+        sendAnnotation(values)
           .then(() => {
-            this.props.handleOk();
+            handleOk();
+            this.setState({ loading: false });
           })
           .catch(() =>
             this.setState({
-              error: 'Problem while sending datas, please retry later...'
+              error: 'Problem while sending datas, please retry later...',
+              loading: false
             })
           );
       }
@@ -322,7 +333,11 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public render() {
-    const { getFieldDecorator } = this.props.form;
+    const {
+      form: { getFieldDecorator },
+      creationVisible,
+      handleCancel
+    } = this.props;
     const {
       tags,
       organizationsSearch,
@@ -341,9 +356,10 @@ class CreateAnnotationForm extends Component<Props, States> {
     return (
       <Modal
         key={2}
-        visible={this.props.creationVisible}
+        visible={creationVisible}
         onOk={this.handleOk}
-        onCancel={this.props.handleCancel}
+        confirmLoading={loading}
+        onCancel={handleCancel}
         title='Create annotation'
       >
         <Row type='flex' justify='center' align='top'>
@@ -444,4 +460,4 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 }
 
-export default Form.create()(withRouter(CreateAnnotationForm));
+export default Form.create()(CreateAnnotationForm);

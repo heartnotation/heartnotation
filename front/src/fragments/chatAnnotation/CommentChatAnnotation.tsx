@@ -1,21 +1,6 @@
 import React, { Component } from 'react';
-import {
-  Comment,
-  Tooltip,
-  List,
-  Input,
-  Form,
-  Button,
-  Avatar,
-  Layout
-} from 'antd';
-import {
-  AnnotationCommentPayload,
-  AnnotationComment
-} from '../../utils/objects';
-import { api } from '../../utils';
-
-const { Header, Footer, Content } = Layout;
+import { Comment, List, Input, Form, Button, Avatar } from 'antd';
+import { api, AnnotationComment, AnnotationCommentPayload } from '../../utils';
 
 const TextArea = Input.TextArea;
 
@@ -56,6 +41,7 @@ interface DataComment {
 interface State {
   comments: DataComment[];
   currentComment: string;
+  error: string;
 }
 interface Props {
   annotation_id: number;
@@ -65,7 +51,8 @@ class CommentChatAnnotation extends Component<Props, State> {
     super(props);
     this.state = {
       comments: [],
-      currentComment: ''
+      currentComment: '',
+      error: ''
     };
   }
 
@@ -73,34 +60,36 @@ class CommentChatAnnotation extends Component<Props, State> {
     api
       .getCommentsOnAnnotationById(this.props.annotation_id)
       .then((response: AnnotationComment[]) => {
-        const commentList: DataComment[] = [];
-        response.forEach(element => {
-          commentList.push({
-            author: element.user.mail,
-            avatar: (
-              <Avatar
-                style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
-                size='large'
-              >
-                {element.user.mail[0].toUpperCase()}
-              </Avatar>
-            ),
-            content: <p>{element.comment}</p>,
-            datetime: element.date.toLocaleString()
-          });
-        });
+        const commentList = response.map(element => ({
+          author: element.user.mail,
+          avatar: (
+            <Avatar
+              style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
+              size='large'
+            >
+              {element.user.mail[0].toUpperCase()}
+            </Avatar>
+          ),
+          content: <p>{element.comment}</p>,
+          datetime: element.date.toLocaleString()
+        }));
         this.setState({ comments: commentList });
+      })
+      .catch(() => {
+        this.setState({ error: 'Fail to load previous comments' });
       });
   }
 
   public handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!this.state.currentComment) {
+    const { currentComment, comments } = this.state;
+    const { annotation_id } = this.props;
+    if (!currentComment) {
       return;
     }
     const commentPayload: AnnotationCommentPayload = {
-      annotation_id: this.props.annotation_id,
-      comment: this.state.currentComment
+      annotation_id,
+      comment: currentComment
     };
     api
       .sendAnnotationComment(commentPayload)
@@ -108,6 +97,7 @@ class CommentChatAnnotation extends Component<Props, State> {
         this.setState({
           currentComment: '',
           comments: [
+            ...comments,
             {
               author: response.user.mail,
               avatar: (
@@ -120,11 +110,11 @@ class CommentChatAnnotation extends Component<Props, State> {
               ),
               content: <p>{response.comment}</p>,
               datetime: response.date.toLocaleString()
-            },
-            ...this.state.comments
+            }
           ]
         });
-      });
+      })
+      .catch(err => this.setState({ error: err.data }));
   }
 
   public handleChange = (e: any) => {
@@ -134,12 +124,11 @@ class CommentChatAnnotation extends Component<Props, State> {
   }
 
   public render() {
+    const { comments, currentComment } = this.state;
     return (
       <div>
         <div className='comments-container'>
-          {this.state.comments.length > 0 && (
-            <CommentList comments={this.state.comments} />
-          )}
+          {comments.length > 0 && <CommentList comments={comments} />}
         </div>
         <div>
           <Comment
@@ -153,7 +142,7 @@ class CommentChatAnnotation extends Component<Props, State> {
               <Editor
                 onChange={this.handleChange}
                 onSubmit={this.handleSubmit}
-                value={this.state.currentComment}
+                value={currentComment}
               />
             }
           />
