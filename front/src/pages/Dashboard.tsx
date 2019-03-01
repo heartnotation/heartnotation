@@ -15,7 +15,6 @@ export interface State {
   annotation?: Annotation;
   editVisible: boolean;
   creationVisible: boolean;
-  keepCreationData: boolean;
   error: string;
 }
 
@@ -53,7 +52,6 @@ class Dashboard extends Component<Props, State> {
     currentAnnotations: [],
     editVisible: false,
     creationVisible: false,
-    keepCreationData: false,
     error: ''
   };
 
@@ -472,7 +470,7 @@ class Dashboard extends Component<Props, State> {
     try {
       await this.refreshDatas();
       this.setState({
-        keepCreationData: false
+        creationVisible: false
       });
     } catch (_) {
       this.setState({ error: 'Failed to refresh datas' });
@@ -481,7 +479,7 @@ class Dashboard extends Component<Props, State> {
   public createHandleCancel = () => {
     this.createCloseModal();
     this.setState({
-      keepCreationData: true
+      creationVisible: false
     });
   }
   public createCloseModal() {
@@ -534,7 +532,7 @@ class Dashboard extends Component<Props, State> {
         <AddButton
           key={2}
           onClick={() => {
-            this.setState({ creationVisible: true, keepCreationData: true });
+            this.setState({ creationVisible: true });
           }}
         />
       ),
