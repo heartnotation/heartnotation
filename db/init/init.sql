@@ -85,7 +85,7 @@ CREATE TABLE public.User_Organization(
 CREATE TABLE public.Tag(
 	id          SERIAL NOT NULL ,
 	name        VARCHAR (50) NOT NULL ,
-	color       CHAR (50)  NOT NULL ,
+	color       CHAR (7)  NOT NULL ,
 	is_active   BOOL  NOT NULL ,
 	parent_id      INT    ,
 	CONSTRAINT Tag_PK PRIMARY KEY (id)
