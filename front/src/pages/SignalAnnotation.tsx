@@ -7,7 +7,6 @@ import { Annotation, Point, Interval } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
-import { Tag } from '../utils/objects';
 import { orderIntervals, sizeInterval } from '../utils/intervals';
 
 interface RouteProps extends RouteComponentProps<{ id: string }> {
@@ -25,6 +24,7 @@ interface State {
   popperVisible: boolean;
   xIntervalStart?: number;
   xIntervalEnd?: number;
+  clickedInterval?: Interval;
   intervalSelectors: string[];
   graphElements: GraphElement[];
   intervals: Interval[];
@@ -52,12 +52,22 @@ class SignalAnnotation extends Component<RouteProps, State> {
     };
   }
 
-  public onChange = (checked: boolean) => {
-    if (checked === true) {
+  public onToogleTool = (tool: 'Navigation' | 'Annotation' | 'Edit') => {
+    if (tool === 'Annotation') {
       d3.select('.zoom').style('display', 'none');
+      d3.select('#brush-createinterval').style('display', 'block');
+    } else if(tool === 'Edit') {
+      d3.select('.zoom').style('display', 'none');
+      d3.select('#brush-createinterval').style('display', 'none');
     } else {
       d3.select('.zoom').style('display', 'block');
+      d3.select('#brush-createinterval').style('display', 'block');
     }
+  }
+
+  public onClickInterval = (intervalId: number) => {
+    this.setState({xIntervalStart: undefined, xIntervalEnd: undefined, popperVisible:true,
+      clickedInterval: this.state.intervals.find((inter:Interval) => inter.id === intervalId)});
   }
 
   private getIntervalsData = (
@@ -114,7 +124,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('clip-path', 'url(#clip)')
       .style('fill', color)
       .style('stroke', 'grey')
-      .style('opacity', '0.4');
+      .style('opacity', '0.4')
+      .on('click', () => this.onClickInterval(id));
   }
 
   private getColors = (
@@ -237,7 +248,6 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     }
     let leads: Point[][];
-    let idGraphElement: number = 0;
 
     if (!annotation.signal) {
       this.setState({ error: 'No signal found', loading: false });
@@ -378,18 +388,16 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
     };
 
-    const drawFocus = (transform: any) => {
-      const scaleX = transform.rescaleX(xScale);
-
-      xAxisGroup.call(xAxis.scale(scaleX));
+    const drawFocus = () => {
+      xAxisGroup.call(xAxis.scale(xScale));
       yAxisGroup.call(yAxis.scale(yScale));
 
       canvasFocusContext.clearRect(0, 0, width, height);
 
-      drawLeads(canvasFocusContext, scaleX, yScale);
+      drawLeads(canvasFocusContext, xScale, yScale);
 
       for (const g of this.state.graphElements) {
-        g.object.x(d => scaleX(d.x));
+        g.object.x(d => xScale(d.x));
         svgFocus
           .datum<Point[]>(g.data)
           .select(g.selector)
@@ -397,20 +405,23 @@ class SignalAnnotation extends Component<RouteProps, State> {
       }
     };
 
-    const drawPreview = (transform: any) => {
+    const drawPreview = () => {
       xAxisGroupPreview.call(xAxisPreview.scale(xScalePreview));
       drawLeads(canvasPreviewContext, xScalePreview, yScalePreview);
     };
 
     const zoomed = () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
+      
+      xScale.domain(d3.event.transform.rescaleX(xScalePreview).domain());
+      drawFocus();
+      xAxisGroup.call(xAxis);
       svgPreview
         .select('.brush')
         .call(brush.move, [
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[0]),
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[1])
-        ]);
-      drawFocus(d3.event.transform);
+        ]); 
     };
 
     const brushed = () => {
@@ -422,7 +433,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
           xScalePreview.invert(d3.event.selection[1])
         ]);
 
-        drawFocus(d3.zoomIdentity);
+        // Change graph zone when brush moved
+        svgFocus
+          .select('.zoom')
+          .call(
+            zoom.transform,
+            d3.zoomIdentity
+              .scale((width - margin.right - margin.left) / (d3.event.selection[1] - d3.event.selection[0]))
+              .translate(-d3.event.selection[0], 0)
+          );
+
+        drawFocus();
       }
 
       xAxisGroup.call(xAxis);
@@ -431,8 +452,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
     const zoom: any = d3
       .zoom()
       .scaleExtent([1, 10000]) // Zoom x1 to x10000
-      .translateExtent([[0, 0], [width, height]])
-      .extent([[0, 0], [width, height]])
+      .translateExtent([[0, 0], [width - margin.right - margin.left, height]])
+      .extent([[0, 0], [width - margin.right - margin.left, height]])
       .on('zoom', zoomed);
 
     const brush: any = d3
@@ -448,128 +469,28 @@ class SignalAnnotation extends Component<RouteProps, State> {
           return;
         }
         const domain = d3.event.selection.map(xScale.invert, xScale);
-        const xStart = Math.round(domain[0]);
-        const xEnd = Math.round(domain[1]);
-        const areaData = [{ x: xStart, y: 0 }, { x: xEnd, y: 0 }];
-
-        const areaMainGraph = d3
-          .area<Point>()
-          .x(d => xScale(d.x))
-          .y0(yScale(yScale.domain()[0]))
-          .y1(yScale(yScale.domain()[1]));
-
-        const areaPreviewGraph = d3
-          .area<Point>()
-          .x(d => xScalePreview(d.x))
-          .y0(yScalePreview(yScalePreview.domain()[0]))
-          .y1(yScalePreview(yScalePreview.domain()[1]));
-
-        svgFocus
-          .select('#interval-focus-container')
-          .append('path')
-          .datum<Point[]>(areaData)
-          .attr('class', 'interval-area')
-          .attr('id', 'interval-area-' + idGraphElement)
-          .attr('d', areaMainGraph)
-          .attr(
-            'transform',
-            'translate(' + margin.left + ', ' + margin.top + ')'
-          )
-          .attr('clip-path', 'url(#clip)');
-
-        svgPreview
-          .select('#interval-preview-container')
-          .append('path')
-          .datum<Point[]>(areaData)
-          .attr('class', 'interval-area-preview')
-          .attr('id', 'interval-area-preview-' + idGraphElement)
-          .attr('d', areaPreviewGraph)
-          .attr(
-            'transform',
-            'translate(' + margin.left + ', ' + margin.top + ')'
-          );
-
-        const mainGraphDatas = this.getIntervalsData(
-          { time_start: xStart, time_end: xEnd },
-          yScale.domain()[1],
-          yScale.domain()[0],
-          xScale,
-          yScale
-        );
-        this.drawInterval(
-          mainGraphDatas,
-          svgFocus,
-          '#mainGraph',
-          idGraphElement,
-          'interval-area',
-          margin,
-          []
-        );
-
-        const previewGraphDatas = this.getIntervalsData(
-          { time_start: xStart, time_end: xEnd },
-          yScale.domain()[1],
-          yScale.domain()[0],
-          xScalePreview,
-          yScalePreview
-        );
-        this.drawInterval(
-          previewGraphDatas,
-          svgPreview,
-          '#previewGraph',
-          idGraphElement,
-          'interval-area-preview',
-          margin,
-          []
-        );
-
-        const graphElement = {
-          id: idGraphElement,
-          selector: `#interval-area-${idGraphElement}`,
-          data: [
-            { x: xStart, y: yScale.domain()[1] },
-            { x: xEnd, y: yScale.domain()[1] }
-          ],
-          object: mainGraphDatas.area
-        };
-        this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
-          this,
-          yScale.domain()[0],
-          yScale.domain()[1],
-          xScale,
-          yScale,
-          xScalePreview,
-          yScalePreview,
-          svgPreview,
-          svgFocus,
-          margin
-        );
-        this.setState({
-          graphElements: [
-            ...this.state.graphElements,
-            ...[
-              graphElement,
-              {
-                ...graphElement,
-                object: previewGraphDatas.area,
-                selector: `#interval-area-preview-${idGraphElement}`
-              }
-            ]
-          ],
-          popperVisible: true,
+        const xStart = domain[0];
+        const xEnd = domain[1];
+        
+        this.setState({popperVisible: true,
           xIntervalStart: xStart,
-          xIntervalEnd: xEnd,
-          intervalSelectors: [
-            ...this.state.intervalSelectors,
-            `#interval-area-${idGraphElement}`,
-            `#interval-area-preview-${idGraphElement}`
-          ]
-        });
+          xIntervalEnd: xEnd});
 
-        d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
-
-        idGraphElement++;
+          d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
       });
+
+      this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
+        this,
+        yScale.domain()[0],
+        yScale.domain()[1],
+        xScale,
+        yScale,
+        xScalePreview,
+        yScalePreview,
+        svgPreview,
+        svgFocus,
+        margin
+      );
 
     svgPreview.append('g').attr('id', 'interval-preview-container');
 
@@ -605,8 +526,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       .attr('width', width - margin.left - margin.right)
       .attr('height', height);
 
-    drawPreview(d3.zoomIdentity);
-    drawFocus(d3.zoomIdentity);
+    drawPreview();
+    drawFocus();
     this.drawAllIntervals(
       yScale.domain()[0],
       yScale.domain()[1],
@@ -629,22 +550,48 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
-  public confirmDelete = (selectors: string[]) => {
-    for (const selector of selectors) {
-      d3.select(selector).remove(); // Remove in graph
-      this.setState({
-        graphElements: this.state.graphElements.filter(
-          (g: GraphElement) => g.selector !== selector
-        )
-      }); // Remove in elements
-    }
-    this.setState({ popperVisible: false, intervalSelectors: [] });
-    message.error('Interval has been deleted.', 5);
+  public confirmDelete = (delInterval:Interval) => {
+    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined, intervals: this.state.intervals.filter((inter:Interval) => inter.id !== delInterval.id)}, () => {
+      message.error('Interval has been deleted.', 5);
+      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    });
   }
 
   private confirmCreate = (newInterval: Interval) => {
-    this.state.intervals.push(newInterval);
+    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined});
+    const exists = this.state.intervals.find((i:Interval) => i.id === newInterval.id);
+    if(exists) {
+      // Interval modification
+      exists.tags = newInterval.tags;
+      exists.comments = newInterval.comments;
+    } else {
+      // Interval creation
+      this.state.intervals.push(newInterval);
+    }
     this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+    message.success(
+      'Interval has been created with the information entered.',
+      5
+    );
+  }
+
+  private confirmCancel = (canInterval:Interval) => {
+    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined}, () => {
+      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+      message.info(
+        'Tags modifications not saved but interval not deleted',
+        5
+      );
+    });
+    const exists = this.state.intervals.find((i:Interval) => i.id === canInterval.id);
+    if(exists) {
+      // Interval modification (comments added)
+      exists.tags = canInterval.tags;
+      exists.comments = canInterval.comments;
+    } else {
+      // Interval creation
+      this.state.intervals.push(canInterval);
+    }
   }
 
   public afterCreate = (
@@ -661,6 +608,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     this.state.graphElements.forEach(graphElement => {
       d3.select(graphElement.selector).remove();
     });
+
     this.setState({ graphElements: [] });
     this.drawAllIntervals(
       yMax,
@@ -672,6 +620,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
       'interval-area',
       margin
     );
+
     this.drawAllIntervals(
       yMax,
       yMin,
@@ -682,14 +631,8 @@ class SignalAnnotation extends Component<RouteProps, State> {
       'interval-area-preview',
       margin
     );
-    this.setState({
-      popperVisible: false,
-      intervalSelectors: []
-    });
-    message.success(
-      'Interval has been created with the information entered.',
-      5
-    );
+ 
+    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
   }
 
   public render = () => {
@@ -715,7 +658,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         <div>
           <HeaderSignalAnnotation
             annotation={annotation}
-            onToggle={this.onChange}
+            onToggle={this.onToogleTool}
           />
           <div className='signal-main-container'>
             <div className='signal-graph-container' id='signal' />
@@ -723,15 +666,17 @@ class SignalAnnotation extends Component<RouteProps, State> {
           </div>
           {this.state.popperVisible &&
             this.state.annotation &&
-            this.state.xIntervalStart &&
-            this.state.xIntervalEnd && (
+            ((this.state.xIntervalStart &&
+            this.state.xIntervalEnd) || this.state.clickedInterval) && (
               <FormIntervalSignalAnnotation
                 start={this.state.xIntervalStart}
                 end={this.state.xIntervalEnd}
+                clickedInterval={this.state.clickedInterval}
                 selectors={this.state.intervalSelectors}
                 annotation={this.state.annotation}
                 confirmCreate={this.confirmCreate}
                 confirmDelete={this.confirmDelete}
+                confirmCancel={this.confirmCancel}
               />
             )}
         </div>
