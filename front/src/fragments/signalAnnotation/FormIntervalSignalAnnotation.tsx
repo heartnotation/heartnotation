@@ -221,9 +221,10 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                 key='1'
               >
                 <p className='text-center'>
-                  Tags to assignate to annotation task{' '}
-                  {this.props.annotation.id} in interval between{' '}
-                  {this.props.start} and {this.props.end} :
+                  Tags to assignate to annotation task&nbsp;
+                  <b>{this.props.annotation.id}</b> in interval <br />
+                  between&nbsp;
+                  <b>{this.props.start} ms</b> and <b>{this.props.end} ms</b> :
                 </p>
                 <Select
                   mode='multiple'

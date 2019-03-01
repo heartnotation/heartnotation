@@ -30,8 +30,8 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	var a d.User
 	json.NewDecoder(r.Body).Decode(&a)
-	if a.Mail == nil || a.OrganizationsID == nil || a.RoleID == 0 {
-		http.Error(w, "invalid args", 400)
+	if a.Mail == nil || a.RoleID == 0 {
+		http.Error(w, "Mail or role invalid", 400)
 		return
 	}
 	db := u.GetConnection()

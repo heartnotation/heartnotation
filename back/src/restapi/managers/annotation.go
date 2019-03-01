@@ -102,13 +102,13 @@ func CreateAnnotation(w http.ResponseWriter, r *http.Request) {
 	contextUser := c.Get(r, "user").(*m.User)
 
 	switch contextUser.Role.ID {
-	// Role Annotateur
-	case 1:
+	// Role Gestionnaire
+	case 2:
+		break
+	// Role Annotateur & Admin
+	default:
 		http.Error(w, "This action is not permitted on the actual user", 403)
 		return
-	// Role Gestionnaire & Admin
-	default:
-		break
 	}
 
 	tags := []m.Tag{}
