@@ -108,6 +108,7 @@ class CommentChatAnnotation extends Component<Props, State> {
         this.setState({
           currentComment: '',
           comments: [
+            ...this.state.comments,
             {
               author: response.user.mail,
               avatar: (
@@ -120,8 +121,7 @@ class CommentChatAnnotation extends Component<Props, State> {
               ),
               content: <p>{response.comment}</p>,
               datetime: response.date.toLocaleString()
-            },
-            ...this.state.comments
+            }
           ]
         });
       });
