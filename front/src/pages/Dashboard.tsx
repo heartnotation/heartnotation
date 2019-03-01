@@ -1,5 +1,5 @@
 import React, { Component, MouseEvent } from 'react';
-import { Table, Input, Icon, Tag, Modal } from 'antd';
+import { Table, Input, Icon, Tag, Modal, Alert } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
 import { Annotation, AnnotationStatus, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
@@ -495,7 +495,8 @@ class Dashboard extends Component<Props, State> {
       currentAnnotations,
       annotation,
       editVisible,
-      creationVisible
+      creationVisible,
+      error
     } = this.state;
     const {
       getAnnotations,
@@ -504,6 +505,15 @@ class Dashboard extends Component<Props, State> {
     } = this.props;
 
     return [
+      error.length > 0 && (
+        <Alert
+          key={0}
+          showIcon={true}
+          type='error'
+          message={error}
+          banner={true}
+        />
+      ),
       <Table<Annotation>
         key={1}
         rowKey='id'
