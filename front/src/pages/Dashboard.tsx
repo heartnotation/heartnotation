@@ -47,7 +47,7 @@ class Dashboard extends Component<Props, State> {
     currentAnnotations: [],
     editVisible: false,
     creationVisible: false,
-    keepCreationData: true
+    keepCreationData: false
   };
 
   public async componentDidMount() {
