@@ -1,20 +1,11 @@
 import React, { Component, MouseEvent } from 'react';
 import { Table, Input, Icon, Tag, Modal } from 'antd';
 import { ColumnProps } from 'antd/lib/table';
-import {
-  Annotation,
-  Organization,
-  api,
-  Status,
-  Role,
-  User,
-  AnnotationStatus
-} from '../utils';
+import { Annotation, AnnotationStatus, api } from '../utils';
 import { withRouter, RouteComponentProps } from 'react-router';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
 import EditAnnotationForm from './EditAnnotationForm';
-import { createCipheriv } from 'crypto';
 import CreateAnnotationForm from './CreateAnnotationForm';
 
 export interface State {
@@ -25,6 +16,7 @@ export interface State {
   editVisible: boolean;
   creationVisible: boolean;
   keepCreationData: boolean;
+  error: string;
 }
 
 interface Props extends RouteComponentProps, AuthProps {
@@ -35,6 +27,20 @@ interface Props extends RouteComponentProps, AuthProps {
 interface ConditionnalColumn extends ColumnProps<Annotation> {
   roles: string[];
 }
+
+const colors = [
+  'geekblue',
+  'green',
+  'volcano',
+  'orange',
+  'yellow',
+  'gold',
+  'lime',
+  'cyan',
+  'purple',
+  'magenta',
+  'red'
+];
 
 const CANCEL_ID: number = 6;
 const VALIDATED_ID: number = 5;
@@ -47,19 +53,29 @@ class Dashboard extends Component<Props, State> {
     currentAnnotations: [],
     editVisible: false,
     creationVisible: false,
-    keepCreationData: false
+    keepCreationData: false,
+    error: ''
   };
 
-  public async componentDidMount() {
-    this.refreshDatas();
+  public componentDidMount = async () => {
+    try {
+      await this.refreshDatas();
+    } catch (_) {
+      this.setState({ error: 'Failed to load datas' });
+    }
   }
 
   private refreshDatas = async () => {
-    const data = await this.props.getAnnotations();
-    this.setState({
-      initialAnnotations: data,
-      currentAnnotations: data.slice()
-    });
+    const { getAnnotations } = this.props;
+    try {
+      const data = await getAnnotations();
+      this.setState({
+        initialAnnotations: data,
+        currentAnnotations: data.slice()
+      });
+    } catch (err) {
+      throw err;
+    }
   }
 
   private modalConfirm = (a: Annotation) => {
@@ -147,19 +163,6 @@ class Dashboard extends Component<Props, State> {
             );
           },
           render: (_, record: Annotation) => {
-            const colors = [
-              'geekblue',
-              'green',
-              'volcano',
-              'orange',
-              'yellow',
-              'gold',
-              'lime',
-              'cyan',
-              'purple',
-              'magenta',
-              'red'
-            ];
             const { organization } = record;
             if (organization) {
               const ui = (
@@ -450,7 +453,11 @@ class Dashboard extends Component<Props, State> {
   }
   public editHandleOk = async () => {
     this.editCloseModal();
-    this.refreshDatas();
+    try {
+      await this.refreshDatas();
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
   public editCloseModal() {
     this.setState({
@@ -462,10 +469,14 @@ class Dashboard extends Component<Props, State> {
   // Create Annotation Form
   public createHandleOk = async () => {
     this.createCloseModal();
-    this.refreshDatas();
-    this.setState({
-      keepCreationData: false
-    });
+    try {
+      await this.refreshDatas();
+      this.setState({
+        keepCreationData: false
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
   public createHandleCancel = () => {
     this.createCloseModal();
@@ -484,16 +495,19 @@ class Dashboard extends Component<Props, State> {
       currentAnnotations,
       annotation,
       editVisible,
-      keepCreationData
+      creationVisible
     } = this.state;
+    const {
+      getAnnotations,
+      history,
+      user: { role }
+    } = this.props;
 
     return [
       <Table<Annotation>
         key={1}
         rowKey='id'
-        columns={this.columns.filter(value =>
-          value.roles.includes(this.props.user.role.name)
-        )}
+        columns={this.columns.filter(value => value.roles.includes(role.name))}
         dataSource={currentAnnotations}
         pagination={{
           position: 'bottom',
@@ -503,10 +517,10 @@ class Dashboard extends Component<Props, State> {
             `${range[0]}-${range[1]} of ${total} items`
         }}
         onRow={(a: Annotation) => ({
-          onClick: () => this.props.history.push(`/annotations/${a.id}`)
+          onClick: () => history.push(`/annotations/${a.id}`)
         })}
       />,
-      this.props.user.role.name === 'Gestionnaire' && (
+      role.name === 'Gestionnaire' && (
         <AddButton
           key={2}
           onClick={() => {
@@ -517,7 +531,7 @@ class Dashboard extends Component<Props, State> {
       annotation && (
         <EditAnnotationForm
           key={3}
-          getAnnotations={api.getAnnotations}
+          getAnnotations={getAnnotations}
           getOrganizations={api.getOrganizations}
           changeAnnotation={api.changeAnnotation}
           getTags={api.getTags}
@@ -529,7 +543,7 @@ class Dashboard extends Component<Props, State> {
         />
       ),
 
-      keepCreationData && (
+      creationVisible && (
         <CreateAnnotationForm
           key={4}
           getTags={api.getTags}
@@ -537,7 +551,7 @@ class Dashboard extends Component<Props, State> {
           getAnnotations={api.getAnnotations}
           checkSignal={api.checkSignal}
           sendAnnotation={api.sendAnnotation}
-          creationVisible={this.state.creationVisible}
+          creationVisible={creationVisible}
           handleOk={this.createHandleOk}
           handleCancel={this.createHandleCancel}
         />
