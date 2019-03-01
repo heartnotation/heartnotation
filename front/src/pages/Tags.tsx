@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
-import { Role, Tag } from '../utils';
+import { Tag } from '../utils';
 import ant, { Tree, Icon, Modal } from 'antd';
-import { inherits } from 'util';
 import TagCreation from './TagCreation';
+import { string } from 'prop-types';
 
 const { TreeNode } = Tree;
 export interface State {
@@ -13,9 +12,10 @@ export interface State {
   tagCreationVisible: boolean;
   parent_id?: number;
   keepCreationData: boolean;
+  error: string;
 }
 
-interface Props extends AuthProps {
+interface Props {
   getTags: () => Promise<Tag[]>;
   sendTag: (datas: Tag) => Promise<Tag>;
   disableTagByID: (datas: number) => Promise<Tag>;
@@ -27,27 +27,31 @@ class Tags extends Component<Props, State> {
     tags: [],
     tagEditVisible: false,
     tagCreationVisible: false,
-    keepCreationData: false
+    keepCreationData: false,
+    error: ''
   };
 
   public async componentDidMount() {
-    const data = await this.getDatas();
-    this.setState({
-      tags: data.filter(t => !t.parent_id)
-    });
+    try {
+      const data = await this.getDatas();
+      this.setState({
+        tags: data.filter(t => !t.parent_id)
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to load datas' });
+    }
   }
 
   public async getDatas(): Promise<Tag[]> {
-    const tags = await this.props.getTags();
-    return tags;
-  }
-
-  public onDragEnter = (info: any) => {
-    console.log(info);
+    try {
+      const tags = await this.props.getTags();
+      return tags;
+    } catch (e) {
+      throw e;
+    }
   }
 
   public onDrop = (info: any) => {
-    console.log(info);
     const dropKey = info.node.props.eventKey;
     const dragKey = info.dragNode.props.eventKey;
     const dropPos = info.node.props.pos.split('-');
@@ -91,7 +95,7 @@ class Tags extends Component<Props, State> {
     } else {
       let ar: any;
       let i: any;
-      loop(data, dropKey, (item: any, index: any, arr: any) => {
+      loop(data, dropKey, (_: any, index: any, arr: any) => {
         ar = arr;
         i = index;
       });
@@ -109,13 +113,17 @@ class Tags extends Component<Props, State> {
 
   public createHandleOk = async () => {
     this.closeModalCreation();
-    const data = await this.getDatas();
-    this.setState({
-      tags: data.filter(t => !t.parent_id), // t.is_active &&
-      tagCreationVisible: false,
-      keepCreationData: false,
-      parent_id: undefined
-    });
+    try {
+      const data = await this.getDatas();
+      this.setState({
+        tags: data.filter(t => !t.parent_id), // t.is_active &&
+        tagCreationVisible: false,
+        keepCreationData: false,
+        parent_id: undefined
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
 
   public createHandleCancel = () => {
@@ -135,7 +143,7 @@ class Tags extends Component<Props, State> {
     });
   }
 
-  public disableTag = async (tagID: number) => {
+  public disableTag = (tagID: number) => {
     const { disableTagByID } = this.props;
     Modal.confirm({
       title: 'Do you want to disable this tag?',
@@ -143,41 +151,53 @@ class Tags extends Component<Props, State> {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        disableTagByID(tagID).then(async () => {
-          const data = await this.getDatas();
-          this.setState({
-            tags: data.filter(t => !t.parent_id)
-          });
-        });
-      },
-      onCancel: () => {
-        //
+        disableTagByID(tagID)
+          .then(async () => {
+            try {
+              const data = await this.getDatas();
+              this.setState({
+                tags: data.filter(t => !t.parent_id)
+              });
+            } catch {
+              this.setState({ error: 'Failed to refresh datas' });
+            }
+          })
+          .catch(() => this.setState({ error: 'Failed to disable tag' }));
       }
     });
   }
 
-  public enableTag = async (tag: Tag) => {
+  public enableTag = (tag: Tag) => {
     const { modifyTagByID } = this.props;
     Modal.confirm({
       title: 'Do you want to enable this tag?',
       okText: 'Yes',
       cancelText: 'No',
       onOk: () => {
-        modifyTagByID(tag).then(async () => {
-          const data = await this.getDatas();
-          this.setState({
-            tags: data.filter(t => !t.parent_id)
-          });
-        });
-      },
-      onCancel: () => {
-        //
+        modifyTagByID(tag)
+          .then(async () => {
+            try {
+              const data = await this.getDatas();
+              this.setState({
+                tags: data.filter(t => !t.parent_id)
+              });
+            } catch {
+              this.setState({ error: 'Failed to refresh datas' });
+            }
+          })
+          .catch(() => this.setState({ error: 'Failed to disable tag' }));
       }
     });
   }
 
   public render() {
-    const { tagCreationVisible, parent_id, keepCreationData } = this.state;
+    const {
+      tagCreationVisible,
+      parent_id,
+      keepCreationData,
+      tags
+    } = this.state;
+    const { sendTag } = this.props;
     const loop = (tags2: Tag[]) =>
       tags2.map(tag => {
         if (tag.children && tag.children.length) {
@@ -303,7 +323,6 @@ class Tags extends Component<Props, State> {
         key={1}
         className='draggable-tree'
         draggable={false}
-        onDragEnter={this.onDragEnter}
         onDrop={this.onDrop}
         switcherIcon={<Icon type='down' />}
         selectable={false}
@@ -318,7 +337,7 @@ class Tags extends Component<Props, State> {
             </div>
           }
         />
-        {loop(this.state.tags)}
+        {loop(tags)}
       </Tree>,
       keepCreationData && (
         <TagCreation
@@ -327,10 +346,10 @@ class Tags extends Component<Props, State> {
           modalVisible={tagCreationVisible}
           handleOk={this.createHandleOk}
           handleCancel={this.createHandleCancel}
-          sendTag={this.props.sendTag}
+          sendTag={sendTag}
         />
       )
     ];
   }
 }
-export default withAuth(Tags);
+export default Tags;
