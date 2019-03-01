@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import AddButton from '../fragments/fixedButton/AddButton';
 import { withAuth, AuthProps } from '../utils/auth';
 import { Role, Tag } from '../utils';
-import { Tree, Icon, Modal } from 'antd';
+import ant, { Tree, Icon, Modal } from 'antd';
 import { inherits } from 'util';
 import TagCreation from './TagCreation';
 
@@ -143,12 +143,12 @@ class Tags extends Component<Props, State> {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-          disableTagByID(tagID).then(async () => {
-            const data = await this.getDatas();
-            this.setState({
-              tags: data.filter(t => !t.parent_id)
-            });
+        disableTagByID(tagID).then(async () => {
+          const data = await this.getDatas();
+          this.setState({
+            tags: data.filter(t => !t.parent_id)
           });
+        });
       },
       onCancel: () => {
         //
@@ -191,8 +191,11 @@ class Tags extends Component<Props, State> {
                     className={
                       tag.is_active ? 'tag_title' : 'tag_title_disabled'
                     }
+                    style={{ opacity: 0.4, fontWeight: 'bold' }}
                   >
-                    {tag.name}&nbsp;&nbsp;
+                    <ant.Tag color={tag.color} key={tag.name}>
+                      {tag.name}&nbsp;&nbsp;
+                    </ant.Tag>
                   </span>
                   {tag.is_active && (
                     <a
@@ -244,8 +247,15 @@ class Tags extends Component<Props, State> {
               <div>
                 <span
                   className={tag.is_active ? 'tag_title' : 'tag_title_disabled'}
+                  style={{ color: tag.color }}
                 >
-                  {tag.name}&nbsp;&nbsp;
+                  <ant.Tag
+                    color={tag.color}
+                    key={tag.name}
+                    style={{ opacity: 0.4, fontWeight: 'bold' }}
+                  >
+                    {tag.name}&nbsp;&nbsp;
+                  </ant.Tag>
                 </span>
                 {tag.is_active && (
                   <a

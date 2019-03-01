@@ -102,7 +102,7 @@ class TagCreation extends Component<Props, States> {
                       pattern: new RegExp('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
                     }
                   ]
-                })(<Input />)}
+                })(<Input type='color' />)}
               </Form.Item>
             </Form>
           </Col>
