@@ -116,12 +116,18 @@
 }
 
 .signal-legend-container {
-  padding-top: 20px;
-  text-align: center;
+  float: right;
+  margin-top: 40px;
+  margin-right: 20px;
+  border: 1px solid #000;
+  width: 17vw;
+  padding: 10px;
 }
 
 .signal-main-container {
+  width: 80vw;
   overflow-x: scroll;
+  float: left;
 }
 
 .signal-main-container::-webkit-scrollbar-track {
@@ -235,4 +241,47 @@ div > .fixed-bottom-button {
 .signal-main-container {
   margin-top: 20px;
   margin-bottom: 50px;
+}
+
+.tag_wrapper .ant-tree-node-content-wrapper {
+  font-size: 18px;
+}
+
+.tag_wrapper .ant-tree-node-content-wrapper:hover {
+  background-color: inherit !important;
+}
+
+.tag_title:hover {
+  background-color: #f0f3ff;
+}
+
+.tag_title_disabled:hover {
+  background-color: inherit !important;
+}
+
+.tag_title_disabled {
+  color: #bfbfbf;
+}
+
+.tag_wrapper .ant-tree-node-content-wrapper:hover .add_tag,
+.tag_wrapper .ant-tree-node-content-wrapper:hover .disable_tag,
+.tag_wrapper .ant-tree-node-content-wrapper:hover .enable_tag {
+  display: inline;
+}
+
+.add_tag,
+.disable_tag,
+.enable_tag {
+  display: none;
+}
+
+.add_tag:hover,
+.enable_tag {
+  color: #95de64;
+}
+.disable_tag:hover {
+  color: #ff7875;
+}
+.legend-tag:hover {
+  cursor: initial;
 }

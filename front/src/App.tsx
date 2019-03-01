@@ -82,7 +82,14 @@ const r = {
     {
       path: '/tags',
       exact: true,
-      component: () => <Tags getTags={api.getTags} />,
+      component: () => (
+        <Tags
+          getTags={api.getTags}
+          sendTag={api.sendTag}
+          disableTagByID={api.deleteTag}
+          modifyTagByID={api.modifyTag}
+        />
+      ),
       title: 'Tags',
       iconName: 'tags',
       roles: ['Gestionnaire', 'Admin']

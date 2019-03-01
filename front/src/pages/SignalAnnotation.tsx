@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Alert, message } from 'antd';
+import { Alert, message, Tag as AntTag } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
-import { Annotation, Point, Interval } from '../utils';
+import { Annotation, Point, Interval, Tag } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
@@ -29,6 +29,8 @@ interface State {
   graphElements: GraphElement[];
   intervals: Interval[];
   mainGraph?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
+  authorizedTags: Tag[];
+  parentTags: Tag[];
 }
 
 interface GraphElement {
@@ -38,6 +40,19 @@ interface GraphElement {
   object: d3.Line<Point> | d3.Area<Point>;
 }
 
+const LegendTag = ({ color, name }: { color: string; name: string }) => (
+  <AntTag
+    className='legend-tag'
+    style={{
+      margin: 4,
+      backgroundColor: `${color}B0`,
+      fontWeight: 'bold'
+    }}
+    color={color}
+  >
+    {name}
+  </AntTag>
+);
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
@@ -48,7 +63,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
       popperVisible: false,
       graphElements: [],
       intervalSelectors: [],
-      intervals: []
+      intervals: [],
+      authorizedTags: [],
+      parentTags: []
     };
   }
 
@@ -56,7 +73,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     if (tool === 'Annotation') {
       d3.select('.zoom').style('display', 'none');
       d3.select('#brush-createinterval').style('display', 'block');
-    } else if(tool === 'Edit') {
+    } else if (tool === 'Edit') {
       d3.select('.zoom').style('display', 'none');
       d3.select('#brush-createinterval').style('display', 'none');
     } else {
@@ -65,9 +82,32 @@ class SignalAnnotation extends Component<RouteProps, State> {
     }
   }
 
+  private parseTags = (annotation: Annotation, intervals: Interval[]) => {
+    const authorizedTag = intervals.map(interval => (interval.tags ? interval.tags : []));
+    const usedTags = authorizedTag.length
+      ? authorizedTag.reduce((prev, curr) => [
+          ...prev,
+          ...curr.filter(tag => prev.find(t => t.id === tag.id) === undefined)
+        ])
+      : [];
+
+    const authorizedTags = annotation.tags;
+
+    const parentTags = usedTags.filter(
+      tag => !authorizedTags.find(t => t.id === tag.id)
+    );
+    return { authorizedTags, parentTags };
+  }
+
   public onClickInterval = (intervalId: number) => {
-    this.setState({xIntervalStart: undefined, xIntervalEnd: undefined, popperVisible:true,
-      clickedInterval: this.state.intervals.find((inter:Interval) => inter.id === intervalId)});
+    this.setState({
+      xIntervalStart: undefined,
+      xIntervalEnd: undefined,
+      popperVisible: true,
+      clickedInterval: this.state.intervals.find(
+        (inter: Interval) => inter.id === intervalId
+      )
+    });
   }
 
   private getIntervalsData = (
@@ -254,10 +294,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     } else {
       leads = annotation.signal;
-      this.setState({ loading: false, annotation, intervals });
+      const legend = this.parseTags(annotation, intervals);
+      this.setState({ loading: false, annotation, intervals, ...legend });
     }
 
-    const width = window.innerWidth - 20;
+    const width = document.querySelector('.signal-main-container')!.clientWidth;
     const height = 600;
     const margin = { top: 20, right: 50, bottom: 20, left: 50 };
     const heightPreview = 25;
@@ -412,7 +453,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
 
     const zoomed = () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') return;
-      
+
       xScale.domain(d3.event.transform.rescaleX(xScalePreview).domain());
       drawFocus();
       xAxisGroup.call(xAxis);
@@ -421,7 +462,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         .call(brush.move, [
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[0]),
           xScalePreview(d3.event.transform.rescaleX(xScalePreview).domain()[1])
-        ]); 
+        ]);
     };
 
     const brushed = () => {
@@ -439,7 +480,10 @@ class SignalAnnotation extends Component<RouteProps, State> {
           .call(
             zoom.transform,
             d3.zoomIdentity
-              .scale((width - margin.right - margin.left) / (d3.event.selection[1] - d3.event.selection[0]))
+              .scale(
+                (width - margin.right - margin.left) /
+                  (d3.event.selection[1] - d3.event.selection[0])
+              )
               .translate(-d3.event.selection[0], 0)
           );
 
@@ -471,26 +515,28 @@ class SignalAnnotation extends Component<RouteProps, State> {
         const domain = d3.event.selection.map(xScale.invert, xScale);
         const xStart = domain[0];
         const xEnd = domain[1];
-        
-        this.setState({popperVisible: true,
-          xIntervalStart: xStart,
-          xIntervalEnd: xEnd});
 
-          d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
+        this.setState({
+          popperVisible: true,
+          xIntervalStart: xStart,
+          xIntervalEnd: xEnd
+        });
+
+        d3.select('#brush-createinterval').call(brushAnnotation.move, null); // Remove the brush selection
       });
 
-      this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
-        this,
-        yScale.domain()[0],
-        yScale.domain()[1],
-        xScale,
-        yScale,
-        xScalePreview,
-        yScalePreview,
-        svgPreview,
-        svgFocus,
-        margin
-      );
+    this.afterCreate = this.afterCreate.bind<SignalAnnotation, any, void>(
+      this,
+      yScale.domain()[0],
+      yScale.domain()[1],
+      xScale,
+      yScale,
+      xScalePreview,
+      yScalePreview,
+      svgPreview,
+      svgFocus,
+      margin
+    );
 
     svgPreview.append('g').attr('id', 'interval-preview-container');
 
@@ -550,17 +596,37 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
-  public confirmDelete = (delInterval:Interval) => {
-    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined, intervals: this.state.intervals.filter((inter:Interval) => inter.id !== delInterval.id)}, () => {
-      message.error('Interval has been deleted.', 5);
-      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
-    });
+  public confirmDelete = (delInterval: Interval) => {
+    this.setState(
+      {
+        popperVisible: false,
+        intervalSelectors: [],
+        xIntervalEnd: undefined,
+        xIntervalStart: undefined,
+        clickedInterval: undefined,
+        intervals: this.state.intervals.filter(
+          (inter: Interval) => inter.id !== delInterval.id
+        )
+      },
+      () => {
+        message.error('Interval has been deleted.', 5);
+        this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+      }
+    );
   }
 
   private confirmCreate = (newInterval: Interval) => {
-    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined});
-    const exists = this.state.intervals.find((i:Interval) => i.id === newInterval.id);
-    if(exists) {
+    this.setState({
+      popperVisible: false,
+      intervalSelectors: [],
+      xIntervalEnd: undefined,
+      xIntervalStart: undefined,
+      clickedInterval: undefined
+    });
+    const exists = this.state.intervals.find(
+      (i: Interval) => i.id === newInterval.id
+    );
+    if (exists) {
       // Interval modification
       exists.tags = newInterval.tags;
       exists.comments = newInterval.comments;
@@ -575,16 +641,27 @@ class SignalAnnotation extends Component<RouteProps, State> {
     );
   }
 
-  private confirmCancel = (canInterval:Interval) => {
-    this.setState({popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined}, () => {
-      this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
-      message.info(
-        'Tags modifications not saved but interval not deleted',
-        5
-      );
-    });
-    const exists = this.state.intervals.find((i:Interval) => i.id === canInterval.id);
-    if(exists) {
+  private confirmCancel = (canInterval: Interval) => {
+    this.setState(
+      {
+        popperVisible: false,
+        intervalSelectors: [],
+        xIntervalEnd: undefined,
+        xIntervalStart: undefined,
+        clickedInterval: undefined
+      },
+      () => {
+        this.afterCreate(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        message.info(
+          'Tags modifications not saved but interval not deleted',
+          5
+        );
+      }
+    );
+    const exists = this.state.intervals.find(
+      (i: Interval) => i.id === canInterval.id
+    );
+    if (exists) {
       // Interval modification (comments added)
       exists.tags = canInterval.tags;
       exists.comments = canInterval.comments;
@@ -631,12 +708,25 @@ class SignalAnnotation extends Component<RouteProps, State> {
       'interval-area-preview',
       margin
     );
- 
-    this.setState({ popperVisible: false, intervalSelectors: [], xIntervalEnd:undefined, xIntervalStart:undefined, clickedInterval:undefined });
+
+    this.setState({
+      popperVisible: false,
+      intervalSelectors: [],
+      xIntervalEnd: undefined,
+      xIntervalStart: undefined,
+      clickedInterval: undefined
+    });
   }
 
   public render = () => {
-    const { loading, annotation, error, refresh } = this.state;
+    const {
+      loading,
+      annotation,
+      error,
+      refresh,
+      authorizedTags,
+      parentTags
+    } = this.state;
     if (refresh) {
       return <NotFound />;
     }
@@ -664,10 +754,26 @@ class SignalAnnotation extends Component<RouteProps, State> {
             <div className='signal-graph-container' id='signal' />
             <div className='signal-context-container' id='context' />
           </div>
+          <div className='signal-legend-container'>
+            {parentTags.length > 0 && [
+              <h3 key={0}>Parent Tags</h3>,
+              parentTags.map(tag => (
+                <div key={tag.id}>
+                  <LegendTag {...tag} />
+                </div>
+              ))
+            ]}
+            <h3>Authorized Tags</h3>
+            {authorizedTags.map(tag => (
+              <div key={tag.id}>
+                <LegendTag {...tag} />
+              </div>
+            ))}
+          </div>
           {this.state.popperVisible &&
             this.state.annotation &&
-            ((this.state.xIntervalStart &&
-            this.state.xIntervalEnd) || this.state.clickedInterval) && (
+            ((this.state.xIntervalStart && this.state.xIntervalEnd) ||
+              this.state.clickedInterval) && (
               <FormIntervalSignalAnnotation
                 start={this.state.xIntervalStart}
                 end={this.state.xIntervalEnd}
