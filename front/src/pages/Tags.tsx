@@ -143,15 +143,12 @@ class Tags extends Component<Props, State> {
       okType: 'danger',
       cancelText: 'No',
       onOk: () => {
-        if (tagID) {
           disableTagByID(tagID).then(async () => {
             const data = await this.getDatas();
             this.setState({
               tags: data.filter(t => !t.parent_id)
             });
           });
-        }
-        // error
       },
       onCancel: () => {
         //
