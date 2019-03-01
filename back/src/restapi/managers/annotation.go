@@ -271,6 +271,10 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 404)
 			return
 		}
+		if err == gorm.ErrInvalidSQL {
+			http.Error(w, err.Error(), 400)
+			return
+		}
 		http.Error(w, err.Error(), 500)
 		return
 	}
@@ -280,6 +284,11 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 
 func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) error {
 	var err error
+
+	if &enumStatusID == nil || userID == nil || &annotationID == nil {
+		return gorm.ErrInvalidSQL
+	}
+
 	enumStatus := m.EnumStatus{}
 	if err = db.Where(enumStatusID).First(&enumStatus).Error; err != nil {
 		return err
