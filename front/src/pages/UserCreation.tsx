@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, Row, Col, Alert, Modal } from 'antd';
+import { Form, Input, Select, Row, Col, Alert, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
-import { RouteComponentProps, withRouter } from 'react-router';
 import { Organization, Role, User } from '../utils';
 import { getAllUsers } from '../utils/api';
 
@@ -11,10 +10,6 @@ const { Option } = Select;
 const formItemLayout = {
   labelCol: { span: 10 },
   wrapperCol: { span: 14 }
-};
-
-const formTailLayout = {
-  wrapperCol: { span: 14, offset: 10 }
 };
 
 interface States {
@@ -29,7 +24,7 @@ interface States {
   error: string;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps {
   getOrganizations: () => Promise<Organization[]>;
   getRoles: () => Promise<Role[]>;
   sendUser: (datas: User) => Promise<User>;
@@ -69,15 +64,19 @@ class UserCreation extends Component<Props, States> {
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
-    this.props.form.validateFieldsAndScroll((err, values) => {
+    const {
+      form: { validateFields },
+      sendUser,
+      handleOk
+    } = this.props;
+    validateFields((err, values) => {
       if (!err) {
         values.mail = values.mail.toLowerCase();
         this.setState({ loading: true, error: '' });
-        this.props
-          .sendUser(values)
+        sendUser(values)
           .then(() => {
-            this.props.handleOk();
-            this.setState({ loading: false });
+            handleOk();
+            this.setState({ loading: false, error: '' });
           })
           .catch(() =>
             this.setState({
@@ -168,7 +167,11 @@ class UserCreation extends Component<Props, States> {
   }
 
   public render() {
-    const { getFieldDecorator } = this.props.form;
+    const {
+      form: { getFieldDecorator },
+      modalVisible,
+      handleCancel
+    } = this.props;
     const {
       roles,
       organizations,
@@ -197,9 +200,9 @@ class UserCreation extends Component<Props, States> {
       <Modal
         key={2}
         title='Create user'
-        visible={this.props.modalVisible}
+        visible={modalVisible}
         onOk={this.handleOk}
-        onCancel={this.props.handleCancel}
+        onCancel={handleCancel}
         confirmLoading={loading}
       >
         <Row type='flex' justify='center' align='top'>
@@ -275,4 +278,4 @@ class UserCreation extends Component<Props, States> {
   }
 }
 
-export default Form.create()(withRouter(UserCreation));
+export default Form.create()(UserCreation);
