@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Table, Input, Icon, Tag, Row, Col, Alert } from 'antd';
-import 'antd/dist/antd.css';
 import { ColumnProps } from 'antd/lib/table';
 import { User, Organization, Role } from '../utils';
 import { withAuth, AuthProps } from '../utils/auth';

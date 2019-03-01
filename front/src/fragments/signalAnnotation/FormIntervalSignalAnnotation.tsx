@@ -94,6 +94,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
       .then((response: IntervalComment) => {
         this.setState({
           comments: [
+            ...comments,
             {
               author: response.user.mail,
               avatar: (
@@ -106,8 +107,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
               ),
               content: <p>{response.comment}</p>,
               datetime: response.date.toLocaleString()
-            },
-            ...comments
+            }
           ],
           textAreaComment: ''
         });
@@ -243,6 +243,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
         grandparents.style.color = '#ffffff';
         grandparents.style.borderColor = '#ffffff';
         grandparents.style.borderWidth = '1px';
+        grandparents.style.opacity = '0.85';
         grandparents.style.backgroundColor = String(t.dataset.color);
       }
     });

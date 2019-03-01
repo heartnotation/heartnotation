@@ -86,6 +86,9 @@ func UpdateTagByID(w http.ResponseWriter, r *http.Request) {
 	if t.ParentID != nil {
 		tag.ParentID = t.ParentID
 	}
+	if t.IsActive != nil {
+		tag.IsActive = *t.IsActive
+	}
 	if u.CheckErrorCode(db.Save(&tag).Error, w) {
 		return
 	}
