@@ -42,9 +42,13 @@ interface GraphElement {
 
 const LegendTag = ({ color, name }: { color: string; name: string }) => (
   <AntTag
+    className='legend-tag'
     style={{
       margin: 4,
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      '&:hover': {
+        cursor: 'initial'
+      }
     }}
     color={color}
   >

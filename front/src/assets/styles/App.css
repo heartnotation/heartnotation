@@ -242,3 +242,7 @@ div > .fixed-bottom-button {
   margin-top: 20px;
   margin-bottom: 50px;
 }
+
+.legend-tag:hover {
+  cursor: initial;
+}
