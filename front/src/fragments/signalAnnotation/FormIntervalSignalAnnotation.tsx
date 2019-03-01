@@ -183,6 +183,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
         grandparents.style.color = '#ffffff';
         grandparents.style.borderColor = '#ffffff';
         grandparents.style.borderWidth = '1px';
+        grandparents.style.opacity = '0.85';
         grandparents.style.backgroundColor = String(t.dataset.color);
       }
     });
