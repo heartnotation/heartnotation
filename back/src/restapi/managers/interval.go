@@ -7,7 +7,9 @@ import (
 	m "restapi/models"
 	u "restapi/utils"
 
+	c "github.com/gorilla/context"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 // FindIntervalByID get an interval by ID
@@ -42,16 +44,39 @@ func CreateInterval(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var i d.Interval
+	db := u.GetConnection()
+	annotation := m.Annotation{}
+	contextUser := c.Get(r, "user").(*m.User)
 	err := json.NewDecoder(r.Body).Decode(&i)
 	if err != nil || i.TimeStart == nil || i.TimeEnd == nil || i.AnnotationID == nil && (*i.TimeStart > *i.TimeEnd) {
 		http.Error(w, "Bad args", 400)
 		return
 	}
-	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID, IsActive: true}
-	if u.CheckErrorCode(u.GetConnection().Create(&c).Error, w) {
+
+	if u.CheckErrorCode(db.Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").First(&annotation, *i.AnnotationID).Error, w) {
 		return
 	}
-	u.Respond(w, c)
+	annotation.LastStatus, _ = annotation.GetLastAndFirstStatus()
+	if annotation.LastStatus.EnumStatus.ID == 2 {
+		if err := changeStatusEditDate(db, w, 3, &contextUser.ID, *i.AnnotationID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			if err == gorm.ErrInvalidSQL {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
+	}
+
+	c := m.Interval{TimeStart: *i.TimeStart, TimeEnd: *i.TimeEnd, AnnotationID: *i.AnnotationID, IsActive: true}
+	if u.CheckErrorCode(db.Create(&c).Error, w) {
+		return
+	}
+	u.RespondCreate(w, c)
 }
 
 // RemoveIntervalByID Remove an interval by his ID
