@@ -5,7 +5,6 @@ import { withAuth, AuthProps } from '../utils/auth';
 import { ColumnProps } from 'antd/lib/table';
 import AddButton from '../fragments/fixedButton/AddButton';
 import OrganizationForm from '../fragments/organization/OrganizationForm';
-import { getOrganizations } from '../utils/api';
 
 interface Props extends AuthProps {
   getOrganizations: () => Promise<Organization[]>;
@@ -20,6 +19,7 @@ interface State {
   selectedOrganization?: Organization;
   createVisible: boolean;
   modifyVisible: boolean;
+  error: string;
 }
 
 interface ConditionnalColumn extends ColumnProps<Organization> {
@@ -33,7 +33,8 @@ class Organizations extends React.Component<Props, State> {
       initialOrganizations: [],
       filteredOrganizations: [],
       createVisible: false,
-      modifyVisible: false
+      modifyVisible: false,
+      error: ''
     };
   }
 
@@ -143,13 +144,23 @@ class Organizations extends React.Component<Props, State> {
               twoToneColor='red'
               style={{ fontSize: '1.3em' }}
               onClick={async () => {
-                await this.props.deleteOrganization(organization);
-                const orgas = await this.props.getOrganizations();
-                this.setState({
-                  initialOrganizations: orgas,
-                  filteredOrganizations: orgas.slice(),
-                  selectedOrganization: undefined
-                });
+                const { deleteOrganization, getOrganizations } = this.props;
+                try {
+                  await deleteOrganization(organization);
+                } catch (_) {
+                  this.setState({ error: 'Failed to delete organization' });
+                }
+                try {
+                  const orgas = await getOrganizations();
+                  this.setState({
+                    initialOrganizations: orgas,
+                    filteredOrganizations: orgas.slice(),
+                    selectedOrganization: undefined,
+                    error: ''
+                  });
+                } catch (_) {
+                  this.setState({ error: 'Failed to refresh datas' });
+                }
               }}
             />
           </Col>
@@ -159,19 +170,29 @@ class Organizations extends React.Component<Props, State> {
   ];
   public componentDidMount = async () => {
     const { getOrganizations } = this.props;
-    const orgas = await getOrganizations();
-    this.setState({
-      initialOrganizations: orgas,
-      filteredOrganizations: orgas.slice()
-    });
+    try {
+      const orgas = await getOrganizations();
+      this.setState({
+        initialOrganizations: orgas,
+        filteredOrganizations: orgas.slice()
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to load datas' });
+    }
   }
   private handleSubmit = async () => {
-    const orgas = await getOrganizations();
-    this.setState({
-      initialOrganizations: orgas,
-      filteredOrganizations: orgas.slice(),
-      createVisible: false
-    });
+    const { getOrganizations } = this.props;
+    try {
+      const orgas = await getOrganizations();
+      this.setState({
+        initialOrganizations: orgas,
+        filteredOrganizations: orgas.slice(),
+        createVisible: false,
+        error: ''
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
   private handleCancel = () => {
     this.setState({

@@ -25,16 +25,16 @@ interface PropsButton extends AuthProps {
 }
 
 const ValidateButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Gestionnaire' ? (
+  const { user, annotation, handleSubmit } = props;
+  return user.role.name === 'Gestionnaire' ? (
     <Button
       type='primary'
       icon='check-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 5,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -44,16 +44,16 @@ const ValidateButton = (props: PropsButton) => {
 };
 
 const InvalidateButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Gestionnaire' ? (
+  const { user, handleSubmit, annotation } = props;
+  return user.role.name === 'Gestionnaire' ? (
     <Button
       type='danger'
       icon='close-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 3,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -63,16 +63,16 @@ const InvalidateButton = (props: PropsButton) => {
 };
 
 const CompleteButton = (props: PropsButton) => {
-  const { user } = props;
-  return props.user.role.name === 'Annotateur' ? (
+  const { user, handleSubmit, annotation } = props;
+  return user.role.name === 'Annotateur' ? (
     <Button
       type='default'
       icon='check-circle'
       size='large'
       onClick={() => {
-        props.handleSubmit({
+        handleSubmit({
           status: 4,
-          id: props.annotation.id
+          id: annotation.id
         });
       }}
     >
@@ -158,13 +158,14 @@ class HeaderSignalAnnotation extends Component<Props, State> {
   }
 
   public handleSubmit = (s: StatusInserter) => {
+    const { history } = this.props;
     api
       .sendStatus(s)
       .then(() => {
-        this.props.history.push('/');
+        history.push('/');
       })
-      .catch(error => {
-        this.setState({ error: 'Error during using button of header' });
+      .catch(err => {
+        this.setState({ error: err.data });
       });
   }
 
@@ -253,7 +254,7 @@ class HeaderSignalAnnotation extends Component<Props, State> {
           />
         </Col>
         <Col offset={1} span={3}>
-          <ChatDrawerAnnotation annotation_id={this.props.annotation.id} />
+          <ChatDrawerAnnotation annotation_id={annotation.id} />
         </Col>
         <Col span={4}>
           <Row type='flex' align='middle' justify='end'>

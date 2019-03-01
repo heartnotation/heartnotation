@@ -203,7 +203,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
     margin: any
   ) => {
     const { intervals } = this.state;
-    const i = intervals.map((interval, _, array) => {
+    const inters = intervals.map((interval, _, array) => {
       const intersectors = array.filter(
         i =>
           i.id !== interval.id &&
@@ -223,7 +223,7 @@ class SignalAnnotation extends Component<RouteProps, State> {
         intersectors
       };
     });
-    const lines = sizeInterval(orderIntervals(i));
+    const lines = sizeInterval(orderIntervals(inters));
     const block = (yMax - yMin) / lines.length;
 
     lines.map((line, lineNumber) => {

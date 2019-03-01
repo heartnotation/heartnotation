@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { FormComponentProps } from 'antd/lib/form';
+import { OptionProps } from 'antd/lib/select';
+import { Organization, Tag, Annotation } from '../utils';
 import {
   Form,
   Input,
-  Button,
   Select,
   AutoComplete,
   Row,
@@ -10,10 +12,6 @@ import {
   Alert,
   Modal
 } from 'antd';
-import { FormComponentProps } from 'antd/lib/form';
-import { OptionProps } from 'antd/lib/select';
-import { RouteComponentProps, withRouter } from 'react-router';
-import { Organization, Tag, Annotation, Status } from '../utils';
 
 const { Option } = Select;
 
@@ -34,7 +32,7 @@ interface States {
   error: string;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps {
   getAnnotations: () => Promise<Annotation[]>;
   changeAnnotation: (data: Annotation) => Promise<Annotation>;
   getTags: () => Promise<Tag[]>;
@@ -155,19 +153,19 @@ class EditAnnotationForm extends Component<Props, States> {
         });
         return;
       }
-
+      const { organizations, tags } = this.state;
+      const { annotation, changeAnnotation, handleOk } = this.props;
       this.setState({ loading: true, error: '' });
-      const a = { ...this.props.annotation };
+      const a = { ...annotation };
 
-      a.organization = this.state.organizations.find(
+      a.organization = organizations.find(
         orga => orga.name === values.organization
       );
       a.name = values.name;
-      a.tags = this.state.tags.filter(t => values.tags.includes(t.id));
-      this.props
-        .changeAnnotation(a)
+      a.tags = tags.filter(t => values.tags.includes(t.id));
+      changeAnnotation(a)
         .then(() => {
-          this.props.handleOk();
+          handleOk();
           this.setState({ loading: false });
         })
         .catch(() => {
@@ -302,4 +300,4 @@ class EditAnnotationForm extends Component<Props, States> {
   }
 }
 
-export default Form.create()(withRouter(EditAnnotationForm));
+export default Form.create()(EditAnnotationForm);
