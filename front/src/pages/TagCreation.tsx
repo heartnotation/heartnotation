@@ -43,9 +43,17 @@ class TagCreation extends Component<Props, States> {
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         this.setState({ loading: true });
-        this.props.sendTag(values).then(() => {
-          this.props.handleOk();
-        });
+        this.props
+          .sendTag(values)
+          .then(() => {
+            this.props.handleOk();
+            this.setState({ loading: false });
+          })
+          .catch(() =>
+            this.setState({
+              loading: false
+            })
+          );
       }
     });
   }
@@ -64,19 +72,7 @@ class TagCreation extends Component<Props, States> {
         visible={this.props.modalVisible}
         onCancel={this.props.handleCancel}
         onOk={this.handleOk}
-        footer={[
-          <Button key='back' onClick={this.props.handleCancel}>
-            Cancel
-          </Button>,
-          <Button
-            key='submit'
-            type='primary'
-            loading={loading}
-            onClick={this.handleOk}
-          >
-            Create
-          </Button>
-        ]}
+        confirmLoading={loading}
       >
         <Row type='flex' justify='center' align='top'>
           <Col span={15}>
