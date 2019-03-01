@@ -53,7 +53,7 @@ class TagCreation extends Component<Props, States> {
   public render() {
     const { getFieldDecorator } = this.props.form;
     const { loading } = this.state;
-    const msgEmpty = 'This field should not be empty';
+    // const msgEmpty = 'This field should not be empty';
     const msgRequired = 'This field is required';
     const wrongColorFormat = 'Empty or wrong color format';
 
