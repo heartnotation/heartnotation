@@ -6,6 +6,7 @@ import { withAuth, AuthProps } from '../utils/auth';
 import EditUserForm from './EditUserForm';
 import UserCreation from './UserCreation';
 import AddButton from '../fragments/fixedButton/AddButton';
+
 export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
@@ -30,6 +31,20 @@ interface ConditionnalColumn extends ColumnProps<User> {
   roles: string[];
 }
 
+const colors = [
+  'geekblue',
+  'green',
+  'volcano',
+  'orange',
+  'yellow',
+  'gold',
+  'lime',
+  'cyan',
+  'purple',
+  'magenta',
+  'red'
+];
+
 class Users extends Component<Props, State> {
   public state: State = {
     searches: new Map<string, string>(),
@@ -42,15 +57,20 @@ class Users extends Component<Props, State> {
   };
 
   public async componentDidMount() {
-    const data = await this.getDatas();
-    this.setState({
-      initialUsers: data,
-      currentUsers: data.slice()
-    });
+    try {
+      const data = await this.getDatas();
+      this.setState({
+        initialUsers: data,
+        currentUsers: data.slice()
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to load datas' });
+    }
   }
 
   public async getDatas(): Promise<User[]> {
-    const users = await this.props.getAllUsers();
+    const { getAllUsers } = this.props;
+    const users = await getAllUsers();
     return users;
   }
 
@@ -100,36 +120,24 @@ class Users extends Component<Props, State> {
         {
           title: 'Organizations',
           dataIndex: 'organizations',
-          render: (organizations: Organization[]) => {
-            const colors = [
-              'geekblue',
-              'green',
-              'volcano',
-              'orange',
-              'yellow',
-              'gold',
-              'lime',
-              'cyan',
-              'purple',
-              'magenta',
-              'red'
-            ];
-            if (organizations !== undefined) {
-              organizations.sort();
-              const ui = (
-                <span>
-                  {organizations.map(organization => (
-                    <Tag
-                      color={colors[(organization.id % colors.length) - 1]}
-                      key={organization.name}
-                    >
-                      {organization.name}
-                    </Tag>
-                  ))}
-                </span>
-              );
-              return ui;
+          render: (organizations: Organization[] | undefined) => {
+            if (organizations === undefined) {
+              return '';
             }
+            organizations.sort();
+            const ui = (
+              <span>
+                {organizations.map(organization => (
+                  <Tag
+                    color={colors[(organization.id % colors.length) - 1]}
+                    key={organization.name}
+                  >
+                    {organization.name}
+                  </Tag>
+                ))}
+              </span>
+            );
+            return ui;
           }
         }
       ],
@@ -175,13 +183,17 @@ class Users extends Component<Props, State> {
                   this.props
                     .deleteUser(user)
                     .then(async () => {
-                      const users = await this.getDatas();
-                      this.setState({
-                        user: undefined,
-                        initialUsers: users,
-                        currentUsers: users.slice(),
-                        error: ''
-                      });
+                      try {
+                        const users = await this.getDatas();
+                        this.setState({
+                          user: undefined,
+                          initialUsers: users,
+                          currentUsers: users.slice(),
+                          error: ''
+                        });
+                      } catch (_) {
+                        this.setState({ error: 'Failed to refresh datas' });
+                      }
                     })
                     .catch(error =>
                       this.setState({
@@ -274,22 +286,32 @@ class Users extends Component<Props, State> {
 
   public handleOkCreation = async () => {
     this.closeModalCreation();
-    const users = await this.getDatas();
-    this.setState({
-      user: undefined,
-      initialUsers: users,
-      currentUsers: users.slice()
-    });
+    try {
+      const users = await this.getDatas();
+      this.setState({
+        user: undefined,
+        initialUsers: users,
+        currentUsers: users.slice(),
+        error: ''
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
 
   public handleOkModification = async () => {
     this.closeModalModification();
-    const users = await this.getDatas();
-    this.setState({
-      user: undefined,
-      initialUsers: users,
-      currentUsers: users.slice()
-    });
+    try {
+      const users = await this.getDatas();
+      this.setState({
+        user: undefined,
+        initialUsers: users,
+        currentUsers: users.slice(),
+        error: ''
+      });
+    } catch (_) {
+      this.setState({ error: 'Failed to refresh datas' });
+    }
   }
 
   public closeModalModification() {
@@ -315,13 +337,18 @@ class Users extends Component<Props, State> {
       keepCreationData,
       error
     } = this.state;
+    const {
+      user: { role },
+      getOrganizations,
+      getRoles,
+      modifyUser,
+      sendUser
+    } = this.props;
     return [
       <Table<User>
         key={1}
         rowKey='id'
-        columns={this.columns.filter(value =>
-          value.roles.includes(this.props.user.role.name)
-        )}
+        columns={this.columns.filter(value => value.roles.includes(role.name))}
         dataSource={currentUsers}
         pagination={{
           position: 'bottom',
@@ -334,36 +361,44 @@ class Users extends Component<Props, State> {
       user && (
         <EditUserForm
           key={2}
-          getOrganizations={this.props.getOrganizations}
-          getRoles={this.props.getRoles}
-          modifyUser={this.props.modifyUser}
+          getOrganizations={getOrganizations}
+          getRoles={getRoles}
+          modifyUser={modifyUser}
           handleCancel={this.handleCancelModification}
           handleOk={this.handleOkModification}
           currentUser={user}
           modalVisible={modifyVisible}
-          user={this.props.user}
+          user={user}
         />
       ),
-      this.props.user.role.name === 'Admin' && (
+      role.name === 'Admin' && (
         <AddButton
           key={3}
           onClick={() => {
-            this.setState({ creationVisible: true, keepCreationData: true });
+            this.setState({ creationVisible: true });
           }}
         />
       ),
-      keepCreationData && (
+      creationVisible && (
         <UserCreation
           key={4}
-          getOrganizations={this.props.getOrganizations}
-          getRoles={this.props.getRoles}
-          sendUser={this.props.sendUser}
+          getOrganizations={getOrganizations}
+          getRoles={getRoles}
+          sendUser={sendUser}
           handleCancel={this.handleCancelCreation}
           handleOk={this.handleOkCreation}
           modalVisible={creationVisible}
         />
       ),
-      error && <Alert key={5} message={error} type='error' showIcon={true} />
+      error && (
+        <Alert
+          key={5}
+          message={error}
+          type='error'
+          showIcon={true}
+          banner={true}
+        />
+      )
     ];
   }
 }

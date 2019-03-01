@@ -44,7 +44,7 @@ export const authenticate = (token: string): Promise<User> => {
 
 export const withAuth = <OriginalProps extends AuthProps>(
   Component: React.ComponentType<OriginalProps>
-): React.SFC<
+): React.FunctionComponent<
   Pick<OriginalProps, Exclude<keyof OriginalProps, keyof AuthProps>>
 > => (
   props: Pick<OriginalProps, Exclude<keyof OriginalProps, keyof AuthProps>>
