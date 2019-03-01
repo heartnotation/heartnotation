@@ -1,9 +1,9 @@
 import * as d3 from 'd3';
 import React, { Component } from 'react';
 import { RouteComponentProps, withRouter } from 'react-router';
-import { Alert, message } from 'antd';
+import { Alert, message, Tag as AntTag } from 'antd';
 import loadingGif from '../assets/images/loading.gif';
-import { Annotation, Point, Interval } from '../utils';
+import { Annotation, Point, Interval, Tag } from '../utils';
 import HeaderSignalAnnotation from '../fragments/signalAnnotation/HeaderSignalAnnotation';
 import FormIntervalSignalAnnotation from '../fragments/signalAnnotation/FormIntervalSignalAnnotation';
 import NotFound from './errors/NotFound';
@@ -29,6 +29,8 @@ interface State {
   graphElements: GraphElement[];
   intervals: Interval[];
   mainGraph?: d3.Selection<SVGGElement, {}, HTMLElement, any>;
+  authorizedTags: Tag[];
+  parentTags: Tag[];
 }
 
 interface GraphElement {
@@ -38,6 +40,21 @@ interface GraphElement {
   object: d3.Line<Point> | d3.Area<Point>;
 }
 
+const LegendTag = ({ color, name }: { color: string; name: string }) => (
+  <AntTag
+    className='legend-tag'
+    style={{
+      margin: 4,
+      fontWeight: 'bold',
+      '&:hover': {
+        cursor: 'initial'
+      }
+    }}
+    color={color}
+  >
+    {name}
+  </AntTag>
+);
 class SignalAnnotation extends Component<RouteProps, State> {
   public constructor(props: RouteProps) {
     super(props);
@@ -48,7 +65,9 @@ class SignalAnnotation extends Component<RouteProps, State> {
       popperVisible: false,
       graphElements: [],
       intervalSelectors: [],
-      intervals: []
+      intervals: [],
+      authorizedTags: [],
+      parentTags: []
     };
   }
 
@@ -63,6 +82,21 @@ class SignalAnnotation extends Component<RouteProps, State> {
       d3.select('.zoom').style('display', 'block');
       d3.select('#brush-createinterval').style('display', 'block');
     }
+  }
+
+  private parseTags = (annotation: Annotation, intervals: Interval[]) => {
+    const usedTags = intervals
+      .map(interval => (interval.tags ? interval.tags : []))
+      .reduce((prev, curr) => [
+        ...prev,
+        ...curr.filter(tag => prev.find(t => t.id === tag.id) === undefined)
+      ]);
+    const authorizedTags = annotation.tags;
+
+    const parentTags = usedTags.filter(
+      tag => !authorizedTags.find(t => t.id === tag.id)
+    );
+    return { authorizedTags, parentTags };
   }
 
   public onClickInterval = (intervalId: number) => {
@@ -254,10 +288,11 @@ class SignalAnnotation extends Component<RouteProps, State> {
       return;
     } else {
       leads = annotation.signal;
-      this.setState({ loading: false, annotation, intervals });
+      const legend = this.parseTags(annotation, intervals);
+      this.setState({ loading: false, annotation, intervals, ...legend });
     }
 
-    const width = window.innerWidth - 20;
+    const width = document.querySelector('.signal-main-container')!.clientWidth;
     const height = 600;
     const margin = { top: 20, right: 50, bottom: 20, left: 50 };
     const heightPreview = 25;
@@ -636,7 +671,14 @@ class SignalAnnotation extends Component<RouteProps, State> {
   }
 
   public render = () => {
-    const { loading, annotation, error, refresh } = this.state;
+    const {
+      loading,
+      annotation,
+      error,
+      refresh,
+      authorizedTags,
+      parentTags
+    } = this.state;
     if (refresh) {
       return <NotFound />;
     }
@@ -663,6 +705,22 @@ class SignalAnnotation extends Component<RouteProps, State> {
           <div className='signal-main-container'>
             <div className='signal-graph-container' id='signal' />
             <div className='signal-context-container' id='context' />
+          </div>
+          <div className='signal-legend-container'>
+            {parentTags.length > 0 && [
+              <h3 key={0}>Parent Tags</h3>,
+              parentTags.map(tag => (
+                <div key={tag.id}>
+                  <LegendTag {...tag} />
+                </div>
+              ))
+            ]}
+            <h3>Authorized Tags</h3>
+            {authorizedTags.map(tag => (
+              <div key={tag.id}>
+                <LegendTag {...tag} />
+              </div>
+            ))}
           </div>
           {this.state.popperVisible &&
             this.state.annotation &&
