@@ -266,44 +266,50 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	changeStatusEditDate(db, w, annotationStatus.EnumStatus, &contextUser.ID, annotationStatus.ID)
+	if err := changeStatusEditDate(db, w, annotationStatus.EnumStatus, &contextUser.ID, annotationStatus.ID); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, err.Error(), 404)
+			return
+		}
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	u.Respond(w, a)
+
 }
 
-func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) {
+func changeStatusEditDate(db *gorm.DB, w http.ResponseWriter, enumStatusID int, userID *int, annotationID int) error {
+	var err error
 	enumStatus := m.EnumStatus{}
-	if u.CheckErrorCode(db.Where(enumStatusID).First(&enumStatus).Error, w) {
-		return
+	if err = db.Where(enumStatusID).First(&enumStatus).Error; err != nil {
+		return err
 	}
 
 	transaction := db.Begin()
 
 	date := time.Now()
 	status := m.Status{EnumStatus: &enumStatus, UserID: userID, AnnotationID: &annotationID, Date: date}
-	if u.CheckErrorCode(transaction.Create(&status).Error, w) {
+	if err = transaction.Create(&status).Error; err != nil {
 		transaction.Rollback()
-		return
+		return err
 	}
 
 	annotation := m.Annotation{ID: annotationID}
-	if u.CheckErrorCode(transaction.Model(&annotation).Association("Status").Append(&status).Error, w) {
+	if err = transaction.Model(&annotation).Association("Status").Append(&status).Error; err != nil {
 		transaction.Rollback()
-		return
+		return err
 	}
 
-	annotationEditDate := m.Annotation{}
-	if u.CheckErrorCode(db.First(&annotationEditDate, annotationID).Error, w) {
+	annotation.EditDate = date
+	if err = transaction.Save(&annotation).Error; err != nil {
 		transaction.Rollback()
-		return
-	}
-	annotationEditDate.EditDate = date
-	if u.CheckErrorCode(db.Save(&annotationEditDate).Error, w) {
-		transaction.Rollback()
-		return
+		return err
 	}
 	transaction.Commit()
-	if u.CheckErrorCode(db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error, w) {
-		return
+	if err = db.Preload("Organization").Preload("Status").Preload("Status.EnumStatus").Preload("Status.User").Preload("Tags").Preload("Commentannotation").Preload("Commentannotation.User").Find(&annotation).Error; err != nil {
+		return err
 	}
+	return nil
 }
 
 // UpdateAnnotation modifies an annotation
@@ -354,9 +360,23 @@ func UpdateAnnotation(w http.ResponseWriter, r *http.Request) {
 	m := m.ToMap(annotation, a)
 
 	if annotation.Organization == nil && a.OrganizationID != annotation.OrganizationID {
-		changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID)
+		if err := changeStatusEditDate(db, w, 2, &contextUser.ID, *a.ID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	} else if annotation.Organization != nil && a.OrganizationID == nil {
-		changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID)
+		if err := changeStatusEditDate(db, w, 1, &contextUser.ID, *a.ID); err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, err.Error(), 404)
+				return
+			}
+			http.Error(w, err.Error(), 500)
+			return
+		}
 	}
 
 	transaction := db.Begin()
