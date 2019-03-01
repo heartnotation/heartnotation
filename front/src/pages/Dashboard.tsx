@@ -280,7 +280,7 @@ class Dashboard extends Component<Props, State> {
       roles: ['Annotateur', 'Gestionnaire', 'Admin']
     },
     {
-      title: 'Edit',
+      title: 'Action',
       dataIndex: 'edit',
       render: (_, annotation: Annotation) => {
         const { user } = this.props;
