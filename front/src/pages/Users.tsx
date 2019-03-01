@@ -121,7 +121,10 @@ class Users extends Component<Props, State> {
         {
           title: 'Organizations',
           dataIndex: 'organizations',
-          render: (organizations: Organization[]) => {
+          render: (organizations: Organization[] | undefined) => {
+            if (organizations === undefined) {
+              return '';
+            }
             organizations.sort();
             const ui = (
               <span>
@@ -386,7 +389,13 @@ class Users extends Component<Props, State> {
         />
       ),
       error && (
-        <Alert key={5} message={error} type='error' showIcon={true} banner={true} />
+        <Alert
+          key={5}
+          message={error}
+          type='error'
+          showIcon={true}
+          banner={true}
+        />
       )
     ];
   }
