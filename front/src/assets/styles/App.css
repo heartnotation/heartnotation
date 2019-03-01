@@ -252,15 +252,15 @@ div > .fixed-bottom-button {
 }
 
 .tag_title:hover {
-  background-color: #f0f3ff;
+  opacity: 0.8;
 }
 
 .tag_title_disabled:hover {
   background-color: inherit !important;
 }
 
-.tag_title_disabled {
-  color: #bfbfbf;
+.tag_title_disabled div {
+  text-decoration: line-through;
 }
 
 .tag_wrapper .ant-tree-node-content-wrapper:hover .add_tag,

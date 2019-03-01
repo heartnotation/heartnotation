@@ -1,27 +1,19 @@
 import React, { Component } from 'react';
-import { Form, Input, Button, Select, Row, Col, Alert, Modal } from 'antd';
+import { Form, Input, Row, Col, Modal, Alert } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
-import { OptionProps } from 'antd/lib/select';
-import { RouteComponentProps, withRouter } from 'react-router';
-import { Organization, Role, Tag } from '../utils';
-import { getAllUsers } from '../utils/api';
-
-const { Option } = Select;
+import { Tag } from '../utils';
 
 const formItemLayout = {
   labelCol: { span: 10 },
   wrapperCol: { span: 14 }
 };
 
-const formTailLayout = {
-  wrapperCol: { span: 14, offset: 10 }
-};
-
 interface States {
   loading: boolean;
+  error: string;
 }
 
-interface Props extends FormComponentProps, RouteComponentProps {
+interface Props extends FormComponentProps {
   parent_id?: number;
   sendTag: (datas: Tag) => Promise<Tag>;
   handleCancel: () => void;
@@ -33,24 +25,29 @@ class TagCreation extends Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loading: false
+      loading: false,
+      error: ''
     };
   }
 
   public handleOk = (e: React.FormEvent<any>) => {
     e.preventDefault();
-
-    this.props.form.validateFieldsAndScroll((err, values) => {
+    const {
+      form: { validateFields },
+      sendTag,
+      handleOk
+    } = this.props;
+    validateFields((err, values) => {
       if (!err) {
         this.setState({ loading: true });
-        this.props
-          .sendTag(values)
+        sendTag(values)
           .then(() => {
-            this.props.handleOk();
-            this.setState({ loading: false });
+            handleOk();
+            this.setState({ loading: false, error: '' });
           })
           .catch(() =>
             this.setState({
+              error: 'Failed to send datas',
               loading: false
             })
           );
@@ -59,9 +56,13 @@ class TagCreation extends Component<Props, States> {
   }
 
   public render() {
-    const { getFieldDecorator } = this.props.form;
-    const { loading } = this.state;
-    // const msgEmpty = 'This field should not be empty';
+    const {
+      form: { getFieldDecorator },
+      modalVisible,
+      handleCancel,
+      parent_id
+    } = this.props;
+    const { loading, error } = this.state;
     const msgRequired = 'This field is required';
     const wrongColorFormat = 'Empty or wrong color format';
 
@@ -69,8 +70,8 @@ class TagCreation extends Component<Props, States> {
       <Modal
         key={2}
         title='Create tag'
-        visible={this.props.modalVisible}
-        onCancel={this.props.handleCancel}
+        visible={modalVisible}
+        onCancel={handleCancel}
         onOk={this.handleOk}
         confirmLoading={loading}
       >
@@ -89,7 +90,7 @@ class TagCreation extends Component<Props, States> {
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tag parent id'>
                 {getFieldDecorator('parent_id', {
-                  initialValue: this.props.parent_id
+                  initialValue: parent_id
                 })(<Input disabled={true} />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tag color'>
@@ -102,9 +103,10 @@ class TagCreation extends Component<Props, States> {
                       pattern: new RegExp('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
                     }
                   ]
-                })(<Input />)}
+                })(<Input type='color' />)}
               </Form.Item>
             </Form>
+            {error && <Alert type='error' message={error} showIcon={true} />}
           </Col>
         </Row>
       </Modal>
@@ -112,4 +114,4 @@ class TagCreation extends Component<Props, States> {
   }
 }
 
-export default Form.create()(withRouter(TagCreation));
+export default Form.create()(TagCreation);
