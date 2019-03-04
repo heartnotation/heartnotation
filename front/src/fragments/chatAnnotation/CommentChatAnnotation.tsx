@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Comment, List, Input, Form, Button, Avatar } from 'antd';
 import { api, AnnotationComment, AnnotationCommentPayload } from '../../utils';
+import { withAuth, AuthProps } from '../../utils/auth';
 
 const TextArea = Input.TextArea;
 
@@ -43,7 +44,7 @@ interface State {
   currentComment: string;
   error: string;
 }
-interface Props {
+interface Props extends AuthProps {
   annotation_id: number;
 }
 class CommentChatAnnotation extends Component<Props, State> {
@@ -125,6 +126,7 @@ class CommentChatAnnotation extends Component<Props, State> {
 
   public render() {
     const { comments, currentComment } = this.state;
+    const { user } = this.props;
     return (
       <div>
         <div className='comments-container'>
@@ -136,7 +138,9 @@ class CommentChatAnnotation extends Component<Props, State> {
               <Avatar
                 style={{ backgroundColor: 'orange', verticalAlign: 'middle' }}
                 size='large'
-              />
+              >
+                {user.mail[0].toUpperCase()}
+              </Avatar>
             }
             content={
               <Editor
@@ -152,4 +156,4 @@ class CommentChatAnnotation extends Component<Props, State> {
   }
 }
 
-export default CommentChatAnnotation;
+export default withAuth(CommentChatAnnotation);
