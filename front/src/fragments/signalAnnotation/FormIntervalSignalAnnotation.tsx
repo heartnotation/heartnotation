@@ -245,6 +245,8 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
         grandparents.style.borderWidth = '1px';
         grandparents.style.opacity = '0.85';
         grandparents.style.backgroundColor = String(t.dataset.color);
+        grandparents.style.borderRadius = '4px';
+        grandparents.style.fontWeight = 'bold';
       }
     });
   }
@@ -255,8 +257,6 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     const {
       tags,
       confirmLoading,
-      error,
-      currentInterval,
       selectedTags,
       comments,
       textAreaComment
@@ -264,7 +264,7 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
     const { annotation, end, start, clickedInterval } = this.props;
     const tagValues = tags.map((val: Tag) => (
       <Option key={val.name} value={val.id} style={{ color: val.color }}>
-        <span id={String(val.id)} data-color={val.color}>
+        <span id={String(val.id)} data-color={`${val.color}d0`}>
           {val.name}
         </span>
       </Option>
@@ -293,15 +293,17 @@ class FormIntervalSignalAnnotation extends Component<Props, State> {
                 {!clickedInterval && (
                   <p className='text-center'>
                     Tags to assignate to annotation task {annotation.id} in
-                    interval between {start} and {end} :
+                    interval <br /> between {Math.round(start!)} and{' '}
+                    {Math.round(end!)} :
                   </p>
                 )}
                 {clickedInterval && (
                   <p className='text-center'>
                     Tags to assignate to annotation task{' '}
-                    {clickedInterval.annotation_id} in interval between{' '}
-                    <b>{clickedInterval.time_start} ms</b> and{' '}
-                    <b>{clickedInterval.time_end} ms</b> :
+                    {clickedInterval.annotation_id} in interval
+                    <br /> between{' '}
+                    <b>{Math.round(clickedInterval.time_start)} ms</b> and{' '}
+                    <b>{Math.round(clickedInterval.time_end)} ms</b> :
                   </p>
                 )}
                 <Select
