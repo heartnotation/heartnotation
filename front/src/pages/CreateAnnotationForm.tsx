@@ -88,11 +88,9 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   private getSignalByAnnotationID = (id: string) => {
-    console.log(id);
     const idInt = parseInt(id, 10);
-    return this.state.annotations
-      .filter(a => a.id === idInt)
-      .map(an => an.signal_id);
+    const annotation = this.state.annotations.find(a => a.id === idInt);
+    return annotation ? annotation.signal_id : '';
   }
 
   public validateId = (_: any, value: any, callback: any) => {
@@ -323,33 +321,34 @@ class CreateAnnotationForm extends Component<Props, States> {
                     },
                     { validator: this.validateParent }
                   ]
-                })(<Input />)}
+                })(
+                  <Input
+                    onChange={e =>
+                      this.props.form.setFieldsValue({
+                        signal_id: this.getSignalByAnnotationID(e.target.value)
+                      })
+                    }
+                  />
+                )}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Signal ID'>
-                {console.log(
-                  'signal id',
-                  this.getSignalByAnnotationID(
-                    this.props.form.getFieldValue('parent_id')
-                  )
-                )}
                 {getFieldDecorator('signal_id', {
-                  initialValue: this.props.form.getFieldValue('parent_id')
-                    ? this.getSignalByAnnotationID(
-                        this.props.form.getFieldValue('parent_id')
-                      )
-                    : '',
                   rules: [
-                    {
-                      whitespace: true,
-                      message: msgEmpty
-                    },
                     {
                       required: true,
                       message: msgRequired
                     },
                     { validator: this.validateId }
                   ]
-                })(<Input />)}
+                })(
+                  <Input
+                    {...(this.props.form.getFieldValue('parent_id')
+                      ? {
+                          disabled: true
+                        }
+                      : { disabled: false, required: true })}
+                  />
+                )}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organization_id', {
