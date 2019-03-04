@@ -28,11 +28,6 @@ interface States {
   tagsSelected: Tag[];
   annotations: Annotation[];
   annotationsFinished: Annotation[];
-  potentialParents: Annotation[];
-  parentCallback: any;
-  parentValue: string;
-  signalCallback: any;
-  signalValue: string;
   annotationValidateStatus: '' | 'success' | 'error';
   loading: boolean;
   error: string;
@@ -60,11 +55,6 @@ class CreateAnnotationForm extends Component<Props, States> {
       tagsSelected: [],
       annotations: [],
       annotationsFinished: [],
-      potentialParents: [],
-      parentCallback: undefined,
-      parentValue: '',
-      signalCallback: undefined,
-      signalValue: '',
       annotationValidateStatus: '',
       loading: true,
       error: ''
@@ -97,37 +87,10 @@ class CreateAnnotationForm extends Component<Props, States> {
     return !isNaN(Number(s));
   }
 
-  public validateIdInt = (_: any, value: any, callback: any) => {
-    const {
-      annotations,
-      parentValue,
-      parentCallback,
-      signalCallback
-    } = this.state;
-    this.setState({
-      signalValue: value
-    });
-
-    this.setState(
-      {
-        potentialParents: annotations.filter(
-          (a: Annotation) => a.signal_id === value
-        )
-      },
-      () => {
-        if (parentCallback) {
-          this.validateParent(_, parentValue, parentCallback);
-        }
-      }
-    );
-
-    this.validateId(_, value, callback);
-
-    if (!signalCallback) {
-      this.setState({
-        signalCallback: callback
-      });
-    }
+  private getSignalByAnnotationID = (id: string) => {
+    const idInt = parseInt(id, 10);
+    const annotation = this.state.annotations.find(a => a.id === idInt);
+    return annotation ? annotation.signal_id : '';
   }
 
   public validateId = (_: any, value: any, callback: any) => {
@@ -204,23 +167,6 @@ class CreateAnnotationForm extends Component<Props, States> {
     callback();
   }
 
-  public validateParentInt = (_: any, value: any, callback: any) => {
-    const { signalCallback, parentCallback, signalValue } = this.state;
-    this.setState({
-      parentValue: value
-    });
-    this.validateParent(_, value, callback);
-
-    if (!parentCallback) {
-      this.setState({
-        parentCallback: callback
-      });
-    }
-    if (this.state.signalCallback) {
-      this.validateId(_, signalValue, signalCallback);
-    }
-  }
-
   public validateParent = (_: any, value: any, callback: any) => {
     if (!value) {
       this.setState({ annotationValidateStatus: '' });
@@ -233,17 +179,10 @@ class CreateAnnotationForm extends Component<Props, States> {
       return;
     }
 
-    const { annotations, annotationsFinished, potentialParents } = this.state;
+    const { annotations, annotationsFinished } = this.state;
 
     if (value && !annotations.map(a => a.id).includes(parseInt(value, 10))) {
       this.validateParentError('This annotations doesn\'t exist', callback);
-      return;
-    }
-    if (!potentialParents.map(a => a.id).includes(parseInt(value, 10))) {
-      this.validateParentError(
-        'This parent has not the same signal ID',
-        callback
-      );
       return;
     }
     if (!annotationsFinished.map(a => a.id).includes(parseInt(value, 10))) {
@@ -257,23 +196,11 @@ class CreateAnnotationForm extends Component<Props, States> {
   }
 
   public validateParentSucces = (callback: any) => {
-    const {
-      form: { getFieldValue, setFieldsValue }
-    } = this.props;
-    const parentIdValue = getFieldValue('parent_id');
-    setFieldsValue({
-      parent_id: parentIdValue
-    });
     this.setState({ annotationValidateStatus: 'success' }, () => {
       callback();
     });
   }
   public validateParentError = (error: string, callback: any) => {
-    const {
-      form: { getFieldValue, setFieldsValue }
-    } = this.props;
-    const parentIdValue = getFieldValue('parent_id');
-    setFieldsValue({ parent_id: parentIdValue });
     this.setState({ annotationValidateStatus: 'error' }, () => {
       callback(error);
     });
@@ -379,20 +306,49 @@ class CreateAnnotationForm extends Component<Props, States> {
                   ]
                 })(<Input />)}
               </Form.Item>
-              <Form.Item {...formItemLayout} label='Signal ID'>
-                {getFieldDecorator('signal_id', {
+              <Form.Item
+                {...formItemLayout}
+                label='Original annotation'
+                hasFeedback={true}
+                validateStatus={annotationValidateStatus}
+              >
+                {getFieldDecorator('parent_id', {
+                  initialValue: null,
                   rules: [
                     {
                       whitespace: true,
                       message: msgEmpty
                     },
+                    { validator: this.validateParent }
+                  ]
+                })(
+                  <Input
+                    onChange={e =>
+                      this.props.form.setFieldsValue({
+                        signal_id: this.getSignalByAnnotationID(e.target.value)
+                      })
+                    }
+                  />
+                )}
+              </Form.Item>
+              <Form.Item {...formItemLayout} label='Signal ID'>
+                {getFieldDecorator('signal_id', {
+                  rules: [
                     {
                       required: true,
                       message: msgRequired
                     },
-                    { validator: this.validateIdInt }
+                    { validator: this.validateId }
                   ]
-                })(<Input />)}
+                })(
+                  <Input
+                    {...(this.props.form.getFieldValue('parent_id')
+                      ? {
+                          disabled: true
+                        }
+                      : { disabled: false, required: true })}
+                  />
+                )}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Organization'>
                 {getFieldDecorator('organization_id', {
@@ -410,23 +366,6 @@ class CreateAnnotationForm extends Component<Props, States> {
                     onSearch={this.handleSearchOrganization}
                   />
                 )}
-              </Form.Item>
-              <Form.Item
-                {...formItemLayout}
-                label='Original annotation'
-                hasFeedback={true}
-                validateStatus={annotationValidateStatus}
-              >
-                {getFieldDecorator('parent_id', {
-                  initialValue: null,
-                  rules: [
-                    {
-                      whitespace: true,
-                      message: msgEmpty
-                    },
-                    { validator: this.validateParentInt }
-                  ]
-                })(<Input />)}
               </Form.Item>
               <Form.Item {...formItemLayout} label='Tags autorisés'>
                 {getFieldDecorator('tags', {
