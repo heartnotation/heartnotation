@@ -118,10 +118,10 @@
 .signal-legend-container {
   float: right;
   margin-top: 40px;
-  margin-right: 20px;
+  margin-right: 1vw;
   border: 1px solid #000;
   width: 17vw;
-  padding: 10px;
+  padding: 1vw;
 }
 
 .signal-main-container {
