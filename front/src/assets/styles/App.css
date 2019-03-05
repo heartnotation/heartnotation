@@ -287,5 +287,5 @@ div > .fixed-bottom-button {
 }
 
 .signal-graph-container, .signal-context-container {
-  display: inline-block;
+  display: inline-block !important;
 }
