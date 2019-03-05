@@ -6,7 +6,6 @@ import { withAuth, AuthProps } from '../utils/auth';
 import EditUserForm from './EditUserForm';
 import UserCreation from './UserCreation';
 import AddButton from '../fragments/fixedButton/AddButton';
-import { isRegExp } from 'util';
 
 export interface State {
   searches: Map<string, string>;
