@@ -1,6 +1,7 @@
-import React, { Component, useState } from 'react';
-import { Drawer, Button } from 'antd';
+import React, { useState } from 'react';
+import { Drawer, Button, Icon } from 'antd';
 import CommentChatAnnotation from '../chatAnnotation/CommentChatAnnotation';
+import Message from '../../assets/images/Message';
 
 interface Props {
   annotation_id: number;
@@ -13,11 +14,11 @@ export default (props: Props) => {
     <div className='chat-drawer-container'>
       <Button
         type='primary'
-        icon='message'
         size='large'
         onClick={() => setVisible(true)}
         className='btn-space'
       >
+        <Icon component={Message} />
         Comments
       </Button>
       <Drawer

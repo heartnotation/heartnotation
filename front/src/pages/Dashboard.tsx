@@ -285,8 +285,7 @@ class Dashboard extends Component<Props, State> {
         if (
           annotation.last_status.enum_status.id !== CANCEL_ID &&
           user.role.id === GESTIONNAIRE_ID &&
-          annotation.last_status.enum_status.id !== VALIDATED_ID &&
-          annotation.last_status.enum_status.id !== IN_PROCESS_ID
+          annotation.last_status.enum_status.id !== VALIDATED_ID
         ) {
           return (
             <>

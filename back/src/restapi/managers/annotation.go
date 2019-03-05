@@ -321,7 +321,7 @@ func UpdateAnnotationStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		if (*a.LastStatus.EnumstatusID == 2 && !(annotationStatus.EnumStatus == 1 || annotationStatus.EnumStatus == 6)) || *a.LastStatus.EnumstatusID == 3 || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
+		if (*a.LastStatus.EnumstatusID == 2 && !(annotationStatus.EnumStatus == 1 || annotationStatus.EnumStatus == 6)) || (*a.LastStatus.EnumstatusID == 3 && annotationStatus.EnumStatus != 6) || *a.LastStatus.EnumstatusID == 5 || *a.LastStatus.EnumstatusID == 6 {
 			http.Error(w, "The current user can not modify this annotation at this time", http.StatusForbidden)
 			return
 		}

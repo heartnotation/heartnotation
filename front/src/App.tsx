@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './assets/styles/App.css';
 import AppRouter from './Routes';
-import AnnotationForm from './pages/CreateAnnotationForm';
 import TagCreation from './pages/TagCreation';
 import Tags from './pages/Tags';
 import Users from './pages/Users';
@@ -9,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import SignalAnnotation from './pages/SignalAnnotation';
 import { api, User } from './utils';
 import { Authenticated, authenticate } from './utils/auth';
-import GoogleLogin from 'react-google-login';
 import loadingGif from './assets/images/loading.gif';
 import Login from './pages/Login';
 import Organizations from './pages/Organizations';
@@ -108,15 +106,6 @@ const r = {
       title: 'Organizations',
       iconName: 'bank',
       roles: ['Gestionnaire', 'Admin']
-    },
-    {
-      path: '/about',
-      component: () => (
-        <h2>Version : {process.env.REACT_APP_VERSION || 'unstable'}</h2>
-      ),
-      title: 'About',
-      iconName: 'question',
-      roles: ['Annotateur', 'Gestionnaire', 'Admin']
     }
   ]
 };
