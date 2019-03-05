@@ -65,22 +65,6 @@ CREATE TABLE public.EnumStatus
 )
 WITHOUT OIDS;
 
-
-------------------------------------------------------------
--- Table: Notification
-------------------------------------------------------------
-CREATE TABLE public.Notification
-(
-	id SERIAL NOT NULL ,
-	title VARCHAR (50) NOT NULL ,
-	content VARCHAR (500) NOT NULL ,
-	date TIMESTAMP NOT NULL ,
-	user_id INT NOT NULL  ,
-	CONSTRAINT Notification_PK PRIMARY KEY (id)
-)
-WITHOUT OIDS;
-
-
 ------------------------------------------------------------
 -- Table: User_Organization
 ------------------------------------------------------------
@@ -216,11 +200,6 @@ ALTER TABLE public.User
 	FOREIGN KEY (role_id)
 	REFERENCES public.Role(id);
 
-ALTER TABLE public.Notification
-	ADD CONSTRAINT Notification_User0_FK
-	FOREIGN KEY (user_id)
-	REFERENCES public.User(id);
-
 ALTER TABLE public.User_Organization
 	ADD CONSTRAINT User_Organization_Organization0_FK
 	FOREIGN KEY (organization_id)
@@ -319,7 +298,6 @@ ALTER TABLE public.Organization OWNER TO heart;
 ALTER TABLE public.Status OWNER TO heart;
 ALTER TABLE public.EnumStatus OWNER TO heart;
 ALTER TABLE public.CommentAnnotation OWNER TO heart;
-ALTER TABLE public.Notification OWNER TO heart;
 ALTER TABLE public.Annotation_Tag OWNER TO heart;
 ALTER TABLE public.User_Organization OWNER TO heart;
 ALTER TABLE public.Interval_Tag OWNER TO heart;
@@ -527,20 +505,30 @@ VALUES
 
 -- INTERVAL
 
-INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
-	VALUES (62000, 65100, TRUE, 1);
+INSERT INTO public.Interval
+	(time_start, time_end, is_active, annotation_id)
+VALUES
+	(62000, 65100, TRUE, 1);
 
-INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id)
-	VALUES (55000, 60100, TRUE, 1);
+INSERT INTO public.Interval
+	(time_start, time_end, is_active, annotation_id)
+VALUES
+	(55000, 60100, TRUE, 1);
 
-INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id)
-	VALUES (50000, 70100, TRUE, 1);
+INSERT INTO public.Interval
+	(time_start, time_end, is_active, annotation_id)
+VALUES
+	(50000, 70100, TRUE, 1);
 
-INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
-	VALUES (24820, 24920, TRUE, 2);
+INSERT INTO public.Interval
+	(time_start, time_end, is_active, annotation_id)
+VALUES
+	(24820, 24920, TRUE, 2);
 
-INSERT INTO public.Interval (time_start, time_end, is_active, annotation_id) 
-	VALUES (10000, 20000, TRUE, 2);
+INSERT INTO public.Interval
+	(time_start, time_end, is_active, annotation_id)
+VALUES
+	(10000, 20000, TRUE, 2);
 
 
 -- CommentInterval
@@ -562,14 +550,20 @@ VALUES
 
 -- TAG
 
-INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on fire', '#F0A202', TRUE);
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
+VALUES
+	(NULL, 'Lungs on fire', '#F0A202', TRUE);
 
-INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (NULL, 'Lungs on water', '#EB5160', TRUE);
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
+VALUES
+	(NULL, 'Lungs on water', '#EB5160', TRUE);
 
-INSERT INTO public.Tag (parent_id, name, color, is_active) 
-	VALUES (2, 'Weird lungs', '#009FFD', TRUE);
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
+VALUES
+	(2, 'Weird lungs', '#009FFD', TRUE);
 
 -- ANNOTATION_TAG
 
@@ -614,29 +608,45 @@ INSERT INTO public.Interval_Tag
 VALUES
 	(1, 2);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (2, 1);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(2, 1);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (2, 3);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(2, 3);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (3, 3);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(3, 3);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (4, 1);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(4, 1);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (4, 2);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(4, 2);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (4, 3);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(4, 3);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (5, 2);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(5, 2);
 
-INSERT INTO public.Interval_Tag (interval_id, tag_id) 
-	VALUES (5, 3);
+INSERT INTO public.Interval_Tag
+	(interval_id, tag_id)
+VALUES
+	(5, 3);
 
 -- Status
 INSERT INTO public.Status
