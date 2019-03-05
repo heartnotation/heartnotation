@@ -285,3 +285,7 @@ div > .fixed-bottom-button {
 .legend-tag:hover {
   cursor: initial;
 }
+
+.signal-graph-container, .signal-context-container {
+  display: inline-block;
+}
