@@ -11,11 +11,11 @@ export interface State {
   searches: Map<string, string>;
   initialUsers: User[];
   currentUsers: User[];
-  user?: User;
   modifyVisible: boolean;
   creationVisible: boolean;
   keepCreationData: boolean;
   error: string;
+  currentUser?: User;
 }
 
 interface Props extends AuthProps {
@@ -53,7 +53,8 @@ class Users extends Component<Props, State> {
     modifyVisible: false,
     creationVisible: false,
     keepCreationData: true,
-    error: ''
+    error: '',
+    currentUser: undefined
   };
 
   public async componentDidMount() {
@@ -167,7 +168,7 @@ class Users extends Component<Props, State> {
               twoToneColor='#6669c9'
               style={{ fontSize: '1.3em' }}
               onClick={() => {
-                this.setState({ modifyVisible: true, user });
+                this.setState({ modifyVisible: true, currentUser: user });
               }}
             />
           </Col>
@@ -186,7 +187,6 @@ class Users extends Component<Props, State> {
                       try {
                         const users = await this.getDatas();
                         this.setState({
-                          user: undefined,
                           initialUsers: users,
                           currentUsers: users.slice(),
                           error: ''
@@ -289,7 +289,6 @@ class Users extends Component<Props, State> {
     try {
       const users = await this.getDatas();
       this.setState({
-        user: undefined,
         initialUsers: users,
         currentUsers: users.slice(),
         error: ''
@@ -304,7 +303,6 @@ class Users extends Component<Props, State> {
     try {
       const users = await this.getDatas();
       this.setState({
-        user: undefined,
         initialUsers: users,
         currentUsers: users.slice(),
         error: ''
@@ -316,7 +314,7 @@ class Users extends Component<Props, State> {
 
   public closeModalModification() {
     this.setState({
-      user: undefined,
+      currentUser: undefined,
       modifyVisible: false
     });
   }
@@ -331,11 +329,10 @@ class Users extends Component<Props, State> {
   public render() {
     const {
       currentUsers,
-      user,
       modifyVisible,
       creationVisible,
-      keepCreationData,
-      error
+      error,
+      currentUser
     } = this.state;
     const {
       user: { role },
@@ -358,7 +355,7 @@ class Users extends Component<Props, State> {
             `${range[0]}-${range[1]} of ${total} items`
         }}
       />,
-      user && (
+      currentUser && (
         <EditUserForm
           key={2}
           getOrganizations={getOrganizations}
@@ -366,9 +363,8 @@ class Users extends Component<Props, State> {
           modifyUser={modifyUser}
           handleCancel={this.handleCancelModification}
           handleOk={this.handleOkModification}
-          currentUser={user}
+          currentUser={currentUser}
           modalVisible={modifyVisible}
-          user={user}
         />
       ),
       role.name === 'Admin' && (

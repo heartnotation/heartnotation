@@ -140,6 +140,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if a.Mail != nil {
 		user.Mail = *a.Mail
 	}
+	user = m.User{ID: *a.ID, Mail: *a.Mail, Organizations: organizations, RoleID: a.RoleID, IsActive: true}
 	if u.CheckErrorCode(db.Preload("Role").Preload("Organizations").Save(&user).Error, w) {
 		return
 	}

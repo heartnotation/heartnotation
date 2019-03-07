@@ -3,7 +3,7 @@ import { Form, Input, Button, Select, Row, Col, Alert, Modal } from 'antd';
 import { FormComponentProps } from 'antd/lib/form';
 import { OptionProps } from 'antd/lib/select';
 import { Organization, Role, User } from '../utils';
-import { AuthProps } from '../utils/auth';
+import { AuthProps, withAuth } from '../utils/auth';
 
 const { Option } = Select;
 
@@ -150,8 +150,7 @@ class EditUserForm extends Component<Props, States> {
         this.setState({ loading: true, error: '' });
         modifyUser(values)
           .then(() => {
-            handleOk();
-            this.setState({ loading: false });
+            this.setState({ loading: false }, handleOk);
           })
           .catch(error =>
             this.setState({
@@ -282,4 +281,4 @@ class EditUserForm extends Component<Props, States> {
   }
 }
 
-export default Form.create()(EditUserForm);
+export default Form.create()(withAuth(EditUserForm));
