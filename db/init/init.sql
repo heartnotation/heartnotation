@@ -482,279 +482,117 @@ INSERT INTO public.User_Organization
 VALUES
 	(1, 10);
 
--- ANNOTATION
-INSERT INTO public.Annotation
-	(parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)
-VALUES
-	(NULL, 'Annotation 1', 1, '1', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
-
-INSERT INTO public.Annotation
-	(parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)
-VALUES
-	(NULL, 'Annotation 2', 2, 'ecg', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
-
-INSERT INTO public.Annotation
-	(parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)
-VALUES
-	(2, 'Annotation 3', 3, 'acc', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
-
-INSERT INTO public.Annotation
-	(parent_id, name, organization_id, signal_id, creation_date, edit_date, is_active, is_editable)
-VALUES
-	(2, 'Annotation 4', 3, 'eeg', '2004-10-19 10:23:54', '2012-12-29 17:19:54', TRUE, TRUE);
-
--- INTERVAL
-
-INSERT INTO public.Interval
-	(time_start, time_end, is_active, annotation_id)
-VALUES
-	(62000, 65100, TRUE, 1);
-
-INSERT INTO public.Interval
-	(time_start, time_end, is_active, annotation_id)
-VALUES
-	(55000, 60100, TRUE, 1);
-
-INSERT INTO public.Interval
-	(time_start, time_end, is_active, annotation_id)
-VALUES
-	(50000, 70100, TRUE, 1);
-
-INSERT INTO public.Interval
-	(time_start, time_end, is_active, annotation_id)
-VALUES
-	(24820, 24920, TRUE, 2);
-
-INSERT INTO public.Interval
-	(time_start, time_end, is_active, annotation_id)
-VALUES
-	(10000, 20000, TRUE, 2);
-
-
--- CommentInterval
-
-INSERT INTO public.CommentInterval
-	(interval_id, user_id, comment, date)
-VALUES
-	(1, 1, 'HOLLY', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentInterval
-	(interval_id, user_id, comment, date)
-VALUES
-	(2, 1, 'MOLLY', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentInterval
-	(interval_id, user_id, comment, date)
-VALUES
-	(3, 1, 'gOdsAkE', '2004-10-19 10:23:54');
-
 -- TAG
 
 INSERT INTO public.Tag
 	(parent_id, name, color, is_active)
 VALUES
-	(NULL, 'Lungs on fire', '#F0A202', TRUE);
+	(NULL, 'Physical Activity', '#570784', TRUE);
 
 INSERT INTO public.Tag
 	(parent_id, name, color, is_active)
 VALUES
-	(NULL, 'Lungs on water', '#EB5160', TRUE);
+	(1, 'Running', '#F0A202', TRUE);
 
 INSERT INTO public.Tag
 	(parent_id, name, color, is_active)
 VALUES
-	(2, 'Weird lungs', '#009FFD', TRUE);
+	(1, 'Bike', '#C50000', TRUE);
 
--- ANNOTATION_TAG
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
+VALUES
+	(1, 'Rest', '#D63898', TRUE);
 
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(1, 1);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(1, 2);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(1, 3);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(2, 1);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(2, 2);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(3, 1);
-INSERT INTO public.Annotation_Tag
-	(annotation_id, tag_id)
-VALUES
-	(4, 1);
+	(NULL, 'Brain Activity', '#009FFD', TRUE);
 
--- INTERVAL_TAG
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
+VALUES
+	(5, 'Eyes opened', '#85002F', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(1, 1);
+	(5, 'Eyes closed', '#FFC43A', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(1, 2);
+	(NULL, 'Heart Activity', '#B80500', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(2, 1);
+	(8, 'P', '#51C43F', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(2, 3);
+	(8, 'QRS', '#2F8B8F', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(3, 3);
+	(8, 'T', '#ED544C', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(4, 1);
+	(NULL, 'Square wave Activity', '#0a8013', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(4, 2);
+	(12, 'True', '#20bfdf', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
+INSERT INTO public.Tag
+	(parent_id, name, color, is_active)
 VALUES
-	(4, 3);
+	(12, 'False', '#f11313', TRUE);
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
-VALUES
-	(5, 2);
+COPY public.annotation (id, name, signal_id, creation_date, edit_date, is_active, is_editable, organization_id, parent_id) FROM stdin;
+1	Square wave problem	1	2019-03-07 10:28:07.073555	2019-03-07 10:29:15.196978	t	t	2	\N
+2	Real ECG	ecg	2019-03-07 10:29:52.939814	2019-03-07 10:30:42.062392	t	t	1	\N
+3	Podology problems	acc	2019-03-07 10:47:52.59378	2019-03-07 10:49:19.695812	t	t	2	\N
+\.
 
-INSERT INTO public.Interval_Tag
-	(interval_id, tag_id)
-VALUES
-	(5, 3);
+COPY public.annotation_tag (tag_id, annotation_id) FROM stdin;
+13	1
+14	1
+8	2
+9	2
+10	2
+11	2
+1	3
+2	3
+\.
 
--- Status
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 1, 1, '2006-10-19 10:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 1, 2, '2006-10-19 10:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 1, 3, '2006-10-19 10:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 1, 4, '2006-10-19 10:23:54');
+COPY public."interval" (id, time_start, time_end, is_active, annotation_id) FROM stdin;
+1	42	59996	t	2
+3	10470	10589	t	2
+4	10596	10715	t	2
+5	10722	10908	t	2
+\.
 
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 2, 1, '2006-10-19 11:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 2, 2, '2006-10-19 11:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 2, 3, '2006-10-19 11:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 2, 4, '2006-10-19 11:23:54');
+COPY public.interval_tag (interval_id, tag_id) FROM stdin;
+1	8
+3	9
+4	10
+5	11
+\.
 
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 3, 1, '2006-10-19 12:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 3, 2, '2006-10-19 12:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 3, 3, '2006-10-19 12:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 3, 4, '2006-10-19 12:23:54');
+COPY public.status (id, date, annotation_id, enumstatus_id, user_id) FROM stdin;
+2	2019-03-07 10:28:34.60941	1	2	3
+1	2019-03-07 10:28:07.079158	1	1	3
+3	2019-03-07 10:29:15.196978	1	6	3
+4	2019-03-07 10:29:52.949639	2	2	3
+5	2019-03-07 10:30:42.062392	2	3	10
+6	2019-03-07 10:47:52.613609	3	2	3
+7	2019-03-07 10:49:06.743659	3	4	4
+8	2019-03-07 10:49:19.695812	3	5	3
+\.
 
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(1, 4, 2, '2006-10-19 13:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 4, 3, '2006-10-19 13:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 4, 4, '2006-10-19 13:23:54');
-
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 5, 3, '2006-10-19 14:23:54');
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 5, 4, '2006-10-19 14:23:54');
-
-INSERT INTO public.Status
-	(user_id, enumstatus_id, annotation_id, date)
-VALUES
-	(2, 6, 4, '2006-10-19 15:23:54');
-
--- CommentAnnotation
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(1, 2, 'The lungs are presenting an incredible amount of water which is coming from an unresolved source', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(1, 3, 'Lungs are actually defectuous due to drugs injections and too much inhale of smoke', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(1, 1, '80% of the cause is daily smoke and sniffing white rails', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(2, 2, 'There is ponies in their lungs', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(2, 3, 'Ponies have invaded the brain', '2004-10-19 10:23:54');
-
-INSERT INTO public.CommentAnnotation
-	(annotation_id, user_id, comment, date)
-VALUES
-	(2, 1, 'Ponies are everywhere. Everywhere.', '2004-10-19 10:23:54');
