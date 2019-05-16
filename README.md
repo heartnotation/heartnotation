@@ -7,5 +7,5 @@ Donc sur votre machine, dans le fichier `/etc/hosts`, ajoutez la ligne
 51.15.2.24  heartnotation.local
 ```
 
-- [REST API](http://51.15.2.24:8080)
-- [Frontend Application](http://51.15.2.24)
+- [REST API](http://51.15.2.24:8080)(not available anymore)
+- [Frontend Application](http://51.15.2.24)(not available anymore)
